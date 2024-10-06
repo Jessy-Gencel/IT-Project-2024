@@ -1,0 +1,22 @@
+# Python
+*.pyc
+__pycache__/
+venv/
+.env
+
+# Node.js
+node_modules/
+.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Misc
+.DS_Store
+Thumbs.db
