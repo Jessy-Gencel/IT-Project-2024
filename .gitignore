@@ -20,3 +20,9 @@ web-build/
 # Misc
 .DS_Store
 Thumbs.db
+/.idea/.gitignore
+/.idea/IT-Project-2024.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/vcs.xml
