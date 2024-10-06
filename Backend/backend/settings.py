@@ -11,6 +11,17 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+from pymongo import MongoClient
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get MongoDB connection details
+MONGO_DB_NAME = os.getenv('MONGO_DB_NAME')
+MONGO_CONNECTION_STRING = os.getenv('MONGO_CONNECTION_STRING')
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-etrs1j7jdh=9d4@oaatt)dsy%72u&1ninn1(++lc2@#xr7t=_u'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,11 +85,18 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+#
+
+client = MongoClient(MONGO_CONNECTION_STRING)
+print(client.list_database_names())
+print("THe thing important" + MONGO_DB_NAME)
+db = client[f"{MONGO_DB_NAME}"]
+print(db.list_collection_names())
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': 'db-name',
     }
 }
 
@@ -123,3 +141,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+

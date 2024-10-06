@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import JsonResponse
+from .models import get_user
 
-def say_hello(request):
-    random_variable = 1
-    second_variable = 2
-    return render(request, 'hello.html', {'name': 'Primordial'})
+def hello(request):
+    users = get_user()
+    return JsonResponse(users, safe=False)

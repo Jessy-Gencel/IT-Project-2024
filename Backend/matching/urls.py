@@ -3,5 +3,5 @@ from . import views
 
 # The URL patterns for the matching app
 urlpatterns = [
-    path('hello/', views.say_hello),
+    path('hello/', views.hello),
 ]
