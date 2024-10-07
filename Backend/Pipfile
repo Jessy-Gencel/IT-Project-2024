@@ -4,11 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
-pytz = "*"
-mongoengine = "*"
 python-dotenv = "*"
-pymongo = "*"
+couchbase = "*"
+flask = "*"
 
 [dev-packages]
 
