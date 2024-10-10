@@ -7,6 +7,7 @@ name = "pypi"
 python-dotenv = "*"
 couchbase = "*"
 flask = "*"
+pinecone = {extras = ["grpc"], version = "*"}
 
 [dev-packages]
 

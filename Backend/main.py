@@ -1,5 +1,5 @@
 from flask import Flask
-from DB.database_connection import getWorkingCollection
+from Backend.DB.couchbase_connection import getWorkingCollection
 
 app = Flask(__name__)
 
