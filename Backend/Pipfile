@@ -7,7 +7,12 @@ name = "pypi"
 python-dotenv = "*"
 couchbase = "*"
 flask = "*"
-pinecone = {extras = ["grpc"], version = "*"}
+pymilvus = "*"
+scipy = "*"
+gensim = "*"
+transformers = "*"
+torch = "*"
+scikit-learn = "*"
 
 [dev-packages]
 
