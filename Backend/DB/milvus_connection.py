@@ -17,14 +17,3 @@ def make_connection():
 
 
 
-# The data for insert verctors should always be a dict consisting of the keys "primary_key" and "vectors"
-
-def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict):
-    res = client.insert(
-        collection_name=collection_name,
-        data=userdata
-    )
-    return res
-
-
-
