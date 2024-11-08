@@ -13,6 +13,8 @@ gensim = "*"
 transformers = "*"
 torch = "*"
 scikit-learn = "*"
+argon2-cffi = "*"
+pyjwt = "*"
 
 [dev-packages]
 
