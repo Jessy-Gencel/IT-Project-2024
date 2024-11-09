@@ -2,10 +2,10 @@ from flask import Flask
 from DB.milvus_connection import make_connection
 from DB.couchbase_connection import connect_to_couchbase, get_collection,get_scope
 from Services.embedding import load_bert, get_word_vector
-from .Routes.authRoutes import auth_bp
-from .Routes.vectorRoutes import vector_bp
-from .Routes.messageRoutes import message_bp
-from .Routes.eventRoutes import event_bp
+from Routes.authRoutes import auth_bp
+from Routes.vectorRoutes import vector_bp
+from Routes.messageRoutes import message_bp
+from Routes.eventRoutes import event_bp
 
 app = Flask(__name__)
 

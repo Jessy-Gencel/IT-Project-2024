@@ -2,7 +2,7 @@ import jwt
 import datetime
 import os
 from dotenv import load_dotenv
-from ..Models.User import User
+from Models.User import User
 
 load_dotenv()
 
