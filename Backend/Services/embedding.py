@@ -125,6 +125,7 @@ def format_vector_to_user_data(id : int, vectors : list, list_of_prefixes : list
     Args:
         id (int): The ID of the user.
         vector (list): The user's vector.
+        list_of_prefixes (list): A list of prefixes for the vectors (words such as global,interest,game etc...).
     Returns:
         dict: The formatted user data.
     """
