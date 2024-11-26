@@ -1,6 +1,6 @@
 from transformers import BertTokenizer, BertModel, PreTrainedModel
 from transformers.modeling_outputs import BaseModelOutputWithPoolingAndCrossAttentions
-from DB.milvus_connection import MilvusClient
+from DB.milvus_connection import MilvusClient, global_vector_DB, category_vector_DB, predefined_vector_DB1, predefined_vector_DB2
 import numpy as np
 import torch
 
@@ -38,14 +38,14 @@ def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict)
     """
     Inserts vectors into a specified collection in Milvus.
 
-    Parameters:
-    client (MilvusClient): The Milvus client instance used to interact with the Milvus server.
-    collection_name (str): The name of the collection where the vectors will be inserted.
-    userdata (dict): A dictionary containing the data to be inserted. It must have the keys "id" and "vectors".
-                     Example: {"id": 1, "vectors": [1,2,3,4,5,6,7,8,9,10]}
+    Args:
+        client (MilvusClient): The Milvus client instance used to interact with the Milvus server.
+        collection_name (str): The name of the collection where the vectors will be inserted.
+        userdata (dict): A dictionary containing the data to be inserted. It must have the keys "id" and "vectors".
+        example: {"id": 1, "vectors": [1,2,3,4,5,6,7,8,9,10]}
 
     Returns:
-    res: The result of the insert operation from the Milvus client.
+        res: The result of the insert operation from the Milvus client.
     """
     res = client.insert(
         collection_name=collection_name,
@@ -53,7 +53,7 @@ def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict)
     )
     return res
 
-def get_embeddings_for_all_categories(array_of_multiple_arrays : list,tokenizer,model:PreTrainedModel):
+def get_all_vectors(array_of_multiple_arrays : list,tokenizer,model:PreTrainedModel,save_to_milvus = False):
     """
     Generate embeddings for all categories from a list of arrays.
     This function processes multiple arrays, each representing a category, and generates a mean vector for each category.
@@ -70,11 +70,21 @@ def get_embeddings_for_all_categories(array_of_multiple_arrays : list,tokenizer,
         array_for_one_category = []
         for word in array:
             vector = get_word_vector(tokenizer,model,word)
+            if save_to_milvus:
+                #Need to implement the checking with the predefined vectors
+                pass
             array_for_one_category.append(vector)
         mean_vector = get_mean_vector_for_category(array_for_one_category)
+        if save_to_milvus:
+            #Need to implement the write to the category vector DB
+            pass
         final_vector_array.append(mean_vector)
     final_vector = concatenate_final_vector(final_vector_array)
+    if save_to_milvus:
+        #Need to implement the write to the global vector DB
+        pass
     return final_vector
+
 
 def get_mean_vector_for_category(array_of_vectors : list):
     """
@@ -99,4 +109,27 @@ def concatenate_final_vector(final_vector : list):
     concatenated_tensor =  torch.cat(final_vector,dim=0)
     return concatenated_tensor.reshape(1,-1)
 
+def format_vector_for_milvus(vector : torch.Tensor):
+    """
+    Formats a PyTorch tensor for insertion into a Milvus collection.
+    Args:
+        vector (torch.Tensor): The tensor to be formatted.
+    Returns:
+        list: The formatted vector as a list.
+    """
+    return vector.tolist()[0]
+
+def format_vector_to_user_data(id : int, vectors : list, list_of_prefixes : list):
+    """
+    Formats user data for insertion into a Milvus collection.
+    Args:
+        id (int): The ID of the user.
+        vector (list): The user's vector.
+    Returns:
+        dict: The formatted user data.
+    """
+    user_data = {"id": id}
+    for i in range(len(vectors)):
+        user_data[f"{list_of_prefixes[i]}_vector"] = vectors[i]
+    return user_data
 
