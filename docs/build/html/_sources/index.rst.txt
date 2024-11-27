@@ -17,4 +17,9 @@ documentation for details.
 
    api
    installation
+   documentation
+   messagesRoute
+   eventRoutes
+   authRoutes
+   vectorRoutes
 

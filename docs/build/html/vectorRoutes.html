@@ -3,9 +3,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; GatewayDocs  documentation</title>
+  <title>Vector routes &mdash; GatewayDocs  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -16,7 +17,7 @@
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
 </head>
 
@@ -47,7 +48,6 @@
 <li class="toctree-l1"><a class="reference internal" href="messagesRoute.html">Message routes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eventRoutes.html">Event routes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="authRoutes.html">Auth routes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="vectorRoutes.html">Vector routes</a></li>
 </ul>
 
         </div>
@@ -64,8 +64,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Index</li>
+      <li class="breadcrumb-item active">Vector routes</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="_sources/vectorRoutes.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -73,12 +74,32 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
-</div>
+  <section id="vector-routes">
+<h1>Vector routes<a class="headerlink" href="#vector-routes" title="Link to this heading"></a></h1>
+<p>This section documents the routes related to the vector blueprint.</p>
+<ul class="simple">
+<li><p><strong>URL Prefix</strong>: /vector</p></li>
+<li><p><strong>Blueprint name</strong>: vector</p></li>
+</ul>
+<section id="post-vector-make">
+<h2>POST vector/make<a class="headerlink" href="#post-vector-make" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Description</strong>: Creates a new vector.</p></li>
+<li><p><strong>Usage</strong>: Generate or initialize a vector.</p></li>
+<li><p><strong>Request</strong>: JSON with key of category and list of interest values</p></li>
+<li><p><strong>Response</strong>: Returns a message indicating the vector was created</p></li>
+</ul>
+</section>
+<section id="get-vector-get">
+<h2>GET vector/get<a class="headerlink" href="#get-vector-get" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Description</strong>: Retrieves a vector</p></li>
+<li><p><strong>Usage</strong>: Fetch the details of an existing vector</p></li>
+<li><p><strong>Request</strong>: id</p></li>
+<li><p><strong>Response</strong>: Returns a message indicating the vector was retrieved</p></li>
+</ul>
+</section>
+</section>
 
 
            </div>

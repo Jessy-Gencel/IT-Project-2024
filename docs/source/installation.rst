@@ -2,9 +2,9 @@ Installation
 ============
 
 Windows install Python
------
+----------------------
 
-    Go to the official Python website: (https://www.python.org/downloads)
+    Go to the official `Python website <https://www.python.org/downloads>`_.
 
     - **Download python**
         - Scroll down and select Python 3.12.7 from the download page. 
@@ -15,13 +15,15 @@ Windows install Python
     - **Verify the installation.**
         - Open the Comand Prompt (win + R, type "cmd" and press enter).
         - Type the following command:
+
 .. code-block:: bash 
 
     python --version
 
 
 macOS install Python
------
+--------------------
+
 
 Go to the official Python website: (https://www.python.org/downloads)
         - **Download python**
@@ -34,25 +36,29 @@ Go to the official Python website: (https://www.python.org/downloads)
         - **Verify the installation.**
             - Open Terminal (Applications > Utilities > Terminal).
             - Type the following command:
+
 .. code-block:: bash 
 
     python3 --version
 
 Windows pip & pipenv installation 
------
+---------------------------------
+
 
     - Open the Comand Prompt (win + R, type "cmd" and press enter).
     - Type the following commands: 
+
 .. code-block:: bash 
 
     pip install --upgrade pip
     pip install pipenv
 
 macOS pip & pipenv installation
------
+-------------------------------
 
     - Open Terminal (Applications > Utilities > Terminal).
     - Type the following commands: 
+
 .. code-block:: bash 
 
     python3 -m pip install --upgrade pip
