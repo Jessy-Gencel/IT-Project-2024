@@ -1,9 +1,11 @@
 from flask import Flask
-from Services.embedding import load_bert, get_word_vector,insert_vectors,format_vector_for_milvus
+from Services.embedding import make_all_vectors, BERT_TOKENIZER, BERT_MODEL
 from Routes.authRoutes import auth_bp
 from Routes.vectorRoutes import vector_bp
 from Routes.messageRoutes import message_bp
 from Routes.eventRoutes import event_bp
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 app = Flask(__name__)
 
@@ -13,13 +15,18 @@ app.register_blueprint(message_bp)
 app.register_blueprint(event_bp)
 @app.route('/')
 def home():
-    tokenizer, model = load_bert()
-    word = "sleeping"
-    vector = format_vector_for_milvus(get_word_vector(tokenizer,model,word))
-    print(vector)
-    #res = insert_vectors(global_vector_DB,"secondary_user_vectors",{"primary_key":1,"game_vector":vector,"music_vector":vector,"movie_vector":vector,"book_vector":vector})
-    #res2 = insert_vectors(category_vector_DB,"secondary_vectors",{"primary_key":1,"game_vector":vector,"music_vector":vector,"book_vector":vector,"movie_vector":vector})
-    return "yay"
+    #vectors = {
+        #"interest": ["sleeping", "eating"],
+        #"game": ["league of legends", "valorant"],
+        #"music": ["heavy metal", "Crowned"],
+        #"movie": ["Barbie", "Harry Potter"],
+        #"hobby": ["painting"],
+        #"book": ["Lord of the Rings"]
+    #}
+    #mbti = "INTJ"
+    #make_all_vectors(vectors, mbti, 1, BERT_TOKENIZER, BERT_MODEL)
+    #return "yay"
+    pass
 
 
 if __name__ == '__main__':
