@@ -1,5 +1,6 @@
 from pymilvus import MilvusClient,AnnSearchRequest,WeightedRanker
 from transformers import BertTokenizer, BertModel
+from DB.milvus_connection import global_vector_DB
 
 def get_top_n_vectors(VDB : MilvusClient,amount_of_results : int, query_vector : list):
     res = VDB.search(
@@ -26,3 +27,6 @@ def make_ANN_request(vector : list, amount_of_results : int, target_field : str)
     }
     request = AnnSearchRequest(**search_param)
     return request
+def get_by_id(id : int):
+    res = global_vector_DB.get(collection_name="global_vectors", ids=id)
+    return res
