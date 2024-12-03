@@ -1,7 +1,7 @@
 from flask import Flask
 from DB.milvus_connection import global_vector_DB
 from Services.embedding import make_all_vectors, BERT_TOKENIZER, BERT_MODEL
-from Services.vector_similarity import get_by_id,get_global_matches
+from Services.vector_similarity import get_by_id,get_global_matches,curve_scores
 from Routes.authRoutes import auth_bp
 from Routes.vectorRoutes import vector_bp
 from Routes.messageRoutes import message_bp
@@ -23,7 +23,8 @@ def home():
     hobby_vector = [vector[0]["hobby_vector"]]
     interest_vector = [vector[0]["interest_vector"]]
     res = get_global_matches(global_vector_DB, 10, global_vector, mbti_vector, hobby_vector, interest_vector)
-    print(res)
+    scores = [score["distance"] for score in res["data"][0]]
+    print(scores)
     return "Hello World"
     
 

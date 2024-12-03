@@ -185,7 +185,7 @@ def get_mbti_vector(mbti : str):
         "ESTJ": np.array([-0.17031324, 0.90511924, 0.33844064, 0.19290024])
     }
     return torch.tensor(mbti_vectors[mbti]).reshape(1, -1)
-            
+
 BERT = load_bert()
 BERT_MODEL = BERT[1]
 BERT_TOKENIZER = BERT[0]
