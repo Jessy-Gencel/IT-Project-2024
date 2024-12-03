@@ -17,22 +17,15 @@ app.register_blueprint(message_bp)
 app.register_blueprint(event_bp)
 @app.route('/')
 def home():
-    #vector = get_by_id(2)
-    #global_vector = vector[0]["global_vector"]
-    #mbti_vector = vector[0]["mbti_vector"]
-    #vectors = {
-        #"interest": ["Walking long distances", "marathons", "anime"],
-        #"game": ["hearts of iron", "tower defense", "bloons td"],
-        #"music": ["hiphop", "heavy metal"],
-        #"movie": ["lord of the rings", "jurrasic park"],
-        #"hobby": ["reading","ice skating"],
-        #"book": ["Erebos"]
-    #}
-    #mbti = "ENTJ"
-    #make_all_vectors(vectors, mbti, 3, BERT_TOKENIZER, BERT_MODEL)
-    #res = get_global_matches(global_vector_DB, 5, [global_vector], [mbti_vector])
-    #print(res)
-    return "yay"
+    vector = get_by_id(2)
+    global_vector = [vector[0]["global_vector"]]
+    mbti_vector = [vector[0]["mbti_vector"]]
+    hobby_vector = [vector[0]["hobby_vector"]]
+    interest_vector = [vector[0]["interest_vector"]]
+    res = get_global_matches(global_vector_DB, 10, global_vector, mbti_vector, hobby_vector, interest_vector)
+    print(res)
+    return "Hello World"
+    
 
 
 if __name__ == '__main__':

@@ -68,6 +68,7 @@ def make_all_vectors(category_dict : dict, mbti : list,id : int, tokenizer, mode
     """
     final_vector_array = []
     mbti_vector = get_mbti_vector(mbti)
+    global_user_data = {"id": id, "mbti_vector": format_vector_for_milvus(mbti_vector)}
     for category, words in category_dict.items():
         user_data = {"id": id}
         array_for_one_category = []
@@ -78,14 +79,18 @@ def make_all_vectors(category_dict : dict, mbti : list,id : int, tokenizer, mode
         mean_vector = get_mean_vector_for_category(array_for_one_category)
         user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
         if category in ["interest","hobby","game"]:
-            insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
+            if category in ["interest","hobby"]:
+                global_user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
+            else:
+                insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
         elif category in ["music","movie","book"]: 
             insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
         else:
             print("Category not found")
-        final_vector_array.append(mean_vector)
+        if category not in ["interest","hobby"]:
+            final_vector_array.append(mean_vector)
     final_vector = concatenate_final_vector(final_vector_array)
-    global_user_data =  {"id": id, "global_vector": format_vector_for_milvus(final_vector), "mbti_vector": format_vector_for_milvus(mbti_vector)}
+    global_user_data["global_vector"] = format_vector_for_milvus(final_vector)
     insert_vectors(global_vector_DB,"global_vectors", global_user_data)
     return "final_vector"
 
