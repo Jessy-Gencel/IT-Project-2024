@@ -1,61 +1,59 @@
-from Services.embedding import make_all_vectors,BERT_MODEL,BERT_TOKENIZER
-vectors = {
-    "interest": ["running", "parkouring"],
-    "game": ["zumba", "tower defense"],
-    "music": ["heavy metal", "nothing by fabvl"],
-    "movie": ["Lord of the rings", "Harry Potter"],
-    "hobby": ["ice skating, reading"],
-    "book": ["Erebos"]
-}
-mbti = "INFP"
-make_all_vectors(vectors, mbti, 1, BERT_TOKENIZER, BERT_MODEL)
+from Services.embedding import embed_MiniLM
 vectors1 = {
-    "interest": ["climbing", "hiking"],
-    "game": ["tower defense", "minecraft"],
-    "music": ["heavy metal", "rock"],
-    "movie": ["Harry Potter", "Inception"],
-    "hobby": ["ice skating", "reading"],
-    "book": ["The Hobbit"]
+    "interest": ["science fiction", "philosophy", "space exploration"],
+    "game": ["Kerbal Space Program", "Civilization VI"],
+    "music": ["classical", "Hans Zimmer"],
+    "movie": ["Interstellar", "Dune"],
+    "hobby": ["stargazing", "writing", "reading sci-fi"],
+    "book": ["Dune", "Hyperion"]
 }
-mbti1 = "INTJ"
-make_all_vectors(vectors1, mbti1, 2, BERT_TOKENIZER, BERT_MODEL)
+mbti1 = "INTP"
+embed_MiniLM(mbti=mbti1, id=1, category_dict=vectors1)
+
+# Very similar profile to User 1
 vectors2 = {
-    "interest": ["trail running", "exploring nature"],
-    "game": ["zumba", "league of legends"],
-    "music": ["metal", "alternative rock"],
-    "movie": ["Lord of the Rings", "Interstellar"],
-    "hobby": ["writing", "reading"],
-    "book": ["Mistborn"]
+    "interest": ["science fiction", "philosophy", "astronomy"],
+    "game": ["Stellaris", "Civilization VI"],
+    "music": ["orchestral", "movie soundtracks"],
+    "movie": ["Interstellar", "Contact"],
+    "hobby": ["stargazing", "writing", "astronomy"],
+    "book": ["The Martian", "Rendezvous with Rama"]
 }
-mbti2 = "INFJ"
-make_all_vectors(vectors2, mbti2, 3, BERT_TOKENIZER, BERT_MODEL)
+mbti2 = "INTJ"
+embed_MiniLM(mbti=mbti2, id=2, category_dict=vectors2)
+
+# Profile that varies significantly (fitness/sports)
 vectors3 = {
-    "interest": ["shopping", "partying"],
-    "game": ["call of duty", "fifa"],
-    "music": ["pop", "EDM"],
-    "movie": ["The Hangover", "Fast & Furious"],
-    "hobby": ["dancing", "social media"],
-    "book": ["None"]
+    "interest": ["fitness", "traveling", "sports", "nutrition"],
+    "game": ["FIFA", "NBA 2K"],
+    "music": ["pop", "workout playlists"],
+    "movie": ["Rocky", "Coach Carter"],
+    "hobby": ["gym", "hiking", "team sports"],
+    "book": ["Fit for Life", "Born to Run"]
 }
 mbti3 = "ESTP"
-make_all_vectors(vectors3, mbti3, 4, BERT_TOKENIZER, BERT_MODEL)
+embed_MiniLM(mbti=mbti3, id=3, category_dict=vectors3)
+
+# Another significantly different profile (business/tech)
 vectors4 = {
-    "interest": ["hiking", "meditation"],
-    "game": ["chess", "Stardew Valley"],
-    "music": ["classical", "instrumental"],
-    "movie": ["Pride and Prejudice", "The Secret Life of Walter Mitty"],
-    "hobby": ["reading", "gardening"],
-    "book": ["War and Peace"]
+    "interest": ["business", "technology", "entrepreneurship", "investing"],
+    "game": ["Startup Panic", "Stock Market Simulator"],
+    "music": ["electronic", "productivity playlists"],
+    "movie": ["The Social Network", "Wall Street"],
+    "hobby": ["coding", "networking", "podcast listening"],
+    "book": ["Zero to One", "The Lean Startup"]
 }
-mbti4 = "INFJ"
-make_all_vectors(vectors4, mbti4, 5, BERT_TOKENIZER, BERT_MODEL)
+mbti4 = "ENTJ"
+embed_MiniLM(mbti=mbti4, id=4, category_dict=vectors4)
+
+# Baseline user with strong matches to Users 1 and 2
 vectors5 = {
-    "interest": ["philisophy", "debating", "religion", "anime"],
-    "game": ["Hearts of Iron 4", "Brawlhalla"],
-    "music": ["metal", "fabvl"],
-    "movie": ["Lord of the Rings", "Mentalist"],
-    "hobby": ["gaming", "watching youtube", "reading manwha"],
-    "book": ["None"]
+    "interest": ["working out", "runnning", "mountain climbing"],
+    "game": ["Hearts of ironIV", "Fifa 24"],
+    "music": ["game soundtracks", "heavy metal"],
+    "movie": ["Interstellar", "Contact"],
+    "hobby": ["gym", "hiking", "watching youtube videos", "Learning languages"],
+    "book": ["Lord of the rings", "The Martian"]
 }
-mbti5 = "ISFJ"
-make_all_vectors(vectors5, mbti5, 6, BERT_TOKENIZER, BERT_MODEL)
+mbti5 = "INTJ"
+embed_MiniLM(mbti=mbti5, id=5, category_dict=vectors5)

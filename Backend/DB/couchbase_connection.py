@@ -18,12 +18,15 @@ def connect_to_couchbase() -> tuple[Bucket, Cluster]:
 	username = f"{os.getenv('CB_USERNAME')}"
 	password = f"{os.getenv('CB_PASSWORD')}"
 	bucket_name = f"{os.getenv('CB_BUCKET')}"
-
+	print(f"Connecting to Couchbase Server at {endpoint} with username {username} and bucket {bucket_name}")
 	auth = PasswordAuthenticator(username, password)
 	options = ClusterOptions(auth)
+	print(options)
 	options.apply_profile("wan_development")
 	try:
+		print(options)
 		cluster = Cluster(endpoint, options)
+		print(cluster)
 		cluster.wait_until_ready(timedelta(seconds=10))
 		db = cluster.bucket(bucket_name)
 
@@ -33,7 +36,7 @@ def connect_to_couchbase() -> tuple[Bucket, Cluster]:
 		traceback.print_exc()
 		return None, None
 
-db, cluster = connect_to_couchbase()
+db, cluster = "test", "test"
 
 
 def get_collection(scope_name: str,collection_name: str) -> Collection:

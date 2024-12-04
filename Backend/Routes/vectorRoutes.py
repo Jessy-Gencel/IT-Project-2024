@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from Services.embedding import BERT_MODEL,BERT_TOKENIZER, make_all_vectors
+from Services.embedding import embed_MiniLM
 
 vector_bp = Blueprint('vector', __name__, url_prefix='/vector')
 

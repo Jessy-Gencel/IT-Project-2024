@@ -1,5 +1,4 @@
 from pymilvus import MilvusClient,AnnSearchRequest,WeightedRanker
-from transformers import BertTokenizer, BertModel
 from DB.milvus_connection import global_vector_DB
 import numpy as np
 
@@ -13,8 +12,8 @@ def get_top_n_vectors(VDB : MilvusClient,amount_of_results : int, query_vector :
 def get_global_matches(VDB : MilvusClient, amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list):
     requests = [make_ANN_request(global_vector, amount_of_results, "global_vector"), make_ANN_request(mbti_vector, amount_of_results, "mbti_vector"), 
                 make_ANN_request(hobby_vector, amount_of_results, "hobby_vector"), make_ANN_request(interest_vector, amount_of_results, "interest_vector")]
-    reranker = WeightedRanker(0.20,0.30,0.25,0.25)
-    res = VDB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, limit = amount_of_results)
+    reranker = WeightedRanker(0.165,0.230,0.225,0.38)
+    res = VDB.hybrid_search(collection_name = "test_vectors", reqs = requests, ranker = reranker, limit = amount_of_results)
     return res
 
 def make_ANN_request(vector : list, amount_of_results : int, target_field : str):
@@ -30,7 +29,7 @@ def make_ANN_request(vector : list, amount_of_results : int, target_field : str)
     request = AnnSearchRequest(**search_param)
     return request
 def get_by_id(id : int):
-    res = global_vector_DB.get(collection_name="global_vectors", ids=id)
+    res = global_vector_DB.get(collection_name="test_vectors", ids=id)
     return res
 
 def curve_scores(scores, curve_type="exponential", **kwargs):

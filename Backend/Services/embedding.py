@@ -1,39 +1,8 @@
-from transformers import BertTokenizer, BertModel, PreTrainedModel
-from transformers.modeling_outputs import BaseModelOutputWithPoolingAndCrossAttentions
 from DB.milvus_connection import MilvusClient, global_vector_DB, category_vector_DB, predefined_vector_DB1
+from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import torch
-
-# Load pre-trained BERT model and tokenizer
-def load_bert():
-    """
-    Loads the BERT tokenizer and model from the pretrained "bert-base-uncased" configuration.
-    Returns:
-        tuple: A tuple containing the BERT tokenizer and model.
-            - tokenizer (BertTokenizer): The tokenizer for the BERT model.
-            - model (BertModel): The BERT model.
-    """
-
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    model = BertModel.from_pretrained("bert-base-uncased")
-    return tokenizer, model
-
-def get_word_vector(tokenizer,model:PreTrainedModel,word):
-    """
-    Generates a word vector (embedding) for a given word using a tokenizer and a pre-trained model.
-    Args:
-        tokenizer: The tokenizer to convert the word into tokens.
-        model (PreTrainedModel): The pre-trained model to generate the word embedding.
-        word (str): The word for which the embedding is to be generated.
-    Returns:
-        torch.Tensor: The word embedding as a tensor, averaged over the last hidden state.
-    """
-    inputs = tokenizer(word, return_tensors="pt")
-    with torch.no_grad():
-        outputs : BaseModelOutputWithPoolingAndCrossAttentions = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1)
-
 
 def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict):
     """
@@ -53,80 +22,6 @@ def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict)
         data=userdata
     )
     return res
-
-def make_all_vectors(category_dict : dict, mbti : list,id : int, tokenizer, model:PreTrainedModel):
-    """
-    Generate embeddings for all categories from a dictionary of arrays.
-    This function processes multiple arrays, each representing a category, and generates a mean vector for each category.
-    The mean vectors are then concatenated to form a final vector representing all categories.
-    Args:
-        category_dict (dict): A dictionary where keys are category names and values are lists of words for those categories.
-        tokenizer: The tokenizer used to process the words.
-        model (PreTrainedModel): The pre-trained model used to generate word vectors.
-    Returns:
-        final_vector: A concatenated vector representing the mean vectors of all categories.
-    """
-    final_vector_array = []
-    mbti_vector = get_mbti_vector(mbti)
-    global_user_data = {"id": id, "mbti_vector": format_vector_for_milvus(mbti_vector)}
-    for category, words in category_dict.items():
-        user_data = {"id": id}
-        array_for_one_category = []
-        for word in words:
-            vector = get_word_vector(tokenizer, model, word)
-            # Need to implement the checking with the predefined vectors
-            array_for_one_category.append(vector)
-        mean_vector = get_mean_vector_for_category(array_for_one_category)
-        user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
-        if category in ["interest","hobby","game"]:
-            if category in ["interest","hobby"]:
-                global_user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
-            else:
-                insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
-        elif category in ["music","movie","book"]: 
-            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
-        else:
-            print("Category not found")
-        if category not in ["interest","hobby"]:
-            final_vector_array.append(mean_vector)
-    final_vector = concatenate_final_vector(final_vector_array)
-    global_user_data["global_vector"] = format_vector_for_milvus(final_vector)
-    insert_vectors(global_vector_DB,"global_vectors", global_user_data)
-    return "final_vector"
-
-
-def get_mean_vector_for_category(array_of_vectors : list):
-    """
-    Computes the mean vector for a given category from a list of vectors.
-    Args:
-        array_of_vectors (list): A list of tensors representing vectors.
-    Returns:
-        torch.Tensor: A tensor representing the mean vector of the input vectors.
-    """
-    stacked_tensor = torch.stack(array_of_vectors)
-    mean_tensor = torch.mean(stacked_tensor,dim=0)
-    return mean_tensor
-
-def concatenate_final_vector(final_vector : list):
-    """
-    Concatenates a list of tensors along the first dimension and reshapes the result.
-    Args:
-        final_vector (list): A list of tensors to be concatenated.
-    Returns:
-        torch.Tensor: A single tensor obtained by concatenating the input tensors along the first dimension and reshaping it to have a shape of (1, -1).
-    """
-    concatenated_tensor =  torch.cat(final_vector,dim=0)
-    return concatenated_tensor.reshape(1,-1)
-
-def format_vector_for_milvus(vector : torch.Tensor):
-    """
-    Formats a PyTorch tensor for insertion into a Milvus collection.
-    Args:
-        vector (torch.Tensor): The tensor to be formatted.
-    Returns:
-        list: The formatted vector as a list.
-    """
-    return vector.tolist()[0]
 
 def mbti_accuracy_test():
     mbti_vectors = {
@@ -184,8 +79,69 @@ def get_mbti_vector(mbti : str):
         "ISTJ": np.array([0.29734561, 0.72303985, 0.0883764, -0.61724272]),
         "ESTJ": np.array([-0.17031324, 0.90511924, 0.33844064, 0.19290024])
     }
-    return torch.tensor(mbti_vectors[mbti]).reshape(1, -1)
+    return torch.tensor(mbti_vectors[mbti]).reshape(1, -1).numpy()[0]
 
-BERT = load_bert()
-BERT_MODEL = BERT[1]
-BERT_TOKENIZER = BERT[0]
+def embed_MiniLM(mbti : str, id : int, category_dict : dict):
+    final_vector_array = []
+    mbti_vector = get_mbti_vector(mbti)
+    global_user_data = {"id": id, "mbti_vector": format_vector_for_milvus(mbti_vector)}
+    for category, words in category_dict.items():
+        user_data = {"id": id}
+        array_for_one_category = []
+        for word in words:
+            vector = model.encode(word)
+            # Need to implement the checking with the predefined vectors
+            array_for_one_category.append(vector)
+        mean_vector = get_mean_vector_for_category(array_for_one_category)
+        user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
+        if category in ["interest","hobby","game"]:
+            if category in ["interest","hobby"]:
+                global_user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
+            else:
+                #insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
+                pass
+        elif category in ["music","movie","book"]: 
+            #insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
+            pass
+        else:
+            print("Category not found")
+        if category not in ["interest","hobby"]:
+            final_vector_array.append(mean_vector)
+    final_vector = conactenate_final_vector(final_vector_array)
+    global_user_data["global_vector"] = format_vector_for_milvus(final_vector)
+    print(global_user_data)
+    insert_vectors(global_vector_DB,"test_vectors", global_user_data)
+    return "final_vector"
+
+def get_mean_vector_for_category(array_of_vectors : np.ndarray):
+    """
+    Computes the mean vector for a given category from a numpy array of vectors.
+    Args:
+        array_of_vectors (np.ndarray): A numpy array of vectors.
+    Returns:
+        np.ndarray: A numpy array representing the mean vector of the input vectors.
+    """
+    mean_vector = np.mean(array_of_vectors, axis=0)
+    return mean_vector
+
+def format_vector_for_milvus(vector : np.ndarray):
+    """
+    Formats a numpy array for insertion into a Milvus collection.
+    Args:
+        vector (np.ndarray): The numpy array to be formatted.
+    Returns:
+        list: The formatted vector as a list.
+    """
+    return vector.tolist()
+def conactenate_final_vector(final_vector : np.ndarray):
+    """
+    Concatenates a numpy array of vectors along the first dimension and reshapes the result.
+    Args:
+        final_vector (np.ndarray): A numpy array of vectors to be concatenated.
+    Returns:
+        np.ndarray: A single numpy array obtained by concatenating the input vectors along the first dimension and reshaping it to have a shape of (1, -1).
+    """
+    concatenated_vector = np.concatenate(final_vector, axis=0)
+    return concatenated_vector.reshape(1, -1)[0]
+
+model = SentenceTransformer('all-MiniLM-L12-v2')
