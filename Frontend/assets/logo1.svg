@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Laag_2" data-name="Laag 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1490.5 500">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fbb03b;
+      }
+
+      .cls-1, .cls-2 {
+        stroke-width: 0px;
+      }
+
+      .cls-3 {
+        stroke-width: 8px;
+      }
+
+      .cls-3, .cls-4, .cls-5, .cls-6 {
+        fill: none;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-3, .cls-4, .cls-6 {
+        stroke: #f7931e;
+      }
+
+      .cls-2 {
+        fill: #f7931e;
+      }
+
+      .cls-4 {
+        stroke-width: 9px;
+      }
+
+      .cls-5 {
+        stroke: #fbb03b;
+        stroke-width: 7px;
+      }
+
+      .cls-6 {
+        stroke-width: 15px;
+      }
+    </style>
+  </defs>
+  <polygon class="cls-1" points="1237.59 377.63 1279.5 283 1241.33 387.5 1237.59 378.62 1237.59 377.63"/>
+  <polygon class="cls-1" points="1259 383.52 1294.5 266 1265.86 393.49 1259 383.52"/>
+  <polygon class="cls-1" points="1282 391.11 1298.5 287 1291.29 397.96 1282 391.11"/>
+  <polygon class="cls-1" points="1306 392.16 1309.5 266 1314 394.5 1306 392.16"/>
+  <polygon class="cls-1" points="1327.23 391.5 1318.5 287 1338 391.5 1327.23 391.5"/>
+  <polygon class="cls-1" points="1351.92 387.41 1324.5 269 1361 388.5 1351.92 387.41"/>
+  <polygon class="cls-1" points="1373.91 378.5 1337.5 283 1382.06 378.5 1373.91 378.5"/>
+  <circle class="cls-1" cx="1388.5" cy="403" r="5"/>
+  <circle class="cls-1" cx="1362.5" cy="413" r="5"/>
+  <circle class="cls-1" cx="1336.5" cy="419" r="5"/>
+  <circle class="cls-1" cx="1309.5" cy="421" r="5"/>
+  <circle class="cls-1" cx="1282.5" cy="419" r="5"/>
+  <circle class="cls-1" cx="1255.5" cy="413" r="5"/>
+  <circle class="cls-1" cx="1230.5" cy="404" r="5"/>
+  <path class="cls-2" d="M1183.5,342s-19.79,23.85-11.89,34.93c7.89,11.07,51.14,0,51.14,0l-39.25-34.93Z"/>
+  <path class="cls-2" d="M1435.99,342s19.79,23.85,11.89,34.93c-7.89,11.07-51.14,0-51.14,0l39.25-34.93Z"/>
+  <path class="cls-6" d="M1478,228.25c0,93.75-76,169.75-169.75,169.75s-169.75-76-169.75-169.75"/>
+  <circle class="cls-1" cx="1425.05" cy="137.81" r="5"/>
+  <circle class="cls-1" cx="1428.96" cy="319.77" r="5"/>
+  <path class="cls-5" d="M1425.05,137.81s73.75,80.56,3.9,181.52"/>
+  <circle class="cls-1" cx="1192.01" cy="137.81" r="5"/>
+  <circle class="cls-2" cx="1138" cy="228.5" r="12.5"/>
+  <circle class="cls-2" cx="1478" cy="229.5" r="12.5"/>
+  <circle class="cls-1" cx="1188.1" cy="319.77" r="5"/>
+  <path class="cls-5" d="M1192.01,137.81s-73.75,80.56-3.9,181.52"/>
+  <path class="cls-6" d="M1268.41,264.98v-89c.12-2.97,1.03-18.16,13.51-29.14,11.01-9.69,23.86-9.81,28.49-9.86,3.92-.04,14.99-.14,24.58,6.67,9.77,6.93,16.42,17.69,16.42,31.33v90h-83Z"/>
+  <g>
+    <line class="cls-4" x1="1290.41" y1="239.98" x2="1290.41" y2="193.42"/>
+    <ellipse class="cls-3" cx="1290.41" cy="191.48" rx=".5" ry="14"/>
+    <path class="cls-3" d="M1270.91,187.48s13,9.63,19,8.32"/>
+  </g>
+  <polygon class="cls-2" points="1286.91 238.48 1183.91 341.48 1194.91 358.48 1223.16 376.4 1294.91 240.48 1286.91 238.48"/>
+  <rect class="cls-2" x="1289.91" y="236.48" width="5" height="4"/>
+  <g>
+    <line class="cls-4" x1="1329.41" y1="239.98" x2="1329.41" y2="193.42"/>
+    <ellipse class="cls-3" cx="1329.41" cy="191.48" rx=".5" ry="14"/>
+    <path class="cls-3" d="M1348.91,187.48s-13,9.63-19,8.32"/>
+  </g>
+  <polygon class="cls-2" points="1332.91 238.48 1435.91 341.48 1424.91 358.48 1396.67 376.4 1324.91 240.48 1332.91 238.48"/>
+  <rect class="cls-2" x="1324.91" y="236.48" width="5" height="4" transform="translate(2654.83 476.95) rotate(-180)"/>
+</svg>
