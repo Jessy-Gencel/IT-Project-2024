@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from Services.embedding import BERT_MODEL,BERT_TOKENIZER, make_all_vectors
+from DB.couchbase_connection import find_match_by_id, find_all_matches
 
 vector_bp = Blueprint('vector', __name__, url_prefix='/vector')
 
@@ -21,3 +22,18 @@ def make_vector():
 def get_vector():
     # Get vector logic here
     return jsonify({"message": "Vector retrieved"})
+
+
+@auth_bp.route('/matches', methods=['GET'])
+def get_matches():
+    matches = find_all_matches()
+    return jsonify(matches)
+
+@auth_bp.route('/matches/<int:matching_id>', methods=['GET'])
+def get_match(matching_id):
+    match = find_match_by_id(matching_id)
+    if match:
+        return jsonify(match), 200
+    else:
+        return jsonify({"error": "Match not found"}), 404
+
