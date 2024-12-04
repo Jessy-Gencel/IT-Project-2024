@@ -13,7 +13,7 @@ def get_global_matches(VDB : MilvusClient, amount_of_results : int, global_vecto
     requests = [make_ANN_request(global_vector, amount_of_results, "global_vector"), make_ANN_request(mbti_vector, amount_of_results, "mbti_vector"), 
                 make_ANN_request(hobby_vector, amount_of_results, "hobby_vector"), make_ANN_request(interest_vector, amount_of_results, "interest_vector")]
     reranker = WeightedRanker(0.165,0.230,0.225,0.38)
-    res = VDB.hybrid_search(collection_name = "test_vectors", reqs = requests, ranker = reranker, limit = amount_of_results)
+    res = VDB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, limit = amount_of_results)
     return res
 
 def make_ANN_request(vector : list, amount_of_results : int, target_field : str):
@@ -29,7 +29,7 @@ def make_ANN_request(vector : list, amount_of_results : int, target_field : str)
     request = AnnSearchRequest(**search_param)
     return request
 def get_by_id(id : int):
-    res = global_vector_DB.get(collection_name="test_vectors", ids=id)
+    res = global_vector_DB.get(collection_name="global_vectors", ids=id)
     return res
 
 def curve_scores(scores, curve_type="exponential", **kwargs):

@@ -36,7 +36,7 @@ def connect_to_couchbase() -> tuple[Bucket, Cluster]:
 		traceback.print_exc()
 		return None, None
 
-db, cluster = "test", "test"
+db, cluster = connect_to_couchbase()
 
 
 def get_collection(scope_name: str,collection_name: str) -> Collection:
