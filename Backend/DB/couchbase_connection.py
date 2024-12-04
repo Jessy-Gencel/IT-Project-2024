@@ -35,6 +35,7 @@ def connect_to_couchbase() -> tuple[Bucket, Cluster]:
 
 db, cluster = connect_to_couchbase()
 
+
 def get_collection(scope_name: str,collection_name: str) -> Collection:
 	CB_collection = db.scope(scope_name).collection(collection_name)
 	return CB_collection
