@@ -15,6 +15,7 @@ torch = "*"
 scikit-learn = "*"
 argon2-cffi = "*"
 pyjwt = "*"
+sentence-transformers = "*"
 
 [dev-packages]
 
