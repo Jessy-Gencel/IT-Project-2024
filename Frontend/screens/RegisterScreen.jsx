@@ -9,7 +9,6 @@ import {yupResolver} from '@hookform/resolvers/yup';
 import { Controller } from 'react-hook-form';
 
 
-
 const schema = yup.object({
     email: yup
         .string()
@@ -21,8 +20,7 @@ const schema = yup.object({
         .required("Password is required"),
 });
 
-const LogInScreen = ({ navigation }) => {
-
+const RegisterScreen = ({ navigation }) => {
     const {
         control,
         handleSubmit,
@@ -37,19 +35,19 @@ const LogInScreen = ({ navigation }) => {
         alert(`Welcome back, ${data.email}!`);
     };
 
-    return (
-    <SafeAreaProvider>
+    return(
+        <SafeAreaProvider>
         <SafeAreaView style={{flex:1}}>
             <View style={styles.logoWelkomContainer}>
                     <Image
                         source={require('../assets/GatewayNoText_Logo.png')}
                         style={styles.logo}
                     />
-                <Text style={styles.welkomText}>Welcome back to Gateway!</Text>
+                <Text style={styles.welkomText}>Welcome to Gateway!</Text>
             </View>
 
             <View style={styles.logInContainer}>
-                <Text style={styles.logInText} >Log in</Text>
+                <Text style={styles.logInText} >Register</Text>
 
                 <View style={styles.schoolEmail}>
                     <Text style={styles.inputTitle}>Email:</Text>
@@ -92,22 +90,19 @@ const LogInScreen = ({ navigation }) => {
                             )}
                         />
                 </View>
+
             </View>
             <View style={styles.logInBtn}>
                 <PrimaryButtonPill style={styles.logInBtn}
-                    title="Log In"
+                    title="Register"
                     onPress={handleSubmit(onSubmit)}
                 />
             </View>
 
             <View style={styles.otherOptions}>
                 <View style={styles.questionContainer}>
-                    <Text style={styles.question}>Forgot password?</Text>
-                    <Text style={styles.link}>Reset password</Text>
-                </View>
-                <View style={styles.questionContainer}>
-                    <Text style={styles.question}>Don't have an account yet?</Text>
-                    <Text style={styles.link}>Register</Text>
+                    <Text style={styles.question}>Already have an account?</Text>
+                    <Text style={styles.link}>Log in</Text>
                 </View>
             </View>
         </SafeAreaView>
@@ -115,5 +110,4 @@ const LogInScreen = ({ navigation }) => {
     );
 }
 
-
-export default LogInScreen;
+export default RegisterScreen;
