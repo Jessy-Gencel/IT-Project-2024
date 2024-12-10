@@ -1,11 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Button } from "react-native";
 
-
-const HomeScreen = ({ navigation }) => {
+const ChatScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text>This is the Home Screen</Text>
+      <Text>This is the Chat Screen</Text>
     </View>
   );
 };
@@ -24,4 +23,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default ChatScreen;
