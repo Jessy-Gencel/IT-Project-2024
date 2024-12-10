@@ -8,7 +8,7 @@ import LogInScreen from "../screens/LogInScreen";
 import ComponentsScreen from "../screens/ComponentsScreen";
 import colors from "../theme/colors";
 import ChatScreen from "../screens/ChatScreen";
-import SplashScreen from "../screens/SplashScreen";
+import RegisterScreen from "../screens/RegisterScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -49,6 +49,7 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Gateways" component={GatewaysScreen} />
       <Tab.Screen name="LogIn" component={LogInScreen} />
+      <Tab.Screen name="Register" component={RegisterScreen} />
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Components" component={ComponentsScreen} />
