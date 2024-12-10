@@ -1,3 +1,5 @@
+import fonts from "../theme/fonts";
+
 const styles = {
   logInContainer: {
     marginLeft: 30,
@@ -7,10 +9,10 @@ const styles = {
     alignSelf: "center",
   },
   logInText: {
-    fontWeight: "bold",
     fontSize: 25,
     color: "#353535",
     marginBottom: 20,
+    fontFamily: fonts.extraBold,
   },
   logInBtn:{
     width: 250,
