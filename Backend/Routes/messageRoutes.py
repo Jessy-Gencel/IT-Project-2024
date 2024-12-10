@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from DB.couchbase_connection import find_messages_by_id, find_chat_by_id, find_all_chats
 
 # Define the blueprint for messages
 message_bp = Blueprint('messages', __name__, url_prefix='/messages')

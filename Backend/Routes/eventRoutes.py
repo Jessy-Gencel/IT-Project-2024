@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from DB.couchbase_connection import find_events_by_id, find_all_events
 
 # Define the blueprint for events
 event_bp = Blueprint('events', __name__, url_prefix='/events')
