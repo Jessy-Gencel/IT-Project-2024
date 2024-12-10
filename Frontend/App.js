@@ -6,6 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import GatewaysScreen from './screens/GatewaysScreen';
+import LogInScreen from './screens/LogInScreen';
 import ComponentsScreen from './screens/ComponentsScreen';
 import colors from './theme/colors';
 import ChatScreen from './screens/ChatScreen';
@@ -35,6 +36,10 @@ export default function App() {
             tabBarActiveTintColor: colors.primary,
             tabBarInactiveTintColor: colors.placeholder,
             tabBarStyle: {
+              backgroundColor: "#ffffff", // Use the surface color from the theme
+              borderTopWidth: 1, // Border on top of navbar
+              borderTopColor: '#ccc', // Border color
+              height: 60, // Height of navbar
               backgroundColor: colors.background,
               borderTopWidth: 1,
               borderTopColor: '#ccc',
@@ -44,6 +49,7 @@ export default function App() {
         >
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Gateways" component={GatewaysScreen} />
+          <Tab.Screen name="LogIn" component={LogInScreen} />
           <Tab.Screen name="Chat" component={ChatScreen} />
           <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="Components" component={ComponentsScreen} />
