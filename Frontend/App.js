@@ -7,6 +7,9 @@ import HomeScreen from './screens/HomeScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import GatewaysScreen from './screens/GatewaysScreen';
 import LogInScreen from './screens/LogInScreen';
+import ComponentsScreen from './screens/ComponentsScreen';
+import colors from './theme/colors';
+import ChatScreen from './screens/ChatScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,31 +22,37 @@ export default function App() {
               let iconName;
               // Define the icon based on the route
               if (route.name === 'Home') {
-                iconName = 'home';
+                iconName = 'home-outline';
               } else if (route.name === 'Profile') {
-                iconName = 'person';
+                iconName = 'person-outline';
               } else if (route.name === 'Gateways') {
-                iconName = 'medical-outline';
+                iconName = 'calendar-clear-outline';
+              } else if (route.name === 'Chat') {
+                iconName = 'chatbubbles-outline';
               }
               return <Ionicons name={iconName} size={size} color={color} />;
             },
-            headerShown: false, // Hide the header
-            tabBarActiveTintColor: 'tomato', // Active tab color
-            tabBarInactiveTintColor: 'gray', // Inactive tab color
+            headerShown: false,
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.placeholder,
             tabBarStyle: {
               backgroundColor: "#ffffff", // Use the surface color from the theme
               borderTopWidth: 1, // Border on top of navbar
               borderTopColor: '#ccc', // Border color
               height: 60, // Height of navbar
+              backgroundColor: colors.background,
+              borderTopWidth: 1,
+              borderTopColor: '#ccc',
+              height: 60,
             },
           })}
         >
           <Tab.Screen name="Home" component={HomeScreen} />
-          <Tab.Screen name="Profile" component={ProfileScreen} />
           <Tab.Screen name="Gateways" component={GatewaysScreen} />
           <Tab.Screen name="LogIn" component={LogInScreen} />
-         
-
+          <Tab.Screen name="Chat" component={ChatScreen} />
+          <Tab.Screen name="Profile" component={ProfileScreen} />
+          <Tab.Screen name="Components" component={ComponentsScreen} />
         </Tab.Navigator>
         <StatusBar style="auto" />
       </NavigationContainer>
