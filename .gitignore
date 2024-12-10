@@ -1,6 +1,6 @@
 # Python
 *.pyc
-_pycache_/
+__pycache__/
 venv/
 .env
 
@@ -14,7 +14,7 @@ npm-debug.*
 *.p12
 *.key
 *.mobileprovision
-.orig.
+*.orig.*
 web-build/
 
 # Misc

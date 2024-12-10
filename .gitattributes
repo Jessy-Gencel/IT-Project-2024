@@ -3,4 +3,4 @@
 
 # Specify the line endings for specific file types
 *.sh text eol=lf
-*.md text eol=lf
+*.md text eol=lf

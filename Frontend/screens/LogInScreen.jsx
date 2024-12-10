@@ -2,38 +2,92 @@ import React, {useState} from "react";
 import {View, Image, TextInput, Text, StyleSheet, Button} from "react-native";
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import styles from '../styles/LogIn';
+import PrimaryButtonPill from '../components/PrimaryButtonPill';
+import * as yup from 'yup';
+import {useForm} from 'react-hook-form';
+import {yupResolver} from '@hookform/resolvers/yup';
 
 
-
+const schema = yup.object({
+    email: yup
+        .string()
+        .email("Enter your institution's email")
+        .required("Email is required"),
+    password: yup
+        .string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+});
 
 const LogInScreen = ({ navigation }) => {
-    const [email, setEmail] = useState(""); 
-    const [password, setPassword] = useState("");
+    const {
+        control,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+    });
+
+    const onSubmit = (data) => {
+        console.log("Form Data:", data);
+        // Logic on how to submit the data needs to be here
+        alert(`Welcome back, ${data.email}!`);
+    };
+
     return (
     <SafeAreaProvider>
         <SafeAreaView style={{flex:1}}>
             <View style={styles.logoWelkomContainer}>
-                    <Image 
-                        source={require('../assets/logo1.svg')} // Adjust path
+                    <Image
+                        source={require('../assets/GatewayNoText_Logo.png')}
                         style={styles.logo}
                     />
-                <Text>Welcome back to Gateway!</Text>
+                <Text style={styles.welkomText}>Welcome back to Gateway!</Text>
             </View>
 
             <View style={styles.logInContainer}>
                 <Text style={styles.logInText} >Log in</Text>
 
                 <View style={styles.schoolEmail}>
-                    <Text style={styles.inputTitle}>School email:</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setEmail}
-                        value={email}
-                        placeholder = "Email"
-                    />
+                    <Text style={styles.inputTitle}>Email:</Text>
+                    <Controller
+                            control={control}
+                            name="email"
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        errors.email ? { borderColor: "red", borderWidth: 1 } : {},
+                                    ]}
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    placeholder="Email"
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
+                            )}
+                        />
+                    <Controller
+                            control={control}
+                            name="password"
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        errors.password ? { borderColor: "red", borderWidth: 1 } : {},
+                                    ]}
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    placeholder="Password"
+                                    secureTextEntry
+                                />
+                            )}
+                        />
                 </View>
                 <View style={styles.password}>
-                    <Text styles={styles.inputTitle}>Password:</Text>
+                    <Text style={styles.inputTitle}>Password:</Text>
                     <TextInput
                         style={styles.input}
                         onChangeText={setPassword}
@@ -42,20 +96,21 @@ const LogInScreen = ({ navigation }) => {
                     />
                 </View>
             </View>
-            <View style={styles.LogInBtn}>
-                <Button
+            <View style={styles.logInBtn}>
+                <PrimaryButtonPill style={styles.logInBtn}
                     title="Log In"
+                    onPress={handleSubmit(onSubmit)}
                 />
             </View>
 
             <View style={styles.otherOptions}>
-                <View style={styles.forgotPassword}>
-                    <Text>Forgot password?</Text>
-                    <Text>Reset password</Text>
+                <View style={styles.questionContainer}>
+                    <Text style={styles.question}>Forgot password?</Text>
+                    <Text style={styles.link}>Reset password</Text>
                 </View>
-                <View style={styles.register}>
-                    <Text>Don't have an account yet?</Text>
-                    <Text>Register</Text>
+                <View style={styles.questionContainer}>
+                    <Text style={styles.question}>Don't have an account yet?</Text>
+                    <Text style={styles.link}>Register</Text>
                 </View>
             </View>
         </SafeAreaView>
