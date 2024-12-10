@@ -3,13 +3,37 @@ import {View, Image, TextInput, Text, StyleSheet, Button} from "react-native";
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import styles from '../styles/LogIn';
 import PrimaryButtonPill from '../components/PrimaryButtonPill';
+import * as yup from 'yup';
+import {useForm} from 'react-hook-form';
+import {yupResolver} from '@hookform/resolvers/yup';
 
 
-
+const schema = yup.object({
+    email: yup
+        .string()
+        .email("Enter your institution's email")
+        .required("Email is required"),
+    password: yup
+        .string()
+        .min(6, "Password must be at least 6 characters")
+        .required("Password is required"),
+});
 
 const LogInScreen = ({ navigation }) => {
-    const [email, setEmail] = useState(""); 
-    const [password, setPassword] = useState("");
+    const {
+        control,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: yupResolver(schema),
+    });
+
+    const onSubmit = (data) => {
+        console.log("Form Data:", data);
+        // Logic on how to submit the data needs to be here
+        alert(`Welcome back, ${data.email}!`);
+    };
+
     return (
     <SafeAreaProvider>
         <SafeAreaView style={{flex:1}}>
@@ -26,12 +50,41 @@ const LogInScreen = ({ navigation }) => {
 
                 <View style={styles.schoolEmail}>
                     <Text style={styles.inputTitle}>Email:</Text>
-                    <TextInput
-                        style={styles.input}
-                        onChangeText={setEmail}
-                        value={email}
-                        placeholder = "Email"
-                    />
+                    <Controller
+                            control={control}
+                            name="email"
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        errors.email ? { borderColor: "red", borderWidth: 1 } : {},
+                                    ]}
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    placeholder="Email"
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
+                            )}
+                        />
+                    <Controller
+                            control={control}
+                            name="password"
+                            render={({ field: { onChange, onBlur, value } }) => (
+                                <TextInput
+                                    style={[
+                                        styles.input,
+                                        errors.password ? { borderColor: "red", borderWidth: 1 } : {},
+                                    ]}
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    placeholder="Password"
+                                    secureTextEntry
+                                />
+                            )}
+                        />
                 </View>
                 <View style={styles.password}>
                     <Text style={styles.inputTitle}>Password:</Text>
@@ -46,6 +99,7 @@ const LogInScreen = ({ navigation }) => {
             <View style={styles.logInBtn}>
                 <PrimaryButtonPill style={styles.logInBtn}
                     title="Log In"
+                    onPress={handleSubmit(onSubmit)}
                 />
             </View>
 
