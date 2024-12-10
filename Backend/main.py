@@ -2,11 +2,10 @@ from flask import Flask
 from DB.milvus_connection import global_vector_DB
 from Services.embedding import model,embed_MiniLM
 from Services.vector_similarity import get_by_id,get_global_matches,curve_scores,get_by_id
-from Backend.Routes.auth_routes import auth_bp
-from Backend.Routes.vector_routes import vector_bp
-from Backend.Routes.message_routes import message_bp
-from Backend.Routes.event_routes import event_bp
-from Backend.Services.couchbase_reads import store_user
+from Routes.auth_routes import auth_bp
+from Routes.vector_routes import vector_bp
+from Routes.message_routes import message_bp
+from Routes.event_routes import event_bp
 import numpy as np
 
 app = Flask(__name__)

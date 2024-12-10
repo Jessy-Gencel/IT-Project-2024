@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
-from Backend.Utils.password_hashing import hash_password, verify_password
-from Backend.Utils.jwt_encode import jwt_full_encode, jwt_get_access_token, jwt_get_refresh_token, jwt_decode
-from Backend.Utils.sanitize_input import sanitize_input
-from Backend.Services.couchbase_reads import find_user_by_email,find_user_by_id
-from Backend.Services.couchbase_writes import store_user
+from Utils.password_hashing import hash_password, verify_password
+from Utils.jwt_encode import jwt_full_encode, jwt_get_access_token, jwt_get_refresh_token, jwt_decode
+from Utils.sanitize_input import sanitize_input
+from Services.couchbase_reads import find_user_by_email,find_user_by_id
+from Services.couchbase_writes import store_user
 import jwt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')

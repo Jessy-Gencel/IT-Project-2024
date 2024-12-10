@@ -1,4 +1,3 @@
-
 from couchbase.exceptions import CouchbaseException
 from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_event_by_id,find_message_by_id,find_chat_by_id,get_collection
 
