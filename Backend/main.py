@@ -6,6 +6,7 @@ from Routes.authRoutes import auth_bp
 from Routes.vectorRoutes import vector_bp
 from Routes.messageRoutes import message_bp
 from Routes.eventRoutes import event_bp
+from Services.couchbase_functions import store_user
 import numpy as np
 
 app = Flask(__name__)
@@ -16,7 +17,7 @@ app.register_blueprint(message_bp)
 app.register_blueprint(event_bp)
 @app.route('/')
 def home():
-    return "Hello World"
+    return "yay"
     
 
 
