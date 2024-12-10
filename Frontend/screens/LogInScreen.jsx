@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import {View, Image, TextInput, Text, StyleSheet, Button} from "react-native";
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import styles from '../styles/LogIn';
+import PrimaryButtonPill from '../components/PrimaryButtonPill';
 
 
 
@@ -13,18 +14,18 @@ const LogInScreen = ({ navigation }) => {
     <SafeAreaProvider>
         <SafeAreaView style={{flex:1}}>
             <View style={styles.logoWelkomContainer}>
-                    <Image 
-                        source={require('../assets/logo1.svg')} // Adjust path
+                    <Image
+                        source={require('../assets/GatewayNoText_Logo.png')}
                         style={styles.logo}
                     />
-                <Text>Welcome back to Gateway!</Text>
+                <Text style={styles.welkomText}>Welcome back to Gateway!</Text>
             </View>
 
             <View style={styles.logInContainer}>
                 <Text style={styles.logInText} >Log in</Text>
 
                 <View style={styles.schoolEmail}>
-                    <Text style={styles.inputTitle}>School email:</Text>
+                    <Text style={styles.inputTitle}>Email:</Text>
                     <TextInput
                         style={styles.input}
                         onChangeText={setEmail}
@@ -33,7 +34,7 @@ const LogInScreen = ({ navigation }) => {
                     />
                 </View>
                 <View style={styles.password}>
-                    <Text styles={styles.inputTitle}>Password:</Text>
+                    <Text style={styles.inputTitle}>Password:</Text>
                     <TextInput
                         style={styles.input}
                         onChangeText={setPassword}
@@ -42,20 +43,20 @@ const LogInScreen = ({ navigation }) => {
                     />
                 </View>
             </View>
-            <View style={styles.LogInBtn}>
-                <Button
+            <View style={styles.logInBtn}>
+                <PrimaryButtonPill style={styles.logInBtn}
                     title="Log In"
                 />
             </View>
 
             <View style={styles.otherOptions}>
-                <View style={styles.forgotPassword}>
-                    <Text>Forgot password?</Text>
-                    <Text>Reset password</Text>
+                <View style={styles.questionContainer}>
+                    <Text style={styles.question}>Forgot password?</Text>
+                    <Text style={styles.link}>Reset password</Text>
                 </View>
-                <View style={styles.register}>
-                    <Text>Don't have an account yet?</Text>
-                    <Text>Register</Text>
+                <View style={styles.questionContainer}>
+                    <Text style={styles.question}>Don't have an account yet?</Text>
+                    <Text style={styles.link}>Register</Text>
                 </View>
             </View>
         </SafeAreaView>
