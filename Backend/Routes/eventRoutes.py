@@ -6,16 +6,18 @@ event_bp = Blueprint('events', __name__, url_prefix='/events')
 
 @event_bp.route('/events', methods=['GET'])
 def get_events():
-    events = find_all_events()
-    return jsonify(events)
+    # events = find_all_events()
+    # return jsonify(events)
+    return "Yippie events", 200
 
 @event_bp.route('/events/<int:event_id>', methods=['GET'])
 def get_event(event_id):
-    event = find_events_by_id(event_id)
-    if event:
-        return jsonify(event), 200
-    else:
-        return jsonify({"error": "Event not found"}), 404
+    # event = find_events_by_id(event_id)
+    # if event:
+    #     return jsonify(event), 200
+    # else:
+    #     return jsonify({"error": "Event not found"}), 404
+    return "Yippie events/event_id", 200
 
 @event_bp.route('/', methods=['POST'])
 def post_event():

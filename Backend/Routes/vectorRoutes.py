@@ -24,16 +24,17 @@ def get_vector():
     return jsonify({"message": "Vector retrieved"})
 
 
-@auth_bp.route('/matches', methods=['GET'])
+@vector_bp.route('/matches', methods=['GET'])
 def get_matches():
-    matches = find_all_matches()
-    return jsonify(matches)
+    # matches = find_all_matches()
+    # return jsonify(matches)
+    return "Yippie matches", 200
 
-@auth_bp.route('/matches/<int:matching_id>', methods=['GET'])
+@vector_bp.route('/matches/<int:matching_id>', methods=['GET'])
 def get_match(matching_id):
-    match = find_match_by_id(matching_id)
-    if match:
-        return jsonify(match), 200
-    else:
-        return jsonify({"error": "Match not found"}), 404
-
+    # match = find_match_by_id(matching_id)
+    # if match:
+    #     return jsonify(match), 200
+    # else:
+    #     return jsonify({"error": "Match not found"}), 404
+    return "Yippie matches/matching_id", 200
