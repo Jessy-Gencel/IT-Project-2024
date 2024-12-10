@@ -32,6 +32,7 @@
 
 <h3>Luna D'Heere:</h3>
 <ol>
+  <li><a href="https://medium.com/scaleuptech/input-form-validations-with-yup-in-react-native-14164c633b05">explanation of how to use yup</a></li>
 </ol>
 
 <h2>Starting up the project</h2>
