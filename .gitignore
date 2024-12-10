@@ -1,6 +1,6 @@
 # Python
-.pyc
-pycache/
+*.pyc
+__pycache__/
 venv/
 .env
 
@@ -8,13 +8,13 @@ venv/
 node_modules/
 .expo/
 dist/
-npm-debug.
+npm-debug.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
-.orig.
+*.orig.*
 web-build/
 
 # Misc
