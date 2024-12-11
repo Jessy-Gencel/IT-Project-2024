@@ -11,6 +11,7 @@ import ChatScreen from "../screens/ChatScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import TestScreen from "../screens/Test";
 import AccountSetupScreen from "../screens/AccountSetupScreen";
+import ChatList from "../screens/ChatList";
 
 const Tab = createBottomTabNavigator();
 
@@ -37,14 +38,11 @@ const BottomTabNavigator = () => {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.placeholder,
         tabBarStyle: {
-          backgroundColor: "#ffffff", // Use the surface color from the theme
-          borderTopWidth: 1, // Border on top of navbar
-          borderTopColor: "#ccc", // Border color
-          height: 60, // Height of navbar
+          height: 90, // Height of navbar
           backgroundColor: colors.background,
           borderTopWidth: 1,
           borderTopColor: "#ccc",
-          height: 60,
+          paddingTop: 10,
         },
       })}
     >
@@ -57,6 +55,7 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Components" component={ComponentsScreen} />
       <Tab.Screen name="Test" component={TestScreen} />
       <Tab.Screen name="AccountSetup" component={AccountSetupScreen} />
+      <Tab.Screen name="ChatList" component={ChatList} />
     </Tab.Navigator>
   );
 };
