@@ -7,6 +7,7 @@ import * as yup from 'yup';
 import {useForm} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import { Controller } from 'react-hook-form';
+import GradientBackground from "../components/LinearBackground";
 
 
 
@@ -39,6 +40,7 @@ const LogInScreen = ({ navigation }) => {
 
     return (
     <SafeAreaProvider>
+        <GradientBackground>
         <SafeAreaView style={{flex:1}}>
             <View style={styles.logoWelkomContainer}>
                     <Image
@@ -111,6 +113,7 @@ const LogInScreen = ({ navigation }) => {
                 </View>
             </View>
         </SafeAreaView>
+        </GradientBackground>
     </SafeAreaProvider>
     );
 }

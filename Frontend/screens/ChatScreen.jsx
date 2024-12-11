@@ -1,11 +1,19 @@
 import React from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
+import { View, Text, StyleSheet, Button, ScrollView } from "react-native";
+import GradientBackground from '../components/LinearBackground'; // Adjust the path as needed
 
 const ChatScreen = ({ navigation }) => {
   return (
-    <View style={styles.container}>
-      <Text>This is the Chat Screen</Text>
-    </View>
+    
+    
+<GradientBackground>
+      
+      </GradientBackground>
+   
+    
+    
+    
+    
   );
 };
 
@@ -16,7 +24,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
-  title: {
+  text: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
