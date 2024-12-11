@@ -9,7 +9,11 @@ from Routes.event_routes import event_bp
 import numpy as np
 from flask import Flask
 from flask_cors import CORS
+from Services.couchbase_writes import store_user
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
@@ -25,6 +29,5 @@ def home():
     return "yay"
     
 
-
 if __name__ == '__main__':
-    app.run(host="10.2.88.210", port=5000, debug=True)
+    app.run(host=f"{os.getenv("IP_ADRESS_SERVER")}", port=5000, debug=True)
