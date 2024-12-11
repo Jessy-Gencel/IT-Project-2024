@@ -1,5 +1,5 @@
 from couchbase.exceptions import CouchbaseException
-from Services.couchbase_functions import get_collection
+from Services.couchbase_reads import get_collection
 
 def generate_id(scope : str,collection : str):
     

@@ -35,10 +35,12 @@ const LogInScreen = ({ navigation }) => {
 
     const onSubmit = async (data) => {
         try{
+            console.log("data", data);
             const response = await axios.post('http://10.2.88.210:5000/auth/login', {
                 email: data.email,
                 password: data.password,
             });
+            console.log("response", response.data);
             navigation.navigate('HomeScreen');
             console.log("login succesfull !")
 

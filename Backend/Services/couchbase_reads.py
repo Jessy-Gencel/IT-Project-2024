@@ -13,10 +13,11 @@ def get_scope(scope_name: str) -> Scope:
 
 def find_user_by_email(email: str):
     try:
-        query = "SELECT * FROM `user-data`.`users` WHERE email = $email"
+        query = "SELECT * FROM `ehb-link`.`user-data`.users WHERE email = $email"
         result = cluster.query(query, email=email)
-        if result.rows:
-            return result.rows[0]
+        rows = list(result)  # Convert result to a list
+        if rows:
+            return rows[0]["users"]  # Return the first user record
         else:
             print(f"User with email {email} not found.")
             return None

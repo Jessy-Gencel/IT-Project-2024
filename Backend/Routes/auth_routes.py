@@ -4,21 +4,23 @@ from Utils.jwt_encode import jwt_full_encode, jwt_get_access_token, jwt_get_refr
 from Utils.sanitize_input import sanitize_input
 from Services.couchbase_reads import find_user_by_email,find_user_by_id
 from Services.couchbase_writes import store_user
+from Utils.extract_name import extract_name
 import jwt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-@auth_bp.route('/login', methods=['GET'])
+@auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     print(data)
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     user = find_user_by_email(email)
-    return "yay"
+    print(user)
+
     
-    if not user or not verify_password(user["password"], password):
-        return jsonify({"message": "Invalid credentials"}), 401
+    #if not user or not verify_password(user["password"], password):
+        #return jsonify({"message": "Invalid credentials"}), 401
     
     access_token, refresh_token = jwt_full_encode(user)
 
@@ -33,8 +35,9 @@ def register():
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     password_hash = hash_password(password)
-
-    store_user(email, password_hash)
+    first_name,last_name = extract_name(email=email)
+    user = {"email" : email, "password" : password_hash, "first_name" : first_name, last_name : last_name, "user_id" : 4}
+    store_user(user=user)
     
     return jsonify({"message": "User created successfully"}), 201
 
