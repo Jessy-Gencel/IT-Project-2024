@@ -8,12 +8,14 @@ import jwt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['GET'])
 def login():
     data = request.get_json()
+    print(data)
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     user = find_user_by_email(email)
+    return "yay"
     
     if not user or not verify_password(user["password"], password):
         return jsonify({"message": "Invalid credentials"}), 401
