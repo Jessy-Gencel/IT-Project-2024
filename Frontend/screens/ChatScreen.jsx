@@ -18,5 +18,4 @@ const ChatScreen = ({ navigation }) => {
   
   );
 };
-
 export default ChatScreen;
