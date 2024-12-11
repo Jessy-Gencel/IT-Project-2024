@@ -1,26 +1,21 @@
 import React from "react";
 import { View, Text, StyleSheet, Button } from "react-native";
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 
 const ChatScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text>This is the Chat Screen</Text>
+      <FontAwesomeIcon icon={faAngleLeft} />
+      <Image
+        source={require('../assets/brent_klein.png')}
+        style={styles.logo}
+      />
+      <Text>Brent Devroey</Text>
+
     </View>
+
+
+  
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-});
-
 export default ChatScreen;

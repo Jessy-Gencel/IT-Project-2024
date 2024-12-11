@@ -7,6 +7,8 @@ import * as yup from 'yup';
 import {useForm} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import { Controller } from 'react-hook-form';
+import axios from 'axios';
+import GradientBackground from "../components/LinearBackground";
 
 
 
@@ -31,14 +33,30 @@ const LogInScreen = ({ navigation }) => {
         resolver: yupResolver(schema),
     });
 
-    const onSubmit = (data) => {
-        console.log("Form Data:", data);
-        // Logic on how to submit the data needs to be here
-        alert(`Welcome back, ${data.email}!`);
+    const onSubmit = async (data) => {
+        try{
+            const response = await axios.post('http://127.0.0.1:5000/auth/login', {
+                email: data.email,
+                password: data.password,
+            });
+
+            navigation.navigate('HomeScreen');
+            console.log("login succesfull !")
+
+            //wa er moet gebeuren als er een error is
+        } catch(error){
+            console.error("Login error:", error);
+            const errorMessage = 
+                error.response && error.response.data
+                ? error.response.data.message
+                : "An error occurred. Please try again.";
+            Alert.alert("Login Failed", errorMessage);
+        }
     };
 
     return (
     <SafeAreaProvider>
+        <GradientBackground>
         <SafeAreaView style={{flex:1}}>
             <View style={styles.logoWelkomContainer}>
                     <Image
@@ -111,6 +129,7 @@ const LogInScreen = ({ navigation }) => {
                 </View>
             </View>
         </SafeAreaView>
+        </GradientBackground>
     </SafeAreaProvider>
     );
 }
