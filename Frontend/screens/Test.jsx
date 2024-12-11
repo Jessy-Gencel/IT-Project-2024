@@ -11,6 +11,7 @@ import ScrollableList from '../components/ScrollList'; // Adjust the path if nec
 import MessageBubble from '../components/MessageBubble';
 import Header from '../components/DefaultHeader'; // Adjust path if necessary
 import MessageListHeader from '../components/MessageListHeader'; // Adjust path accordingly
+import GradientBackground from '../components/LinearBackground'; // Adjust the path as needed
 
 
 const App = () => {
@@ -27,9 +28,12 @@ const App = () => {
   }));
 
   return (
+  
+    
 
     
-          <ScrollView >
+          <ScrollView style={styles.scrollViewStyle}>
+            <GradientBackground>
 <View style={styles.spaceInBetween}></View> 
 
 <View style={styles.containerHeader}>
@@ -124,10 +128,10 @@ const App = () => {
     
     <View style={styles.spaceInBetween}></View>
 
-
+    </GradientBackground>
           </ScrollView>
           
-    
+
     
     
     
@@ -183,6 +187,8 @@ const styles = StyleSheet.create({
     flex: 1,
     
   },
+  
+  
 });
 
 export default App;
