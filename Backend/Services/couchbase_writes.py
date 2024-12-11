@@ -1,13 +1,13 @@
 from couchbase.exceptions import CouchbaseException
 from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_event_by_id,find_message_by_id,find_chat_by_id,get_collection
+from Utils.id_generator import add_id_to_document
 
 def store_user(user : dict):
-    userid = user["user_id"]
-    del user["user_id"]
+    user_with_id = add_id_to_document(user,"user-data","users")
     try:
         user_collection = get_collection("user-data", "users")
-        user_collection.insert(f"user::{userid}", user)
-        return find_user_by_id(userid)
+        user_collection.insert(f"user::{user_with_id["id"]}", user_with_id)
+        return find_user_by_id(user_with_id["id"])
     except CouchbaseException as e:
         print(f"An error occurred while storing the user: {e}")
         return None

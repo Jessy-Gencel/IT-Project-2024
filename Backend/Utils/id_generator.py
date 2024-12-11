@@ -1,5 +1,5 @@
 from couchbase.exceptions import CouchbaseException
-from Services.couchbase_functions import get_collection
+from Services.couchbase_writes import get_collection
 
 def generate_id(scope : str,collection : str):
     
@@ -19,14 +19,15 @@ def generate_id(scope : str,collection : str):
     """
     collection_cb = get_collection(scope_name=scope, collection_name=collection)
     counter_key = f'counter:{collection_cb.name}'
+    print(counter_key)
     try:
-        result = collection_cb.binary().increment(counter_key, delta=1, initial=1)
+        result = collection_cb.binary().increment(counter_key)
         return result.value   
     except CouchbaseException as e:
         print(f"Error generating ID: {e}")
         return None
     
-def add_id_to_document(collection_dict : dict,prefix : str, scope : str, collection : str):
+def add_id_to_document(collection_dict : dict, scope : str, collection : str):
     """
     Adds a generated ID to an existing document in the collection dictionary.
     
@@ -43,6 +44,6 @@ def add_id_to_document(collection_dict : dict,prefix : str, scope : str, collect
         dict: The updated collection dictionary with the new ID field added.
     """
 
-    collection_dict[f"{prefix}_id"] = f"{prefix}::{generate_id(scope=scope,collection=collection)}"
+    collection_dict[f"id"] = f"{generate_id(scope=scope,collection=collection)}"
     return collection_dict
 
