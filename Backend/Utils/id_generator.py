@@ -1,29 +1,48 @@
-from couchbase.auth import PasswordAuthenticator
-from couchbase.cluster import Cluster
 from couchbase.exceptions import CouchbaseException
+from Services.couchbase_functions import get_collection
 
-
-cluster = Cluster('couchbase://localhost', PasswordAuthenticator('username', 'password'))
-bucket = cluster.bucket('bucket_name')
-collection = bucket.default_collection()
-
-def generate_id(collection):
+def generate_id(scope : str,collection : str):
     
     """
-    Generate a unique ID for a Couchbase collection using an atomic counter.
+    Generate a unique document ID for a Couchbase collection using an atomic counter.
+    
+    This function retrieves the collection using the provided scope and collection name,
+    then uses a binary counter to generate a unique ID by incrementing a counter value. 
+    The counter is stored as a key in the format 'counter:<collection_name>'.
 
     Args:
-        collection: The Couchbase collection object.
-    
-    Returns:
-        int: The generated ID or None in case of an error.
-    """
+        scope: The scope in which the collection resides.
+        collection: The name of the collection.
 
-    counter_key = f'counter:{collection.name}'
+    Returns:
+        int: The generated document ID, or None if an error occurs.
+    """
+    collection_cb = get_collection(scope_name=scope, collection_name=collection)
+    counter_key = f'counter:{collection_cb.name}'
     try:
-        result = collection.binary().increment(counter_key, delta=1, initial=1)
-        return result.content
+        result = collection_cb.binary().increment(counter_key, delta=1, initial=1)
+        return result.value   
     except CouchbaseException as e:
         print(f"Error generating ID: {e}")
         return None
     
+def add_id_to_document(collection_dict : dict,prefix : str, scope : str, collection : str):
+    """
+    Adds a generated ID to an existing document in the collection dictionary.
+    
+    This function generates a unique ID based on the provided scope and collection, 
+    and stores it in the document dictionary with a field name based on the provided prefix.
+
+    Args:
+        collection_dict: The dictionary representing the document to which the ID will be added.
+        prefix: The prefix to be used for the ID field.
+        scope: The scope within which the ID is generated.
+        collection: The collection name within the specified scope where the ID is generated.
+
+    Returns:
+        dict: The updated collection dictionary with the new ID field added.
+    """
+
+    collection_dict[f"{prefix}_id"] = f"{prefix}::{generate_id(scope=scope,collection=collection)}"
+    return collection_dict
+
