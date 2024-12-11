@@ -45,33 +45,73 @@ const AccountSetupScreen = ({ navigation }) => {
         Hi, Nils!{"\n"}Let's set up your account.
       </Text>
       <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
-      <View style={styles.alignLeft}>
-        <Text style={styles.titleMedium}>What are your hobbies?</Text>
-        <Text style={styles.subtitle}>Add at least 3.</Text>
+      {currentStep == 1 && (
+        <>
+          <View style={styles.alignLeft}>
+            <Text style={styles.titleMedium}>What are your hobbies?</Text>
+            <Text style={styles.subtitle}>Add at least 3.</Text>
 
-        <Controller
-          control={control}
-          name="password"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={[
-                loginStyles.input,
-                errors.password ? { borderColor: "red", borderWidth: 1 } : {},
-              ]}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="Password"
-              placeholderTextColor={colors.placeholder}
-              secureTextEntry
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[
+                    loginStyles.input,
+                    errors.password
+                      ? { borderColor: "red", borderWidth: 1 }
+                      : {},
+                  ]}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Hobby"
+                  placeholderTextColor={colors.placeholder}
+                  secureTextEntry
+                />
+              )}
             />
-          )}
-        />
-      </View>
-      <View style={[styles.badgeList, styles.alignLeft]}>
-        <Badge title="Gym" isHighlighted />
-        <Badge title="Opera" />
-      </View>
+          </View>
+          <View style={[styles.badgeList, styles.alignLeft]}>
+            <Badge title="Gym" isHighlighted />
+            <Badge title="Opera" />
+          </View>
+        </>
+      )}
+
+      {currentStep == 2 && (
+        <>
+          <View style={styles.alignLeft}>
+            <Text style={styles.titleMedium}>What are your interests?</Text>
+            <Text style={styles.subtitle}>Add at least 3.</Text>
+
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[
+                    loginStyles.input,
+                    errors.password
+                      ? { borderColor: "red", borderWidth: 1 }
+                      : {},
+                  ]}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Interest"
+                  placeholderTextColor={colors.placeholder}
+                  secureTextEntry
+                />
+              )}
+            />
+          </View>
+          <View style={[styles.badgeList, styles.alignLeft]}>
+            <Badge title="Investing" isHighlighted />
+            <Badge title="MILFs" />
+          </View>
+        </>
+      )}
 
       {currentStep < stepsCount && (
         <View style={styles.btnPrimary}>
