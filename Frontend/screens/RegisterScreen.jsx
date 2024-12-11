@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller } from "react-hook-form";
 import GradientBackground from "../components/LinearBackground";
+import axios from "axios";
 
 const schema = yup.object({
   email: yup
@@ -20,7 +21,7 @@ const schema = yup.object({
     .required("Password is required"),
     confirm_password: yup
         .string()
-        .oneOf([Yup.ref('password'), null], "Passwords must match")
+        .oneOf([yup.ref('password'), null], "Passwords must match")
         .required("Please confirm your password"),
 });
 
@@ -40,9 +41,9 @@ const RegisterScreen = ({ navigation }) => {
         {
           email: data.email,
           password: data.password,
-          confirm_password: data.confirm_password,
         }
       );
+      console.log("response", response.data);
       console.log("Form Data:", data);
       navigation.navigate("AccountSetupScreen");
     } catch (error) {

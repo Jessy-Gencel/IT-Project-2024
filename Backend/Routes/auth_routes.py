@@ -17,10 +17,10 @@ def login():
     password = sanitize_input(data['password'])
     user = find_user_by_email(email)
     print(user)
-
+    print(verify_password(user["password"], password))
     
-    #if not user or not verify_password(user["password"], password):
-        #return jsonify({"message": "Invalid credentials"}), 401
+    if not user or not verify_password(user["password"], password):
+        return jsonify({"message": "Invalid credentials"}), 401
     
     access_token, refresh_token = jwt_full_encode(user)
 
@@ -35,6 +35,8 @@ def register():
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     password_hash = hash_password(password)
+    print(password_hash)
+    print(type(password_hash))
     first_name,last_name = extract_name(email=email)
     user = {"email" : email, "password" : password_hash, "first_name" : first_name, last_name : last_name, "user_id" : 4}
     store_user(user=user)
