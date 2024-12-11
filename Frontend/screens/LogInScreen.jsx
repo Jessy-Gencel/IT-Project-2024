@@ -35,7 +35,7 @@ const LogInScreen = ({ navigation }) => {
 
     const onSubmit = async (data) => {
         try{
-            const response = await axios.post('http://127.0.0.1:5000/auth/login', {
+            const response = await axios.post('http://10.2.88.210:5000/auth/login', {
                 email: data.email,
                 password: data.password,
             });
