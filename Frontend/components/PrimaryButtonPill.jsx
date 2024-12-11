@@ -12,13 +12,20 @@ const PrimaryButtonPill = ({ title, onPress }) => {
 const styles = StyleSheet.create({
   button: {
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 50,
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
     backgroundColor: colors.accent,
     borderRadius: 50,
+        // Shadow for iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 5, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+        // Shadow for Android
+        elevation: 5,
   },
   buttonText: {
     color: colors.textWhite,
