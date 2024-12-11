@@ -3,6 +3,7 @@ from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_eve
 
 def store_user(user : dict):
     userid = user["user_id"]
+    user["id"] = user["user_id"]
     del user["user_id"]
     try:
         user_collection = get_collection("user-data", "users")
