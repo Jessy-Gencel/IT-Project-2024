@@ -2,7 +2,6 @@ from DB.milvus_connection import MilvusClient, global_vector_DB, category_vector
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-import torch
 
 def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict):
     """
@@ -79,7 +78,7 @@ def get_mbti_vector(mbti : str):
         "ISTJ": np.array([0.29734561, 0.72303985, 0.0883764, -0.61724272]),
         "ESTJ": np.array([-0.17031324, 0.90511924, 0.33844064, 0.19290024])
     }
-    return torch.tensor(mbti_vectors[mbti]).reshape(1, -1).numpy()[0]
+    return mbti_vectors[mbti][0] ######################################### IF IT BREAKS IT'S HERE #########################################
 
 def embed_MiniLM(mbti : str, id : int, category_dict : dict):
     final_vector_array = []

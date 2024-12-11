@@ -15,7 +15,7 @@ def login():
     password = sanitize_input(data['password'])
     user = find_user_by_email(email)
     
-    if not user or not verify_password(user.password_hash, password):
+    if not user or not verify_password(user["password"], password):
         return jsonify({"message": "Invalid credentials"}), 401
     
     access_token, refresh_token = jwt_full_encode(user)
@@ -25,8 +25,8 @@ def login():
         "refresh_token": refresh_token
     })
 
-@auth_bp.route('/signup', methods=['POST'])
-def signup():
+@auth_bp.route('/register', methods=['POST'])
+def register():
     data = request.get_json()
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
