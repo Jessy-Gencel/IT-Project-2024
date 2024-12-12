@@ -21,7 +21,7 @@ const ChatList = ({navigation, isUnread }) => {
                   </View>
                 </View>
                 <View
-                  style={styles.dot}
+                  style={[isUnread && styles.dot]}
                 />
             </View>
             <View style={styles.chatListContainer}>
@@ -31,12 +31,15 @@ const ChatList = ({navigation, isUnread }) => {
                 <View style={styles.senderAndMessage}>
                   <Text style= {styles.sender}>Brent Devroey</Text>
                   <View style={styles.timeAndMessage}>
-                    <Text numberOfLines={1} style={styles.message2}>Waar zijn jullie? Ik sta aan aula 1</Text>
+                    <Text numberOfLines={1} style={styles.message}>Waar zijn jullie? Ik sta aan aula 1</Text>
                     <Text>12:33</Text>
                   </View>
                 </View>
-
+                <View
+                  style={[isUnread && styles.dot]}
+                />
             </View>
+
         </View>
     </View> 
   );
