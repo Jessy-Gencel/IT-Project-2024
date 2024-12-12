@@ -2,7 +2,7 @@ import jwt
 import datetime
 import os
 from dotenv import load_dotenv
-from Models.User import User
+from Models.user import User
 
 load_dotenv()
 
@@ -21,7 +21,7 @@ def jwt_get_access_token(user: User) -> str:
         str: The encoded JWT access token as a string.
     """
     access_token = jwt.encode({
-        'user_id': user.id,
+        'user_id': user["id"],
         'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)  # Example: 1 week
     }, SECRET_KEY, algorithm="HS256")
     return access_token
@@ -39,7 +39,7 @@ def jwt_get_refresh_token(user: User) -> str:
         str: The encoded JWT refresh token as a string.
     """
     refresh_token = jwt.encode({
-        'user_id': user.id,
+        'user_id': user["id"],
         'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7)  # Example: 1 week
     }, SECRET_KEY, algorithm="HS256")
     return refresh_token

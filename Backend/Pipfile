@@ -9,12 +9,11 @@ couchbase = "*"
 flask = "*"
 pymilvus = "*"
 scipy = "*"
-gensim = "*"
-transformers = "*"
-torch = "*"
 scikit-learn = "*"
 argon2-cffi = "*"
 pyjwt = "*"
+sentence-transformers = "*"
+flask-cors = "*"
 
 [dev-packages]
 
