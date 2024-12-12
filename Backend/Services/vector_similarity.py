@@ -1,14 +1,8 @@
 from pymilvus import MilvusClient,AnnSearchRequest,WeightedRanker
-from DB.milvus_connection import global_vector_DB
+from DB.milvus_connection import global_vector_DB,category_vector_DB,predefined_vector_DB1
 import numpy as np
 
-def get_top_n_vectors(VDB : MilvusClient,amount_of_results : int, query_vector : list):
-    res = VDB.search(
-        collection_name="BERT_test",
-        data=query_vector,
-        top_k=amount_of_results
-    )
-    return res
+
 def get_global_matches(VDB : MilvusClient, amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list):
     requests = [make_ANN_request(global_vector, amount_of_results, "global_vector"), make_ANN_request(mbti_vector, amount_of_results, "mbti_vector"), 
                 make_ANN_request(hobby_vector, amount_of_results, "hobby_vector"), make_ANN_request(interest_vector, amount_of_results, "interest_vector")]
@@ -55,3 +49,30 @@ def curve_scores(scores, curve_type="exponential", **kwargs):
     # Map back to percentages
     final_scores = [round(c * 100, 1) for c in curved_scores]
     return final_scores
+def check_with_predefined_vectors(category : str, vector : list):
+    res = None
+    if category == "game":
+        res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", vector=vector, limit=5)
+    else:
+        res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", vector=vector, limit=5)
+    ids = [interest['id'] for interest in res['data'][0]]
+    distances = [interest['distance'] for interest in res['data'][0]]
+    print(ids)
+    print(distances)
+    return distances,ids
+
+def make_category_bucket_array(similarities : list, ids : list):
+    """
+    Creates a bucket array for a given category from a list of vectors.
+    Args:
+        category (str): The category to create the bucket array for.
+        array_of_vectors (list): A list of vectors.
+    Returns:
+        list: A list of dictionaries representing the bucket array for the category.
+    """
+    combined = list(zip(similarities, ids))
+    combined_sorted = sorted(combined, key=lambda x: x[0], reverse=True)
+    _, sorted_ids = zip(*combined_sorted)
+    sorted_ids = list(sorted_ids)[:10]
+    print(sorted_ids)
+    return sorted_ids

@@ -35,7 +35,6 @@ def find_user_by_id(user_id: int):
     try:
         user_document = get_collection("user-data", "users").get("user::" + user_id)
         user_data = user_document.content_as[dict]
-        user_data["user_id"] = user_document.key
         return user_data
     
     except DocumentNotFoundException:
@@ -55,7 +54,6 @@ def find_profile_by_id(user_id: int):
     try:
         profile_document = get_collection("user-data", "profiles").get("profile::" + user_id)
         profile_data = profile_document.content_as[dict]
-        profile_data["user_id"] = profile_document.key
         return profile_data
     
     except DocumentNotFoundException:
@@ -75,7 +73,6 @@ def find_event_by_id(event_id: int):
     try:
         event_document = get_collection("event-data", "events").get("event::" + event_id)
         event_data = event_document.content_as[dict]
-        event_data["event_id"] = event_document.key
         return event_data
     
     except DocumentNotFoundException:
@@ -94,7 +91,6 @@ def find_message_by_id(message_id: int):
     try:
         message_document = get_collection("message-data", "messages").get("message::" + message_id)
         message_data = message_document.content_as[dict]
-        message_data["message_id"] = message_document.key
         return message_data
     
     except DocumentNotFoundException:
@@ -113,7 +109,6 @@ def find_chat_by_id(chat_id: int):
     try:
         chat_document = get_collection("message-data", "chats").get("chat::" + chat_id)
         chat_data = chat_document.content_as[dict]
-        chat_data["chat_id"] = chat_document.key
         return chat_data
     
     except DocumentNotFoundException:

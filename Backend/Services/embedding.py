@@ -1,4 +1,5 @@
 from DB.milvus_connection import MilvusClient, global_vector_DB, category_vector_DB, predefined_vector_DB1
+from Services.vector_similarity import check_with_predefined_vectors,make_category_bucket_array
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -58,7 +59,7 @@ def get_mbti_vector(mbti : str):
     Args:
         mbti (str): A string representing an MBTI personality type.
     Returns:
-        torch.Tensor: A tensor representing the MBTI personality type.
+        list <float>: A list representing the MBTI personality type.
     """
     mbti_vectors = {
         "INFP": np.array([0.0761407, -0.97400398, 0.01463829, 0.2128487]),
@@ -80,28 +81,38 @@ def get_mbti_vector(mbti : str):
     }
     return mbti_vectors[mbti][0] ######################################### IF IT BREAKS IT'S HERE #########################################
 
-def embed_MiniLM(mbti : str, id : int, category_dict : dict):
+def embed_MiniLM(id : int, category_dict : dict):
     final_vector_array = []
+    id_category_dict = {}
+    mbti = category_dict["mbti"]
     mbti_vector = get_mbti_vector(mbti)
-    global_user_data = {"id": id, "mbti_vector": format_vector_for_milvus(mbti_vector)}
+    formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
+    print(formatted_mbti_vector)
+    del category_dict["mbti"]
+    global_user_data = {"id": id, "mbti_vector": formatted_mbti_vector}
     for category, words in category_dict.items():
         user_data = {"id": id}
         array_for_one_category = []
+        category_ids = []
+        category_similarities = []
         for word in words:
             vector = model.encode(word)
-            # Need to implement the checking with the predefined vectors
+            similarity_word,category_id_word = check_with_predefined_vectors(category, vector)
+            for i in range(len(category_id_word)):
+                category_ids.append(category_id_word[i])
+                category_similarities.append(similarity_word[i])
             array_for_one_category.append(vector)
+        sorted_category_ids = make_category_bucket_array(category_similarities, category_ids)
+        id_category_dict[f"{category}"] = sorted_category_ids
         mean_vector = get_mean_vector_for_category(array_for_one_category)
         user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
         if category in ["interest","hobby","game"]:
             if category in ["interest","hobby"]:
                 global_user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
             else:
-                #insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
-                pass
+                insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
         elif category in ["music","movie","book"]: 
-            #insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
-            pass
+            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
         else:
             print("Category not found")
         if category not in ["interest","hobby"]:
@@ -110,7 +121,7 @@ def embed_MiniLM(mbti : str, id : int, category_dict : dict):
     global_user_data["global_vector"] = format_vector_for_milvus(final_vector)
     print(global_user_data)
     insert_vectors(global_vector_DB,"test_vectors", global_user_data)
-    return "final_vector"
+    return id_category_dict
 
 def get_mean_vector_for_category(array_of_vectors : np.ndarray):
     """
