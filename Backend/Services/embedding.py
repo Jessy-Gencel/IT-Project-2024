@@ -22,7 +22,6 @@ def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict)
         data=userdata
     )
     return res
-
 def mbti_accuracy_test():
     mbti_vectors = {
         "INFP": np.array([0.0761407, -0.97400398, 0.01463829, 0.2128487]),
@@ -80,6 +79,21 @@ def get_mbti_vector(mbti : str):
         "ESTJ": np.array([-0.17031324, 0.90511924, 0.33844064, 0.19290024])
     }
     return mbti_vectors[mbti][0] ######################################### IF IT BREAKS IT'S HERE #########################################
+
+def embed_singular_vectors(category : str, words : list):
+    """
+    Embeds a list of words into a vector and returns the mean vector of the embeddings.
+    Args:
+        category (str): The category of the words.
+        words (list): A list of words to be embedded.
+    """
+    for word in words:
+        vector = model.encode(word)
+        if category == "game":
+            insert_vectors(category_vector_DB, f"{category}_predefined_vectors", {f"{category}_predefined_vectors": vector.tolist(), "word": word})
+        else:
+            insert_vectors(predefined_vector_DB1, f"{category}_predefined_vectors", {f"{category}_predefined_vectors": vector.tolist(), "word": word})            
+    return "All vectors added"
 
 def embed_MiniLM(id : int, category_dict : dict):
     final_vector_array = []
