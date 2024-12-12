@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
+    marginTop:5,
     marginBottom: 10, // Restored compact spacing
   },
   eventDetailItem: {

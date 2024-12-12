@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
+import { View, Text, StyleSheet, Button, Image } from "react-native";
+import styles from "../styles/LogIn";
 
 const ChatScreen = ({ navigation }) => {
   return (
