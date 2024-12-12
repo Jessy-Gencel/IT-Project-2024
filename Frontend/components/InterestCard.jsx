@@ -1,43 +1,89 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Popup from './PopUp'; // Import the Popup component
-import CustomSwitch from './SlideSwitch'; // Adjust the path as needed
+import CustomSwitch from './SlideSwitch'; // Custom Switch component
 import SecondaryButtonPill from './SecondaryButtonPill';
+import InputField from './InputField'; // Input Field component
+import Badge from "./Badge"; // Badge component
 
 const InterestsCard = ({ title, buttonText, id }) => {
-  const [isEnabled, setIsEnabled] = useState(false);
-
+  const [isEnabled, setIsEnabled] = useState(false); // Switch state
+  const [isPopupVisible, setIsPopupVisible] = useState(false); // Popup state
+  const [inputValue, setInputValue] = useState(""); // State for input value
+  const [badges, setBadges] = useState([]); // Array to store badges
+  
+  // Toggle Switch
   const toggleSwitch = () => setIsEnabled((prevState) => !prevState);
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
-
+  
+  // Open Popup
   const openPopup = () => setIsPopupVisible(true);
+  
+  // Close Popup
   const closePopup = () => setIsPopupVisible(false);
+  
+  // Handle Add Badge
+  const handleAddBadge = () => {
+    if (inputValue.trim() !== "") {
+      setBadges((prevBadges) => [...prevBadges, inputValue]);
+      setInputValue(""); // Clear input after adding
+      closePopup(); // Close popup after adding badge
+    }
+  };
 
   return (
     <View>
-      {/* Card with Title, Switch, and Add Button */}
+      {/* Card Layout */}
       <View style={styles.card}>
         <View style={styles.cardContent}>
+          {/* Title and Button */}
           <Text style={styles.title}>{title}</Text>
-          <SecondaryButtonPill 
-            title={buttonText} 
-            onPress={openPopup} 
-            style={styles.smallButton} 
-            textStyle={styles.smallButtonText} 
+          <SecondaryButtonPill
+            title={buttonText}
+            onPress={openPopup}
+            style={styles.smallButton}
+            textStyle={styles.smallButtonText}
           />
         </View>
+        {/* Custom Switch */}
         <CustomSwitch />
       </View>
-      
+
+      {/* Badges Container */}
+      <View style={styles.badgeContainer}>
+        {badges.map((badge, index) => (
+          <View key={index} style={styles.badgeWrapper}>
+            <Badge title={badge} isHighlighted />
+          </View>
+        ))}
+      </View>
+
       {/* Popup Component */}
       <Popup isVisible={isPopupVisible} onClose={closePopup}>
-        {/* Dynamic Content */}
-        <Text style={styles.popupText}>Hello! This is a dynamic popup.</Text>
+        {id === 1 ? (
+          <View style={styles.emptyPopup}>
+            {/* Placeholder for an empty popup */}
+            <Text style={styles.popupText}>No additional options for this card.</Text>
+          </View>
+        ) : (
+          <View style={styles.inputPopup}>
+            {/* Input Field for Non-ID 1 Cards */}
+            <Text style={styles.popupText}>Enter a new badge:</Text>
+            <InputField
+              placeholder="Type here"
+              value={inputValue}
+              onChangeText={setInputValue}
+            />
+            <TouchableOpacity onPress={handleAddBadge} style={styles.addButton}>
+              <Text style={styles.addButtonText}>Add</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </Popup>
     </View>
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
@@ -45,16 +91,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     marginVertical: 10,
-    borderRadius: 8,
+    
     backgroundColor: '#fff',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    borderColor:'grey',
+    borderTopWidth: 1,
+    
   },
   cardContent: {
-    top:-25,
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 10,
@@ -65,7 +108,6 @@ const styles = StyleSheet.create({
     marginRight: 15, // Spacing between title and button
   },
   smallButton: {
-    
     paddingHorizontal: 8, // Reduced padding
     paddingVertical: 4,  // Reduced vertical padding
     backgroundColor: '#007BFF',
@@ -77,9 +119,37 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
   },
+  badgeContainer: {
+    marginTop: 10,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10, // Space between badges
+  },
+  badgeWrapper: {
+    marginBottom: 10, // Space between rows
+    width: '30%', // Ensures 3 badges per row
+  },
   popupText: {
     fontSize: 16,
     textAlign: 'center',
+  },
+  addButton: {
+    padding: 10,
+    backgroundColor: '#007BFF',
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  emptyPopup: {
+    padding: 20,
+  },
+  inputPopup: {
+    padding: 20,
   },
 });
 
