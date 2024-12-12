@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import LogoWrapper from './Logo';
 
 const Header = ({ showBackArrow = false, notificationCount = 0 }) => {
   return (
@@ -14,13 +15,13 @@ const Header = ({ showBackArrow = false, notificationCount = 0 }) => {
 
       {/* Logo and App Name */}
       <View style={styles.logoContainer}>
-        <Image
-          source={{
-            uri: 'https://via.placeholder.com/40',
-          }}
-          style={styles.logo}
-        />
-        <Text style={styles.appName}>Gateway</Text>
+      <LogoWrapper 
+  logoSource={require('../assets/GatewayNoText_Logo.png')} 
+  width={50} 
+  height={50} 
+  />
+
+        
       </View>
 
       {/* Icons on the right */}
@@ -55,6 +56,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
+    marginTop:40,
   },
   backArrow: {
     marginRight: 10,
@@ -63,6 +65,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    marginLeft:20,
   },
   logo: {
     width: 40,
