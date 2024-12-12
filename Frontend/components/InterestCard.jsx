@@ -4,7 +4,7 @@ import Popup from './PopUp'; // Import the Popup component
 import CustomSwitch from './SlideSwitch'; // Adjust the path as needed
 import SecondaryButtonPill from './SecondaryButtonPill';
 
-const InterestsCard = ({ title, buttonText }) => {
+const InterestsCard = ({ title, buttonText, id }) => {
   const [isEnabled, setIsEnabled] = useState(false);
 
   const toggleSwitch = () => setIsEnabled((prevState) => !prevState);
@@ -45,30 +45,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     marginVertical: 10,
+    borderRadius: 8,
     backgroundColor: '#fff',
-    elevation: 1,
-    
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   cardContent: {
+    top:-25,
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 10,
-    top:-30,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginRight: 8, // Spacing between title and button
+    marginRight: 15, // Spacing between title and button
   },
   smallButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    
+    paddingHorizontal: 8, // Reduced padding
+    paddingVertical: 4,  // Reduced vertical padding
     backgroundColor: '#007BFF',
-    borderRadius: 8,
-    minWidth: 60,
+    borderRadius: 6,    // Adjusted border radius
+    minWidth: 50,       // Reduced minimum width
   },
   smallButtonText: {
-    fontSize: 12,
+    fontSize: 10, // Smaller font size
     color: '#fff',
     textAlign: 'center',
   },

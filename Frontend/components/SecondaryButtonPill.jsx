@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import colors from "../theme/colors";
 
-const SecondaryButtonPill = ({ title, onPress }) => {
+const SecondaryButtonPill = ({ title, onPress, style, textStyle  }) => {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
       <Text style={styles.buttonText}>{title}</Text>
