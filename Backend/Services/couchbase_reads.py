@@ -11,6 +11,43 @@ def get_scope(scope_name: str) -> Scope:
 	CB_scope = db.scope(scope_name)
 	return CB_scope
 
+def transform_presets(presets_list):
+    """
+    Transform a list of preset dictionaries into a single dictionary
+    with category names as keys and their corresponding lists as values.
+    
+    Args:
+        presets_list (list): A list of dictionaries containing preset categories
+    
+    Returns:
+        dict: A dictionary with category names and their lists
+    """
+    result = {}
+    
+    for preset_dict in presets_list:
+        for category, items in preset_dict.get('presets', {}).items():
+            result[category] = items
+    
+    return result
+
+def get_predefined_lists():
+    try:
+        query = "SELECT * FROM `ehb-link`.`service-data`.presets"
+        result = cluster.query(query)
+        rows = list(result)  # Convert result to a list
+        if rows:
+            return transform_presets(rows)  # Return the first predefined lists record
+        else:
+            print(f"Predefined lists not found.")
+            return None
+        
+    except CouchbaseException as e:
+        print(f"An error occurred while querying the database: {e}")
+        return None
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
 def find_user_by_email(email: str):
     try:
         query = "SELECT * FROM `ehb-link`.`user-data`.users WHERE email = $email"

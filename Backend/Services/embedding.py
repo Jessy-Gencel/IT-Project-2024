@@ -80,14 +80,15 @@ def get_mbti_vector(mbti : str):
     }
     return mbti_vectors[mbti][0] ######################################### IF IT BREAKS IT'S HERE #########################################
 
-def embed_singular_vectors(category : str, words : list):
+def embed_singular_vectors(category : str, words : list[str]):
     """
     Embeds a list of words into a vector and returns the mean vector of the embeddings.
     Args:
         category (str): The category of the words.
-        words (list): A list of words to be embedded.
+        words (list[str]): A list of words to be embedded.
     """
     for word in words:
+        word = word.lower()
         vector = model.encode(word)
         if category == "game":
             insert_vectors(category_vector_DB, f"{category}_predefined_vectors", {f"{category}_predefined_vectors": vector.tolist(), "word": word})
