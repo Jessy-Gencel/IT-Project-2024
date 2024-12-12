@@ -19,7 +19,7 @@ const mbtiArray = [
 
 const mbti = mbtiArray.map((type) => ({
   label: type,
-  value: type.toLowerCase(),
+  value: type,
 }));
 
 export default mbti;

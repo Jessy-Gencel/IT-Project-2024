@@ -18,23 +18,110 @@ import loginStyles from "../styles/LogIn";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import TertiaryButon from "../components/TertiaryButton";
 import mbti from "../config/mbti";
+import interests from "../config/interests";
 import RNPickerSelect from "react-native-picker-select";
+import axios from "axios";
 
 const AccountSetupScreen = ({ navigation }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedValue, setSelectedValue] = useState("");
-  const stepsCount = 4;
+  const stepsCount = 5;
+  const [formData, setFormData] = useState({
+    id: "12345",
+    mbti: "",
+    interests: [],
+    hobbies: [],
+    games: [],
+    movies: [],
+    books: [],
+    music: [],
+  });
+
+  // Schema's
+  const hobbiesSchema = yup.object({
+    hobby: yup
+      .array()
+      .of(yup.string().required("Please provide at least 3 hobbies"))
+      .min(3, "Please provide at least 3 hobbies")
+      .required("Please provide at least 3 hobbies"),
+  });
+
+  const interestsSchema = yup.object({
+    interest: yup
+      .array()
+      .of(
+        yup
+          .string()
+          .required("Please provide at least 3 interests.")
+          .oneOf(interests, "Please select a valid interest.")
+      )
+      .min(3, "Please provide at least 3 interests.")
+      .required("Please provide at least 3 interests."),
+  });
+
+  const favoritesSchema = yup.object({
+    games: yup
+      .array()
+      .of(yup.string().required("Each game should be a string"))
+      .nullable(),
+    movies: yup
+      .array()
+      .of(yup.string().required("Each movie should be a string"))
+      .nullable(),
+    books: yup
+      .array()
+      .of(yup.string().required("Each book should be a string"))
+      .nullable(),
+    music: yup
+      .array()
+      .of(yup.string().required("Each song or artist should be a string"))
+      .nullable(),
+  });
+
+  const mbtiSchema = yup.object({
+    mbti: yup.string().required("Please enter your MBTI"),
+  });
 
   const schema = yup.object({
-    email: yup
-      .string()
-      .email("Enter your institution's email")
-      .required("Email is required"),
-    password: yup
-      .string()
-      .min(6, "Password must be at least 6 characters")
-      .required("Password is required"),
+    hobbies: hobbiesSchema,
+    interests: interestsSchema,
+    favorites: favoritesSchema,
+    mbti: mbtiSchema,
   });
+
+  // Form Handlers
+  const {
+    register: registerHobbies,
+    handleSubmit: handleSubmitHobbies,
+    formState: { errors: errorsHobbies },
+  } = useForm({
+    resolver: yupResolver(hobbiesSchema),
+  });
+
+  const {
+    register: registerInterests,
+    handleSubmit: handleSubmitInterests,
+    formState: { errors: errorsInterests },
+  } = useForm({
+    resolver: yupResolver(interestsSchema),
+  });
+
+  const {
+    register: registerFavorites,
+    handleSubmit: handleSubmitFavorites,
+    formState: { errors: errorsFavorites },
+  } = useForm({
+    resolver: yupResolver(favoritesSchema),
+  });
+
+  const {
+    register: registerMbti,
+    handleSubmit: handleSubmitMbti,
+    formState: { errors: errorsMbti },
+  } = useForm({
+    resolver: yupResolver(mbtiSchema),
+  });
+
   const {
     control,
     handleSubmit,
@@ -42,6 +129,51 @@ const AccountSetupScreen = ({ navigation }) => {
   } = useForm({
     resolver: yupResolver(schema),
   });
+
+  // Submissions
+  const onSubmitHobbies = (data) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      hobbies: data.hobbies,
+    }));
+    nextStep();
+  };
+
+  const onSubmitInterests = (data) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      interests: data.interests,
+    }));
+    nextStep();
+  };
+
+  const onSubmitFavorites = (data) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      favorites: data.favorites,
+    }));
+    nextStep();
+  };
+
+  const onSubmitMbti = (data) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      mbti: data.mbti,
+    }));
+    nextStep();
+  };
+
+  const onSubmit = async () => {
+    try {
+      const response = await axios.post(
+        "https://localhost:5000/auth/createProfile",
+        formData
+      );
+      console.log("Data submitted successfully: ", response.data);
+    } catch (error) {
+      console.error("Error submitting data: ", error);
+    }
+  };
 
   const nextStep = () => {
     if (currentStep < stepsCount) {
@@ -63,6 +195,29 @@ const AccountSetupScreen = ({ navigation }) => {
     }
   };
 
+  // Check what handler to use
+  const currentHandler = () => {
+    switch (currentStep) {
+      case 1:
+        handleSubmit(handleSubmitHobbies)();
+        break;
+      case 2:
+        handleSubmit(handleSubmitInterests)();
+        break;
+      case 3:
+        handleSubmit(handleSubmitFavorites)();
+        break;
+      case 4:
+        handleSubmit(handleSubmitMbti)();
+        break;
+      case 5:
+        handleSubmit(handleSubmit)();
+      default:
+        break;
+    }
+  };
+
+  // Screen
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -304,17 +459,20 @@ const AccountSetupScreen = ({ navigation }) => {
           </>
         )}
 
-        {/* Next Step */}
+        {/* Validate */}
         {currentStep < stepsCount && (
           <View style={styles.btnPrimary}>
             <PrimaryButtonPill title="Continue" onPress={nextStep} />
           </View>
         )}
 
-        {/* Complete Setup */}
+        {/* Submit */}
         {currentStep == stepsCount && (
           <View style={styles.btnPrimary}>
-            <PrimaryButtonPill title="Complete Setup" onPress={nextStep} />
+            <PrimaryButtonPill
+              title="Complete Setup"
+              onPress={handleSubmit(onSubmit)}
+            />
           </View>
         )}
 

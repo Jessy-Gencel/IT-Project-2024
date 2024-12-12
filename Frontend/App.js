@@ -11,6 +11,7 @@ import { StatusBar } from "expo-status-bar";
 import { createStackNavigator } from "@react-navigation/stack";
 import "react-native-gesture-handler";
 import SplashScreen from "./screens/SplashScreen";
+import AccountSetupScreen from './screens/AccountSetupScreen';
 import BottomTabNavigator from "./components/BottomTabNavigator";
 
 
@@ -22,6 +23,7 @@ export default function App() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Main" component={BottomTabNavigator} />
+        <Stack.Screen name="AccountSetup" component={AccountSetupScreen} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
