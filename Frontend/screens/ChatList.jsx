@@ -1,9 +1,10 @@
 import React from "react";
 import { View, Text, StyleSheet, Button, Image } from "react-native";
 import MessageListHeader from "../components/MessageListHeader";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 
-const ChatList = ({navigation, isUnread }) => {
+const ChatList = ({navigation, isUnread, isMuted }) => {
   return (
     <View style={styles.container}>
         <MessageListHeader style={styles.MessageListHeader}/>
@@ -20,10 +21,19 @@ const ChatList = ({navigation, isUnread }) => {
                     <Text style={[styles.time, isUnread && styles.timeUnread]}>12:33</Text>
                   </View>
                 </View>
-                <View
-                  style={[isUnread && styles.dot]}
-                />
-            </View>
+                <View>
+                  {isMuted ? (
+                    <Ionicons
+                      name="notifications-off-outline"
+                      size={20}
+                      color="#888"
+                      style={styles.mutedIcon}
+                    />
+                  ) : (
+                    isUnread && <View style={styles.dot} />
+                  )}
+                </View>
+          </View>
             <View style={styles.chatListContainer}>
                 <Image
                     source = {require('../assets/brent_klein.png')}
@@ -35,11 +45,19 @@ const ChatList = ({navigation, isUnread }) => {
                     <Text>12:33</Text>
                   </View>
                 </View>
-                <View
-                  style={[isUnread && styles.dot]}
-                />
+                <View>
+                  {isMuted ? (
+                    <Ionicons
+                      name="notifications-off-outline"
+                      size={20}
+                      color="#888"
+                      style={styles.mutedIcon}
+                    />
+                  ) : (
+                    isUnread && <View style={styles.dot} />
+                  )}
+                </View>
             </View>
-
         </View>
     </View> 
   );
