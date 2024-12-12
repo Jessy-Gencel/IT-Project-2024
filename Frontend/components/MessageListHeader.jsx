@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
+    marginTop: 50,
   },
   logoContainer: {
     marginRight: 10,

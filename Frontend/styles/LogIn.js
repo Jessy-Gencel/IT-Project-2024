@@ -1,3 +1,5 @@
+import colors from "../theme/colors";
+
 const styles = {
   logInContainer: {
     marginLeft: 30,
@@ -12,7 +14,7 @@ const styles = {
     color: "#353535",
     marginBottom: 20,
   },
-  logInBtn:{
+  logInBtn: {
     width: 250,
     alignSelf: "center",
     marginTop: 30,
@@ -22,18 +24,25 @@ const styles = {
 
   input: {
     height: 40,
-    borderColor: "#3535358C",
+    borderColor: colors.placeholder,
     borderWidth: 1,
     borderRadius: 5,
     paddingLeft: 10,
-    fontSize: 16,
+    fontSize: 14,
     backgroundColor: "#fff",
-    marginBottom: 17,
+    marginBottom: 15,
+    // Shadow for iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    // Shadow for Android
+    elevation: 6,
   },
   inputTitle: {
     color: "#3535358C",
     fontSize: 15,
-    marginBottom: 7,
+    marginBottom: 5,
   },
 
   //GateWay en logo
@@ -56,26 +65,26 @@ const styles = {
     marginBottom: 70,
   },
 
-    //Other options
+  //Other options
 
- otherOptions:{
+  otherOptions: {
     marginTop: 10,
- },
- questionContainer:{
+  },
+  questionContainer: {
     flexDirection: "row",
     justifyContent: "space-evenly",
     width: 250,
     alignSelf: "center",
     margin: 5,
- },
- question:{
+  },
+  question: {
     fontWeight: "bold",
     color: "#353535",
- },
+  },
 
- link:{
+  link: {
     color: "#007BFF",
     textDecorationLine: "underline",
- }
+  },
 };
 export default styles;
