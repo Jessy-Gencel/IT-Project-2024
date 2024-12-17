@@ -78,7 +78,7 @@ def get_mbti_vector(mbti : str):
         "ISTJ": np.array([0.29734561, 0.72303985, 0.0883764, -0.61724272]),
         "ESTJ": np.array([-0.17031324, 0.90511924, 0.33844064, 0.19290024])
     }
-    return mbti_vectors[mbti][0] ######################################### IF IT BREAKS IT'S HERE #########################################
+    return mbti_vectors[mbti] ######################################### IF IT BREAKS IT'S HERE #########################################
 
 def embed_singular_vectors(category : str, words : list[str]):
     """
@@ -102,7 +102,6 @@ def embed_MiniLM(id : int, category_dict : dict):
     mbti = category_dict["mbti"]
     mbti_vector = get_mbti_vector(mbti)
     formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
-    print(formatted_mbti_vector)
     del category_dict["mbti"]
     global_user_data = {"id": id, "mbti_vector": formatted_mbti_vector}
     for category, words in category_dict.items():
@@ -114,10 +113,12 @@ def embed_MiniLM(id : int, category_dict : dict):
             vector = model.encode(word)
             similarity_word,category_id_word = check_with_predefined_vectors(category, vector)
             for i in range(len(category_id_word)):
-                category_ids.append(category_id_word[i])
-                category_similarities.append(similarity_word[i])
+                if category_id_word[i] not in category_ids:
+                    category_ids.append(category_id_word[i])
+                    category_similarities.append(similarity_word[i])
             array_for_one_category.append(vector)
-        sorted_category_ids = make_category_bucket_array(category_similarities, category_ids)
+        sorted_category_ids = make_category_bucket_array(category_similarities, category_ids, category)
+        #print(category)
         id_category_dict[f"{category}"] = sorted_category_ids
         mean_vector = get_mean_vector_for_category(array_for_one_category)
         user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
@@ -125,17 +126,23 @@ def embed_MiniLM(id : int, category_dict : dict):
             if category in ["interest","hobby"]:
                 global_user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
             else:
-                insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
+                #print(f"{category}_vectors")
+                #print(user_data)
+                pass
+                #insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
         elif category in ["music","movie","book"]: 
-            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
+            #print(f"{category}_vectors")
+            #print(user_data)
+            pass
+            #insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
         else:
             print("Category not found")
         if category not in ["interest","hobby"]:
             final_vector_array.append(mean_vector)
     final_vector = conactenate_final_vector(final_vector_array)
     global_user_data["global_vector"] = format_vector_for_milvus(final_vector)
-    print(global_user_data)
-    insert_vectors(global_vector_DB,"test_vectors", global_user_data)
+    #print(global_user_data)
+    #insert_vectors(global_vector_DB,"test_vectors", global_user_data)
     return id_category_dict
 
 def get_mean_vector_for_category(array_of_vectors : np.ndarray):
@@ -170,3 +177,4 @@ def conactenate_final_vector(final_vector : np.ndarray):
     return concatenated_vector.reshape(1, -1)[0]
 
 model = SentenceTransformer('all-MiniLM-L12-v2')
+

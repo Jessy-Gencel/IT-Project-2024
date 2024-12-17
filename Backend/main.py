@@ -16,13 +16,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
 
-
-
 app.register_blueprint(auth_bp)
 app.register_blueprint(vector_bp)
 app.register_blueprint(message_bp)
 app.register_blueprint(event_bp)
 app.register_blueprint(preset_bp)
+
 @app.route('/')
 def home():
     return "yay"

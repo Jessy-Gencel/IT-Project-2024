@@ -38,16 +38,16 @@ def register():
     print(password_hash)
     print(type(password_hash))
     first_name,last_name = extract_name(email=email)
-    user = {"email" : email, "password" : password_hash, "first_name" : first_name, last_name : last_name, "user_id" : 4}
-    store_user(user=user)
+    user = {"email" : email, "password" : password_hash, "first_name" : first_name, last_name : last_name}
+    #store_user(user=user)
     
     return jsonify({"message": "User created successfully"}), 201
 
 @auth_bp.route('/createProfile', methods=['POST'])
 def create_profile():
     data = request.get_json()
-    id = sanitize_input(data['id'])
-    mbti = sanitize_input(data['mbti'])
+    id = sanitize_input(str(data['id']))
+    mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
     hobbies = santize_array(data['hobbies'])
     games = santize_array(data['games'])
@@ -57,9 +57,9 @@ def create_profile():
     ############################## SANITIZATION ###############################
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
-    print(traits)
-    return "We got here"
     predefined_matching_categories = embed_MiniLM(id,traits)
+    print(predefined_matching_categories)
+    return "we got here", 200
     ############################## MAKE VECTORS FOR PROFILE ###############################
     chats = []
     events = []

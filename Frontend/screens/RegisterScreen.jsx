@@ -37,7 +37,7 @@ const RegisterScreen = ({ navigation }) => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "http://10.2.88.210:5000/auth/register",
+        "http://192.168.10.171:5000/auth/register",
         {
           email: data.email,
           password: data.password,

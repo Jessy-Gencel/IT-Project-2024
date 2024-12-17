@@ -25,6 +25,12 @@ def make_ANN_request(vector : list, amount_of_results : int, target_field : str)
 def get_by_id(id : int):
     res = global_vector_DB.get(collection_name="global_vectors", ids=id)
     return res
+def get_by_category_and_id(category : str, id : int):
+    if category == "game":
+        res = category_vector_DB.get(collection_name=f"{category}_predefined_vectors", ids=id, output_fields=["word"])
+    else:
+        res = predefined_vector_DB1.get(collection_name=f"{category}_predefined_vectors", ids=id, output_fields=["word"])
+    return res[0]["word"]
 
 def curve_scores(scores, curve_type="exponential", **kwargs):
     # Normalize scores
@@ -50,18 +56,20 @@ def curve_scores(scores, curve_type="exponential", **kwargs):
     final_scores = [round(c * 100, 1) for c in curved_scores]
     return final_scores
 def check_with_predefined_vectors(category : str, vector : list):
+    vector = [vector]
     res = None
     if category == "game":
-        res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", vector=vector, limit=5)
+        res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
     else:
-        res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", vector=vector, limit=5)
-    ids = [interest['id'] for interest in res['data'][0]]
-    distances = [interest['distance'] for interest in res['data'][0]]
-    print(ids)
-    print(distances)
+        res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
+    #print(res)
+    ids = [interest['id'] for interest in res[0]]
+    distances = [interest['distance'] for interest in res[0]]
+    #print(ids)
+    #print(distances)
     return distances,ids
 
-def make_category_bucket_array(similarities : list, ids : list):
+def make_category_bucket_array(similarities : list, ids : list, category : str):
     """
     Creates a bucket array for a given category from a list of vectors.
     Args:
@@ -74,5 +82,11 @@ def make_category_bucket_array(similarities : list, ids : list):
     combined_sorted = sorted(combined, key=lambda x: x[0], reverse=True)
     _, sorted_ids = zip(*combined_sorted)
     sorted_ids = list(sorted_ids)[:10]
-    print(sorted_ids)
+    best_matches = [f"{category} best matches in order:"]
+    for id in sorted_ids:
+        word = get_by_category_and_id(category, id)
+        best_matches.append({"word": word})
+    print(best_matches)
+    #print("These are the sorted IDS")
+    #print(sorted_ids)
     return sorted_ids
