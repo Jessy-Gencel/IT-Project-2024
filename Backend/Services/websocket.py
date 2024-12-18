@@ -5,6 +5,7 @@ from couchbase.cluster import Cluster, ClusterOptions
 from couchbase.auth import PasswordAuthenticator
 from datetime import datetime
 import uuid
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -47,5 +48,5 @@ def handle_message(data):
 
 
 if __name__ == '__main__':
-    socketio.run(app, host='10.2.88.71', port=5000)
+    socketio.run(app, host=f"{os.getenv("IP_ADRESS_SERVER")}", port=5000)
 
