@@ -2,11 +2,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import colors from "../theme/colors";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-const PrimaryButton = ({ title, isHighlighted }) => {
+const PrimaryButton = ({ title, isHighlighted, onPress }) => {
   return (
     <View style={[styles.container, isHighlighted && styles.highlighted]}>
       <Text style={isHighlighted ? styles.titleHighlighted : styles.title}>{title}</Text>
-      <TouchableOpacity style={styles.closeButton}>
+      <TouchableOpacity style={styles.closeButton} onPress = {onPress}>
         <Ionicons name="close" size={16} color={colors.textBlack} style={isHighlighted ? styles.titleHighlighted : styles.title} />
       </TouchableOpacity>
     </View>
