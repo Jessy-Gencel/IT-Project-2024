@@ -13,8 +13,15 @@ import EventCardWithSection from "../components/EventCardWithSection"; // Assumi
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
 import GradientBackground from "../components/LinearBackground";
 import { Ionicons } from "@expo/vector-icons";
+import axiosInstance from "../services/AxiosConfig";
+
+const response = axiosInstance.get("/vector/");
+console.log(response);
+
+
 
 const HomePage = () => {
+  
   const matchingProfiles = [
     {
       id: "1",
