@@ -175,10 +175,16 @@ const AccountSetupScreen = ({ navigation }) => {
           source={require("../assets/logo-main.png")}
           style={styles.logo}
         />
-        <Text style={styles.title}>
-          Hi, Nils!{"\n"}Let's set up your account.
-        </Text>
-        <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
+        {currentStep !== stepsCount && (
+  <Text style={styles.title}>
+    Hi, Nils!{"\n"}Let's set up your account.
+  </Text>
+)}
+{currentStep === stepsCount && (
+  <Text style={styles.title}>
+    Account Setup{"\n"}Overview.
+  </Text>
+)}
         {/* Step 1 */}
         {currentStep == 1 && (
           <>
@@ -445,6 +451,104 @@ const AccountSetupScreen = ({ navigation }) => {
           </>
         )}
 
+                {/* Step 5 */}
+{currentStep == stepsCount && (
+  <>
+    
+    
+    {/* MBTI */}
+    {formData.mbti && (
+      <View style={styles.section}>
+        <View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>MBTI</Text>
+    </View>
+        <Text style={styles.sectionContent}>{formData.mbti}</Text>
+      </View>
+    )}
+
+    {/* Interests */}
+    {formData.interests.length > 0 && (
+      <View style={styles.section}>
+        <View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Interests</Text>
+    </View>
+        <View style={styles.badgeList2}>
+          {formData.interests.map((interest, index) => (
+            <Badge key={index} title={interest} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Hobbies */}
+    {formData.hobbies.length > 0 && (
+      <View style={styles.section}>
+        <View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Hobbies</Text>
+    </View>
+        <View style={styles.badgeList2}>
+          {formData.hobbies.map((hobby, index) => (
+            <Badge key={index} title={hobby} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Movies */}
+    {formData.movies.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>favourite movies</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.movies.map((movie, index) => (
+            <Badge key={index} title={movie} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Music */}
+    {formData.music.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Favourite Music</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.music.map((song, index) => (
+            <Badge key={index} title={song} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Games */}
+    {formData.games.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>favourite Games</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.games.map((game, index) => (
+            <Badge key={index} title={game} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Books */}
+    {formData.books.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Favourite books</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.books.map((book, index) => (
+            <Badge key={index} title={book} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+  </>
+)}
+
+
         {/* Validate */}
         {currentStep < stepsCount && (
           <View style={styles.btnPrimary}>
@@ -458,7 +562,7 @@ const AccountSetupScreen = ({ navigation }) => {
           <View style={styles.btnPrimary}>
             <PrimaryButtonPill
               title="Complete Setup"
-              onPress={handleSubmit(onSubmit)}
+              
             />
           </View>
         )}
@@ -504,6 +608,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
   },
   titleMedium: {
+    marginBottom: 10,
     fontSize: 20,
     fontWeight: "medium",
   },
@@ -515,6 +620,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   badgeList: {
+    
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
@@ -529,6 +635,24 @@ const styles = StyleSheet.create({
   },
   step3Wrapper: {
     marginTop: 15,
+  },section: {
+    flex:1,
+    alignSelf: "flex-start",
+    marginVertical: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  sectionContent: {
+    fontSize: 16,
+    color: colors.textBlack,
+  },badgeList2: {
+    marginLeft: 25,
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    gap: 10,
   },
 });
 
