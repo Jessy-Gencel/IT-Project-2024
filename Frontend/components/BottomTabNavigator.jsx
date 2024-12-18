@@ -12,6 +12,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import TestScreen from "../screens/Test";
 import AccountSetupScreen from "../screens/AccountSetupScreen";
 import ChatList from "../screens/ChatList";
+import  WebSocket  from "../screens/TestWebsocket";
 
 const Tab = createBottomTabNavigator();
 
@@ -53,9 +54,10 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Components" component={ComponentsScreen} />
-      
+      <Tab.Screen name="websockets" component={WebSocket} />
       <Tab.Screen name="AccountSetup" component={AccountSetupScreen} />
       <Tab.Screen name="ChatList" component={ChatList} />
+      
     </Tab.Navigator>
   );
 };
