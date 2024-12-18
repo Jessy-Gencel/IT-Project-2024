@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Button, Image, ScrollView, TextInput } from "react-native";
+import { View, Text, StyleSheet, Button, Image, ScrollView, TextInput,KeyboardAvoidingView, Platform } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Badge from "../components/Badge";
 import MessageBubble from '../components/MessageBubble';
@@ -18,49 +18,49 @@ const ChatScreen = ({ navigation }) => {
 
   return (
     <LinearBackground>
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Ionicons name="chevron-back-outline" style={styles.backIcon}/>
-        <Image
-          source={require('../assets/brent_klein.png')}
-          style={styles.topPfp}
-        />
-        <Text style={styles.topName}>Brent Devroey</Text>
-      </View>
-      <View style={styles.profileShort}>
-        <Image
-          source={require('../assets/brent_groot.png')}
-          style={styles.pfpBig}
-        />
-        <Text style={styles.pfpName}>Brent Devroey</Text>
-        <Text style={styles.biography}>Ge moet naar de maan schieten en in de sterren belanden</Text>
-      </View>
-      <View style={styles.matchSection}>
-        <Text style={styles.matchText}>You matched on</Text>
-        <View style={styles.badges}>
-          <Badge text="Football" />
-          <Badge text="Games" />
-          <Badge text="Books" />
-          <Badge text="Poëzie" />
-          <Badge text="MILFs" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Ionicons name="chevron-back-outline" style={styles.backIcon}/>
+          <Image
+            source={require('../assets/brent_klein.png')}
+            style={styles.topPfp}
+          />
+          <Text style={styles.topName}>Brent Devroey</Text>
+        </View>
+        <View style={styles.profileShort}>
+          <Image
+            source={require('../assets/brent_groot.png')}
+            style={styles.pfpBig}
+          />
+          <Text style={styles.pfpName}>Brent Devroey</Text>
+          <Text style={styles.biography}>Ge moet naar de maan schieten en in de sterren belanden</Text>
+        </View>
+        <View style={styles.matchSection}>
+          <Text style={styles.matchText}>You matched on</Text>
+          <View style={styles.badges}>
+            <Badge text="Football" />
+            <Badge text="Games" />
+            <Badge text="Books" />
+            <Badge text="Poëzie" />
+            <Badge text="MILFs" />
+          </View>
+        </View>
+        <ScrollView style={styles.chatSection} contentContainerStyle={{ paddingBottom: 20 }}>
+          {messages.map((item) => (
+            <MessageBubble
+              key={item.id}
+              message={item.message}
+              sender={item.sender}
+            />
+          ))}
+        </ScrollView>
+
+        {/* Input Field */}
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} placeholder="Write a message..." />
+          <Ionicons name="send-outline" size={24} color="#F7931E" style={styles.sendIcon} />
         </View>
       </View>
-      <ScrollView style={styles.chatSection} contentContainerStyle={{ paddingBottom: 20 }}>
-        {messages.map((item) => (
-          <MessageBubble
-            key={item.id}
-            message={item.message}
-            sender={item.sender}
-          />
-        ))}
-      </ScrollView>
-
-      {/* Input Field */}
-      <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Write a message..." />
-        <Ionicons name="send-outline" size={24} color="#F7931E" style={styles.sendIcon} />
-      </View>
-    </View>
 </LinearBackground>
   );
 };
