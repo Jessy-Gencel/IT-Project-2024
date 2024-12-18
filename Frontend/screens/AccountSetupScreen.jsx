@@ -148,6 +148,8 @@ const AccountSetupScreen = ({ navigation }) => {
   };
 
   const addItem = (field) => {
+    console.log(inputValue)
+    console.log(formData[field])
     if (inputValue.trim()) {
       // prev is voor de previous data op te halen
       //setFormData(prev) nodig omdat je telkens je form reset
@@ -155,8 +157,10 @@ const AccountSetupScreen = ({ navigation }) => {
         ...prev,
         [field]: [...prev[field], inputValue.trim()]
       }))
+      console.log(formData[field])
     }
     setInputValue("");
+    console.log(formData[field])
   }
 
   const removeItem = (field, index) => {
@@ -188,12 +192,12 @@ const AccountSetupScreen = ({ navigation }) => {
 
               <Controller
                 control={control}
-                name="password"
+                name="hobbies"
                 render={({ field: {onBlur, value } }) => (
                   <TextInput
                     style={[
                       loginStyles.input,
-                      errors.password
+                      errors.hobbies
                         ? { borderColor: "red", borderWidth: 1 }
                         : {},
                     ]}
@@ -230,12 +234,12 @@ const AccountSetupScreen = ({ navigation }) => {
 
               <Controller
                 control={control}
-                name="password"
+                name="interests"
                 render={({ field: {onBlur, inputValue } }) => (
                   <TextInput
                     style={[
                       loginStyles.input,
-                      errors.password
+                      errors.interests
                         ? { borderColor: "red", borderWidth: 1 }
                         : {},
                     ]}
@@ -278,7 +282,7 @@ const AccountSetupScreen = ({ navigation }) => {
                     <TextInput
                       style={[
                         loginStyles.input,
-                        errors.password
+                        errors.movies
                           ? { borderColor: "red", borderWidth: 1 }
                           : {},
                       ]}
@@ -317,13 +321,13 @@ const AccountSetupScreen = ({ navigation }) => {
                     <TextInput
                       style={[
                         loginStyles.input,
-                        errors.password
+                        errors.music
                           ? { borderColor: "red", borderWidth: 1 }
                           : {},
                       ]}
                       onBlur={onBlur}
                       onChangeText={setInputValue}
-                      value={value}
+                      value={inputValue}
                       placeholder="Enter a song or artist"
                       placeholderTextColor={colors.placeholder}
                       onSubmitEditing={() => addItem("music")}
@@ -356,7 +360,7 @@ const AccountSetupScreen = ({ navigation }) => {
                     <TextInput
                       style={[
                         loginStyles.input,
-                        errors.password
+                        errors.games
                           ? { borderColor: "red", borderWidth: 1 }
                           : {},
                       ]}
@@ -395,7 +399,7 @@ const AccountSetupScreen = ({ navigation }) => {
                     <TextInput
                       style={[
                         loginStyles.input,
-                        errors.password
+                        errors.books
                           ? { borderColor: "red", borderWidth: 1 }
                           : {},
                       ]}
@@ -448,7 +452,7 @@ const AccountSetupScreen = ({ navigation }) => {
         {/* Validate */}
         {currentStep < stepsCount && (
           <View style={styles.btnPrimary}>
-            <PrimaryButtonPill title="Continue" onPress={nextStep} />
+            <PrimaryButtonPill title="Continue" onPress={handleSubmit(nextStep)} />
           </View>
         )}
 
