@@ -78,7 +78,7 @@ def get_mbti_vector(mbti : str):
         "ISTJ": np.array([0.29734561, 0.72303985, 0.0883764, -0.61724272]),
         "ESTJ": np.array([-0.17031324, 0.90511924, 0.33844064, 0.19290024])
     }
-    return mbti_vectors[mbti] ######################################### IF IT BREAKS IT'S HERE #########################################
+    return mbti_vectors[mbti] 
 
 def embed_singular_vectors(category : str, words : list[str]):
     """

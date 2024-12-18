@@ -3,12 +3,19 @@ from DB.milvus_connection import global_vector_DB,category_vector_DB,predefined_
 import numpy as np
 
 
-def get_global_matches(VDB : MilvusClient, amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list):
-    requests = [make_ANN_request(global_vector, amount_of_results, "global_vector"), make_ANN_request(mbti_vector, amount_of_results, "mbti_vector"), 
-                make_ANN_request(hobby_vector, amount_of_results, "hobby_vector"), make_ANN_request(interest_vector, amount_of_results, "interest_vector")]
+def get_global_matches(userid : int,amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list):
+    requests = [make_ANN_request(global_vector, amount_of_results, "global_vectors"), 
+                make_ANN_request(mbti_vector, amount_of_results, "mbti_vectors"), 
+                make_ANN_request(hobby_vector, amount_of_results, "hobby_vectors"), 
+                make_ANN_request(interest_vector, amount_of_results, "interest_vectors")]
     reranker = WeightedRanker(0.165,0.230,0.225,0.38)
-    res = VDB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, limit = amount_of_results)
-    return res
+    res = global_vector_DB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, 
+                                         limit = amount_of_results)
+    for result in res[0]:
+        if result["id"] == userid:
+            res[0].remove(result)
+            break
+    return res[0]
 
 def make_ANN_request(vector : list, amount_of_results : int, target_field : str):
     search_param = {
@@ -18,7 +25,7 @@ def make_ANN_request(vector : list, amount_of_results : int, target_field : str)
             "metric_type": "COSINE",
             "params": {"nprobe": 10}
         },
-        "limit" : amount_of_results
+        "limit" : amount_of_results,
     }
     request = AnnSearchRequest(**search_param)
     return request
