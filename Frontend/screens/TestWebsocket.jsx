@@ -10,15 +10,17 @@ const App = () => {
   useEffect(() => {
     // Connect to Flask WebSocket server
     const socketInstance = io('http://10.2.88.71:5000', {
-      transports: ['websocket'],
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    }); // Make sure Flask is running on this address
+      transports: ['websocket'], // Use WebSocket transport
+      reconnectionAttempts: 5,  // Retry connection 5 times
+      reconnectionDelay: 1000,  // 1-second delay between retries
+    });
+
     setSocket(socketInstance);
 
-    // Handle response from Flask
+    // Handle incoming responses from the server
     socketInstance.on('response', (data) => {
-      setResponse(data.message);
+      console.log('Server Response:', data);
+      setResponse(data.message || 'No message');
     });
 
     // Handle connection errors
@@ -26,49 +28,50 @@ const App = () => {
       console.error('Connection Error:', error);
     });
 
-    // Clean up the socket connection when component unmounts
+    // Clean up the socket connection when the component unmounts
     return () => {
       socketInstance.disconnect();
     };
   }, []);
 
-    const sendMessage = () => {
-        if (socket) {
-        socket.emit('send_message', {
-            sender_id: 'user1',  // Example sender ID
-            recipient_id: 'user2',  // Example recipient ID
-            message: message,
-        });
-        }
-    };
+  const sendMessage = () => {
+    if (socket) {
+      // Emit the 'send_message' event to the server
+      socket.emit('send_message', {
+        conversation_id: 'conv123', // Example conversation ID
+        sender_id: 'user1',        // Example sender ID
+        recipient_id: 'user2',     // Example recipient ID
+        content: message,          // The actual message content
+      });
+    }
+  };
 
-
-  
   return (
-    <View style={{ padding: 100 }}>
+    <View style={styles.container}>
       <TextInput
-        style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 20 }}
-        placeholder="Enter message"
+        style={styles.input}
+        placeholder="Enter your message"
         value={message}
         onChangeText={setMessage}
       />
       <Button title="Send Message" onPress={sendMessage} />
-      {response && <Text style={{ marginTop: 20 }}>Response: {response}</Text>}
+      {response && <Text style={styles.response}>Response: {response}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#f5f5f5',
   },
   input: {
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
+    width: '80%',
     marginBottom: 20,
     paddingHorizontal: 10,
     backgroundColor: '#fff',

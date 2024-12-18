@@ -12,13 +12,19 @@ from flask_cors import CORS
 from Services.couchbase_writes import store_user
 import os
 from dotenv import load_dotenv
+from flask_socketio import SocketIO
+from websockets import init_websockets
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
+app.config['SECRET_KEY'] = 'your_secret_key'
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 
+collection = None  # Ensure this is properly initialized based on your DB logic
+init_websockets(app, socketio, collection)
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(vector_bp)
@@ -30,4 +36,5 @@ def home():
     
 
 if __name__ == '__main__':
-    app.run(host=f"{os.getenv("IP_ADRESS_SERVER")}", port=5000, debug=True)
+    socketio.run(app, host=os.getenv('IP_ADRESS_SERVER'), port=5000, debug=True)
+

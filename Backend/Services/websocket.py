@@ -1,50 +1,62 @@
-from Backend.DB.couchbase_connection import connect_to_couchbase
-from flask import Flask, request
-from flask_socketio import SocketIO, emit, join_room, leave_room
-from datetime import datetime
-import uuid
-import os
+from flask_socketio import SocketIO, emit
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-socketio = SocketIO(app, cors_allowed_origins="*")
+def init_websockets(app, socketio, collection):
+    """
+    Initializes WebSocket routes for the given Flask app and SocketIO instance.
 
-print("Attempting to connect to Couchbase...")
-db, cluster = connect_to_couchbase()
-if db is None or cluster is None:
-    raise Exception("Failed to connect to Couchbase")
+    :param app: Flask application instance.
+    :param socketio: SocketIO instance.
+    :param collection: Couchbase collection instance for database operations.
+    """
 
-print("Connected to Couchbase")
-collection = db.default_collection()
+    @socketio.on('connect')
+    def handle_connect():
+        """Handles new WebSocket connections."""
+        print(f"Client connected: {request.sid}")
+        emit('server_response', {'message': 'Welcome to the WebSocket server!'})
 
-@socketio.on('connect')
-def handle_connect():
-    print("Client connected")
-    emit('server_response', {'message': 'Welcome'})
+    @socketio.on('send_message')
+    def handle_send_message(data):
+        """
+        Handles incoming messages.
+        Expects:
+            {
+                "conversation_id": "conv123",
+                "sender_id": "user1",
+                "recipient_id": "user2",
+                "content": "Hello, World!"
+            }
+        """
+        try:
+            # Extract message details
+            conversation_id = data.get('conversation_id')
+            sender_id = data.get('sender_id')
+            recipient_id = data.get('recipient_id')
+            content = data.get('content')
 
-@socketio.on('send_message')
-def handle_message(data):
-    conversation_id = data['conversation_id']
-    sender_id = data['sender_id']
-    content = data['content']
-    timestamp = datetime.utcnow().isoformat()
+            # Create a unique ID and timestamp for the message
+            message_id = str(uuid.uuid4())
+            timestamp = datetime.utcnow().isoformat()
 
-    message_id = str(uuid.uuid4())
-    message_doc = {
-        "message_id": message_id,
-        "conversation_id": conversation_id,
-        "sender_id": sender_id,
-        "content": content,
-        "timestamp": timestamp
+            # Prepare the document for Couchbase
+            message_doc = {
+                "message_id": message_id,
+                "conversation_id": conversation_id,
+                "sender_id": sender_id,
+                "recipient_id": recipient_id,
+                "content": content,
+                "timestamp": timestamp
+            }
 
-    }
+            # Store the message in Couchbase
+            collection.upsert(message_id, message_doc)
 
-    collection.upsert(message_id, message_doc)
-    print(f"Message {message_id} stored in Couchbase")
-
-if __name__ == '__main__':
-    print("Starting WebSocket server...")
-    socketio.run(app, host=os.getenv("IP_ADRESS_SERVER"), port=5000)
-    print("WebSocket server started")
-
+            # Emit a response back to the client
+            emit('response', {
+                'status': 'success',
+                'message_id': message_id,
+                'timestamp': timestamp
+            }, broadcast=True)
+        except Exception as e:
+            emit('response', {'status': 'error', 'message': str(e)})
 
