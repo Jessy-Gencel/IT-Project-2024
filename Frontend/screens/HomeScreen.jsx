@@ -13,6 +13,7 @@ import EventCardWithSection from '../components/EventCardWithSection'; // Assumi
 import ProgressBar from '../components/ProgressBar'; // Assuming ProgressBar component is in the same directory
 import GradientBackground from '../components/LinearBackground';
 import { Ionicons } from '@expo/vector-icons';
+import MatchingCard from '../components/MatchingCard';
 
 const HomePage = () => {
   const matchingProfiles = [
@@ -30,7 +31,7 @@ const HomePage = () => {
     
     
     {
-      id: '2',
+      id: '1',
       profilePicture: require('../assets/brent_klein.png'),
       creatorName: 'John Doe',
       isGroup: false,
@@ -52,7 +53,7 @@ const HomePage = () => {
       
     },
     {
-      id: '2',
+      id: '3',
       profilePicture: require('../assets/brent_klein.png'),
       creatorName: 'John Doe',
       isGroup: false,
@@ -63,7 +64,7 @@ const HomePage = () => {
       
     },
     {
-      id: '2',
+      id: '4',
       profilePicture: require('../assets/brent_klein.png'),
       creatorName: 'John Doe',
       isGroup: false,
@@ -84,6 +85,7 @@ const HomePage = () => {
         <Header showBackArrow={false} notificationCount={5} />
 
         {/* Matching Section */}
+        <MatchingCard name="Brent" age={19} src={require('../assets/gabimaru.jpg')} matchPercentage={69} interests={["Skiing", "Bears"]} />
         
                 <View style={styles.matchingSection}>
           <Text style={styles.sectionTitle}>Matching</Text>
