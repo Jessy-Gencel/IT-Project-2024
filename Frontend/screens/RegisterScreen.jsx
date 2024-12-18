@@ -45,7 +45,7 @@ const RegisterScreen = ({ navigation }) => {
       );
       console.log("response", response.data);
       console.log("Form Data:", data);
-      navigation.navigate("AccountSetupScreen");
+      navigation.navigate("AccountSetup");
     } catch (error) {
       console.error("Register error:", error);
       const errorMessage =
@@ -147,7 +147,7 @@ const RegisterScreen = ({ navigation }) => {
             <PrimaryButtonPill
               style={styles.logInBtn}
               title="Register"
-              onPress={handleSubmit(onSubmit)}
+              onPress={[handleSubmit(onSubmit)]}
             />
           </View>
 
