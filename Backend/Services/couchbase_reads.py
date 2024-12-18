@@ -123,28 +123,11 @@ def find_event_by_id(event_id: int):
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
-def find_message_by_id(message_id: int):
-    message_id = str(message_id)
-    try:
-        message_document = get_collection("message-data", "messages").get("message::" + message_id)
-        message_data = message_document.content_as[dict]
-        return message_data
-    
-    except DocumentNotFoundException:
-        print(f"Message with ID {message_id} not found.")
-        return None
-    
-    except CouchbaseException as e:
-        print(f"An error occurred while retrieving message with ID {message_id}: {e}")
-        return None
 
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        return None
 def find_chat_by_id(chat_id: int):
     chat_id = str(chat_id)
     try:
-        chat_document = get_collection("message-data", "chats").get("chat::" + chat_id)
+        chat_document = get_collection("user-data", "chats").get("chat::" + chat_id)
         chat_data = chat_document.content_as[dict]
         return chat_data
     
