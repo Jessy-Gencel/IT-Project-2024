@@ -15,13 +15,23 @@ import GradientBackground from "../components/LinearBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 
-const response = axiosInstance.get("/vector/");
-console.log(response);
+const getHomeMatches = async () => {
+  try {
+    const response = await axiosInstance.get("/vector/getHomeMatches/1");
+    console.log("Home Matches:", response.data);
+    return response.data; // Return the data if needed elsewhere
+  } catch (error) {
+    console.error(
+      "Error fetching home matches:",
+      error.response?.data || error.message
+    );
+    throw error; // Optionally re-throw to handle errors in the calling code
+  }
+};
 
-
+console.log(getHomeMatches());
 
 const HomePage = () => {
-  
   const matchingProfiles = [
     {
       id: "1",
@@ -57,7 +67,7 @@ const HomePage = () => {
 
   const events = [
     {
-      id: "2",
+      id: "1",
       profilePicture: require("../assets/brent_klein.png"),
       creatorName: "John Doe",
       isGroup: false,
@@ -78,7 +88,7 @@ const HomePage = () => {
         "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
     },
     {
-      id: "2",
+      id: "3",
       profilePicture: require("../assets/brent_klein.png"),
       creatorName: "John Doe",
       isGroup: false,
@@ -88,7 +98,7 @@ const HomePage = () => {
       description: "Join us for a fun football afternoon!",
     },
     {
-      id: "2",
+      id: "4",
       profilePicture: require("../assets/brent_klein.png"),
       creatorName: "John Doe",
       isGroup: false,
@@ -128,7 +138,7 @@ const HomePage = () => {
                           ? { uri: item.profilePicture }
                           : item.profilePicture
                       }
-                      style={styles.profilePicture}
+                      style={styles.pfp}
                     />
 
                     <View style={styles.cardText}>
@@ -219,7 +229,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
   },
-  profilePicture: {
+  pfp: {
     width: 60,
     height: 60,
     borderRadius: 20,
