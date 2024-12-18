@@ -4,7 +4,6 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Badge from "../components/Badge";
 import MessageBubble from '../components/MessageBubble';
 import LinearBackground from '../components/LinearBackground';
-import styles from "../styles/LogIn";
 
 const ChatScreen = ({ navigation }) => {
   const messages = [
