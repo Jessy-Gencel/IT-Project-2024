@@ -498,7 +498,7 @@ const AccountSetupScreen = ({ navigation }) => {
     {formData.movies.length > 0 && (
       <View style={styles.section}>
 <View style={styles.alignLeft}>
-      <Text style={styles.titleMedium}>favourite movies</Text>
+      <Text style={styles.titleMedium}>Favourite movies</Text>
     </View>        <View style={styles.badgeList2}>
           {formData.movies.map((movie, index) => (
             <Badge key={index} title={movie} isHighlighted />
@@ -524,7 +524,7 @@ const AccountSetupScreen = ({ navigation }) => {
     {formData.games.length > 0 && (
       <View style={styles.section}>
 <View style={styles.alignLeft}>
-      <Text style={styles.titleMedium}>favourite Games</Text>
+      <Text style={styles.titleMedium}>Favourite Games</Text>
     </View>        <View style={styles.badgeList2}>
           {formData.games.map((game, index) => (
             <Badge key={index} title={game} isHighlighted />
