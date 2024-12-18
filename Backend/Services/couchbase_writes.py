@@ -1,5 +1,5 @@
 from couchbase.exceptions import CouchbaseException
-from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_event_by_id,find_message_by_id,find_chat_by_id,get_collection
+from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_event_by_id,find_chat_by_id,get_collection
 from Utils.id_generator import add_id_to_document
 
 def store_user(user : dict):
@@ -33,24 +33,15 @@ def store_event(event : dict):
     except CouchbaseException as e:
         print(f"An error occurred while storing the event: {e}")
         return None
-def store_message(message : dict):
-    messageid = message["message_id"]
-    del message["message_id"]
+def store_chats(message : dict):
+    message_with_id = add_id_to_document(message,"user-data","chats")
     try:
-        user_collection = get_collection("message-data", "messages")
-        user_collection.insert(f"message::{messageid}", message)
-        return find_message_by_id(messageid)
+        print(message_with_id)
+        user_collection = get_collection("user-data", "chats")
+        user_collection.insert(f"message::{message_with_id["id"]}", message)
+        print("jdsfhsdjkjk")
+        return find_chat_by_id(message_with_id["id"])
     except CouchbaseException as e:
         print(f"An error occurred while storing the message: {e}")
         return None
     
-def store_chat(chat : dict):
-    chatid = chat["chat_id"]
-    del chat["chat_id"]
-    try:
-        user_collection = get_collection("message-data", "chats")
-        user_collection.insert(f"chat::{chatid}", chat)
-        return find_chat_by_id(chatid)
-    except CouchbaseException as e:
-        print(f"An error occurred while storing the chat: {e}")
-        return None

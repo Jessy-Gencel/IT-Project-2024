@@ -24,12 +24,14 @@ def get_chats():
     return "Yippie chats", 200
 
 
-@message_bp.route('/chats/<int:conversation_id>', methods=['GET'])
-def get_chat(conversation_id):
-    # chat = find_chat_by_id(conversation_id)
+@message_bp.route('/chats/<int:chat_id>', methods=['GET'])
+def get_chat(chat_id):
+    # chat = find_chat_by_id(chat_id)
     # if chat:
     #     return jsonify(chat), 200
     # else:
     #     return jsonify({"error": "Chat not found"}), 404
     return "Yippie chats/conversation_id", 200
+
+
 
