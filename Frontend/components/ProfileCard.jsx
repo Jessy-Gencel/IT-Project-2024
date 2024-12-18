@@ -8,7 +8,7 @@ const ProfileCard = ({ profilePicture, name, age, mbti, quote, onEditPress }) =>
   return (
     <View style={styles.card}>
        <Image 
-        source={{ uri: profilePicture }} // Handle both local and remote images
+        source={typeof profilePicture === 'string' ? { uri: profilePicture } : profilePicture} // Handle both local and remote images
         style={styles.profileImage} 
       />
       
