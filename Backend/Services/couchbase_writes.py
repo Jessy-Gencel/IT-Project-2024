@@ -33,18 +33,17 @@ def store_event(event : dict):
     except CouchbaseException as e:
         print(f"An error occurred while storing the event: {e}")
         return None
-def store_message(message : dict):
-    messageid = message["message_id"]
-    del message["message_id"]
+def store_chats(message : dict):
+    message_with_id = add_id_to_document(message,"user-data","chats")
     try:
-        user_collection = get_collection("message-data", "messages")
-        user_collection.insert(f"message::{messageid}", message)
-        return find_message_by_id(messageid)
+        user_collection = get_collection("user-data", "chats")
+        user_collection.insert(f"message::{message_with_id["id"]}", message)
+        return find_message_by_id(message_with_id["id"])
     except CouchbaseException as e:
         print(f"An error occurred while storing the message: {e}")
         return None
     
-def store_chat(chat : dict):
+def store_messages(chat : dict):
     chatid = chat["chat_id"]
     del chat["chat_id"]
     try:

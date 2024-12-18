@@ -1,6 +1,7 @@
 from flask_socketio import SocketIO, emit
+from Services.couchbase_writes import store_chats
 
-def init_websockets(app, socketio, collection):
+def init_websockets(socketio):
     """
     Initializes WebSocket routes for the given Flask app and SocketIO instance.
 
@@ -12,7 +13,7 @@ def init_websockets(app, socketio, collection):
     @socketio.on('connect')
     def handle_connect():
         """Handles new WebSocket connections."""
-        print(f"Client connected: {request.sid}")
+        print(f"Client connected: yay")
         emit('server_response', {'message': 'Welcome to the WebSocket server!'})
 
     @socketio.on('send_message')
@@ -33,30 +34,20 @@ def init_websockets(app, socketio, collection):
             sender_id = data.get('sender_id')
             recipient_id = data.get('recipient_id')
             content = data.get('content')
-
-            # Create a unique ID and timestamp for the message
-            message_id = str(uuid.uuid4())
-            timestamp = datetime.utcnow().isoformat()
-
-            # Prepare the document for Couchbase
-            message_doc = {
-                "message_id": message_id,
+            print(conversation_id)
+            print(sender_id)
+            print(recipient_id)
+            print(content)
+            # Store message in the database
+            message_dict = {
                 "conversation_id": conversation_id,
                 "sender_id": sender_id,
                 "recipient_id": recipient_id,
-                "content": content,
-                "timestamp": timestamp
+                "messages": []
             }
+            store_chats(message_dict)
+            return "Message Sent"
 
-            # Store the message in Couchbase
-            collection.upsert(message_id, message_doc)
-
-            # Emit a response back to the client
-            emit('response', {
-                'status': 'success',
-                'message_id': message_id,
-                'timestamp': timestamp
-            }, broadcast=True)
         except Exception as e:
             emit('response', {'status': 'error', 'message': str(e)})
 
