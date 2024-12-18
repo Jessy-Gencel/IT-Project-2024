@@ -22,7 +22,7 @@ def generate_id(scope : str,collection : str):
     counter_key = f'counter:{collection_cb.name}'
     print(counter_key)
     try:
-        result = collection_cb.binary().increment(counter_key,IncrementOptions(initial=SignedInt64(5)))
+        result = collection_cb.binary().increment(counter_key,IncrementOptions(initial=SignedInt64(1)))
         print(result.content)
         return result.content   
     except CouchbaseException as e:

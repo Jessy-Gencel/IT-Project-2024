@@ -38,8 +38,8 @@ def register():
     print(password_hash)
     print(type(password_hash))
     first_name,last_name = extract_name(email=email)
-    user = {"email" : email, "password" : password_hash, "first_name" : first_name, last_name : last_name}
-    #store_user(user=user)
+    user = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
+    store_user(user=user)
     
     return jsonify({"message": "User created successfully"}), 201
 
@@ -55,7 +55,7 @@ def create_profile():
     books = santize_array(data['books'])
     music = santize_array(data['music'])
     ############################## SANITIZATION ###############################
-    traits = {"mbti" : mbti, "interests" : interests, "hobbies" : hobbies, "games" : games, "movies" : movies, "books" : books, "music" : music}
+    traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
     predefined_matching_categories = embed_MiniLM(int(id),traits)
     print(predefined_matching_categories)
@@ -63,11 +63,11 @@ def create_profile():
     chats = []
     events = []
     trait_vectors = predefined_matching_categories
-    user_profile = {"id" : id, "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
+    user = find_user_by_id(id)
+    user_profile = {"id" : id,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
     profile = store_profile(user_profile)
-    print(profile)
-    return user_profile, 200
+    return "User created correctly", 200
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh():
