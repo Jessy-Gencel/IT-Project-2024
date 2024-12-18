@@ -1,3 +1,4 @@
+from Backend.DB.couchbase_connection import connect_to_couchbase
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from couchbase.cluster import Cluster, ClusterOptions
@@ -9,12 +10,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-cluster = Cluster(
-    "couchbase://localhost:5000"
-    ClusterOptions(PasswordAuthenticator("{CB_USERNAME}", "{CB_PASSWORD}"))
-)
-bucket = cluster.bucket("messages")
-collection = bucket.default_collection()
+db, cluster = connect_to_couchbase()
+if db is None or cluster is None:
+    raise Exception("Failed to connect to Couchbase")
+
+collection = db.default_collection()
 
 @socketio.on('connect')
 def handle_connect():
