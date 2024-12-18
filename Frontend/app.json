@@ -26,7 +26,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "BASE_URL": "https://10.2.88.190:5000"
+      "BASE_URL": "http://10.2.88.190:5000"
     }
   }
 }
