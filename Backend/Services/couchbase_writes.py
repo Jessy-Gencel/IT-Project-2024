@@ -6,6 +6,7 @@ def store_user(user : dict):
     user_with_id = add_id_to_document(user,"user-data","users")
     try:
         user_collection = get_collection("user-data", "users")
+        print(user_with_id)
         user_collection.insert(f"user::{user_with_id["id"]}", user_with_id)
         return find_user_by_id(user_with_id["id"])
     except CouchbaseException as e:
@@ -13,12 +14,12 @@ def store_user(user : dict):
         return None
     
 def store_profile(profile : dict):
-    userid = profile["user_id"]
-    del profile["user_id"]
+    profile_with_id = add_id_to_document(profile,"user-data","profiles")
+    print(profile_with_id)
     try:
-        user_collection = get_collection("user-data", "profiles")
-        user_collection.insert(f"profile::{userid}", profile)
-        return find_profile_by_id(userid)
+        profile_collection = get_collection("user-data", "profiles")
+        profile_collection.insert(f"profile::{profile_with_id['id']}", profile_with_id)
+        return find_profile_by_id(profile_with_id["id"])
     except CouchbaseException as e:
         print(f"An error occurred while storing the profile: {e}")
         return None
