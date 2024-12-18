@@ -1,5 +1,5 @@
 from Backend.DB.couchbase_connection import connect_to_couchbase
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from couchbase.cluster import Cluster, ClusterOptions
 from couchbase.auth import PasswordAuthenticator
@@ -48,3 +48,4 @@ def handle_message(data):
 
 if __name__ == '__main__':
     socketio.run(app, host='10.2.88.71', port=5000)
+
