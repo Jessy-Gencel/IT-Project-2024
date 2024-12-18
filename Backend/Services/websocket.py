@@ -1,8 +1,6 @@
 from Backend.DB.couchbase_connection import connect_to_couchbase
 from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from couchbase.cluster import Cluster, ClusterOptions
-from couchbase.auth import PasswordAuthenticator
 from datetime import datetime
 import uuid
 import os
@@ -11,10 +9,12 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+print("Attempting to connect to Couchbase...")
 db, cluster = connect_to_couchbase()
 if db is None or cluster is None:
     raise Exception("Failed to connect to Couchbase")
 
+print("Connected to Couchbase")
 collection = db.default_collection()
 
 @socketio.on('connect')
@@ -22,6 +22,7 @@ def handle_connect():
     print("Client connected")
     emit('server_response', {'message': 'Welcome'})
 
+@socketio.on('send_message')
 def handle_message(data):
     conversation_id = data['conversation_id']
     sender_id = data['sender_id']
@@ -39,14 +40,11 @@ def handle_message(data):
     }
 
     collection.upsert(message_id, message_doc)
-
-    emit('response', {
-        'message': 'Message received and stored.',
-        'message_id': message_id,
-        'timestamp': timestamp
-    })
-
+    print(f"Message {message_id} stored in Couchbase")
 
 if __name__ == '__main__':
-    socketio.run(app, host=f"{os.getenv("IP_ADRESS_SERVER")}", port=5000)
+    print("Starting WebSocket server...")
+    socketio.run(app, host=os.getenv("IP_ADRESS_SERVER"), port=5000)
+    print("WebSocket server started")
+
 
