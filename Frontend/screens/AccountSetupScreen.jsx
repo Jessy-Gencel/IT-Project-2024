@@ -148,8 +148,6 @@ const AccountSetupScreen = ({ navigation }) => {
   };
 
   const addItem = (field) => {
-    console.log(inputValue)
-    console.log(formData[field])
     if (inputValue.trim()) {
       // prev is voor de previous data op te halen
       //setFormData(prev) nodig omdat je telkens je form reset
@@ -157,10 +155,8 @@ const AccountSetupScreen = ({ navigation }) => {
         ...prev,
         [field]: [...prev[field], inputValue.trim()]
       }))
-      console.log(formData[field])
     }
     setInputValue("");
-    console.log(formData[field])
   }
 
   const removeItem = (field, index) => {
