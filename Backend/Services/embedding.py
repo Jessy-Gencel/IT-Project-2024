@@ -103,7 +103,7 @@ def embed_MiniLM(id : int, category_dict : dict):
     mbti_vector = get_mbti_vector(mbti)
     formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
     del category_dict["mbti"]
-    global_user_data = {"id": id, "mbti_vector": formatted_mbti_vector}
+    global_user_data = {"id": id, "mbti_vectors": formatted_mbti_vector}
     for category, words in category_dict.items():
         user_data = {"id": id}
         array_for_one_category = []
@@ -119,30 +119,26 @@ def embed_MiniLM(id : int, category_dict : dict):
             array_for_one_category.append(vector)
         sorted_category_ids = make_category_bucket_array(category_similarities, category_ids, category)
         #print(category)
-        id_category_dict[f"{category}"] = sorted_category_ids
+        id_category_dict[f"{category}_vectors"] = sorted_category_ids
         mean_vector = get_mean_vector_for_category(array_for_one_category)
-        user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
+        user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
         if category in ["interest","hobby","game"]:
             if category in ["interest","hobby"]:
-                global_user_data[f"{category}_vector"] = format_vector_for_milvus(mean_vector)
+                global_user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
             else:
-                #print(f"{category}_vectors")
-                #print(user_data)
+                insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
                 pass
-                #insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
         elif category in ["music","movie","book"]: 
-            #print(f"{category}_vectors")
-            #print(user_data)
+            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
             pass
-            #insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
         else:
             print("Category not found")
         if category not in ["interest","hobby"]:
             final_vector_array.append(mean_vector)
     final_vector = conactenate_final_vector(final_vector_array)
-    global_user_data["global_vector"] = format_vector_for_milvus(final_vector)
-    #print(global_user_data)
-    #insert_vectors(global_vector_DB,"test_vectors", global_user_data)
+    global_user_data["global_vectors"] = format_vector_for_milvus(final_vector)
+    print(global_user_data)
+    insert_vectors(global_vector_DB,"global_vectors", global_user_data)
     return id_category_dict
 
 def get_mean_vector_for_category(array_of_vectors : np.ndarray):

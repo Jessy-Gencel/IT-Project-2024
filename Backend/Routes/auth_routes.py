@@ -55,11 +55,10 @@ def create_profile():
     books = santize_array(data['books'])
     music = santize_array(data['music'])
     ############################## SANITIZATION ###############################
-    traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits = {"mbti" : mbti, "interests" : interests, "hobbies" : hobbies, "games" : games, "movies" : movies, "books" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
-    predefined_matching_categories = embed_MiniLM(id,traits)
+    predefined_matching_categories = embed_MiniLM(int(id),traits)
     print(predefined_matching_categories)
-    return "we got here", 200
     ############################## MAKE VECTORS FOR PROFILE ###############################
     chats = []
     events = []
@@ -68,7 +67,7 @@ def create_profile():
     ############################## MAKE PROFILE DICT ###############################
     profile = store_profile(user_profile)
     print(profile)
-    return jsonify({"message": "User created successfully"}), 201
+    return user_profile, 200
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh():

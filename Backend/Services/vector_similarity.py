@@ -82,11 +82,14 @@ def make_category_bucket_array(similarities : list, ids : list, category : str):
     combined_sorted = sorted(combined, key=lambda x: x[0], reverse=True)
     _, sorted_ids = zip(*combined_sorted)
     sorted_ids = list(sorted_ids)[:10]
+    #control_function_matching(category, sorted_ids)
+    #print("These are the sorted IDS")
+    #print(sorted_ids)
+    return sorted_ids
+
+def control_function_matching(category : str, sorted_ids : list):
     best_matches = [f"{category} best matches in order:"]
     for id in sorted_ids:
         word = get_by_category_and_id(category, id)
         best_matches.append({"word": word})
     print(best_matches)
-    #print("These are the sorted IDS")
-    #print(sorted_ids)
-    return sorted_ids
