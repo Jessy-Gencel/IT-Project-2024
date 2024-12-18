@@ -1,5 +1,6 @@
 from couchbase.exceptions import CouchbaseException
 from Services.couchbase_reads import get_collection
+from couchbase.options import IncrementOptions, SignedInt64
 
 def generate_id(scope : str,collection : str):
     
@@ -21,8 +22,9 @@ def generate_id(scope : str,collection : str):
     counter_key = f'counter:{collection_cb.name}'
     print(counter_key)
     try:
-        result = collection_cb.binary().increment(counter_key)
-        return result.value   
+        result = collection_cb.binary().increment(counter_key,IncrementOptions(initial=SignedInt64(5)))
+        print(result.content)
+        return result.content   
     except CouchbaseException as e:
         print(f"Error generating ID: {e}")
         return None
