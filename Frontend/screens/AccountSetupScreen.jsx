@@ -24,7 +24,6 @@ import axios from "axios";
 
 const AccountSetupScreen = ({ navigation }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedValue, setSelectedValue] = useState("");
   const stepsCount = 5;
   const [formData, setFormData] = useState({
     id: "12345",
@@ -89,39 +88,6 @@ const AccountSetupScreen = ({ navigation }) => {
     mbti: mbtiSchema,
   });
 
-  // Form Handlers
-  const {
-    register: registerHobbies,
-    handleSubmit: handleSubmitHobbies,
-    formState: { errors: errorsHobbies },
-  } = useForm({
-    resolver: yupResolver(hobbiesSchema),
-  });
-
-  const {
-    register: registerInterests,
-    handleSubmit: handleSubmitInterests,
-    formState: { errors: errorsInterests },
-  } = useForm({
-    resolver: yupResolver(interestsSchema),
-  });
-
-  const {
-    register: registerFavorites,
-    handleSubmit: handleSubmitFavorites,
-    formState: { errors: errorsFavorites },
-  } = useForm({
-    resolver: yupResolver(favoritesSchema),
-  });
-
-  const {
-    register: registerMbti,
-    handleSubmit: handleSubmitMbti,
-    formState: { errors: errorsMbti },
-  } = useForm({
-    resolver: yupResolver(mbtiSchema),
-  });
-
   const {
     control,
     handleSubmit,
@@ -129,51 +95,6 @@ const AccountSetupScreen = ({ navigation }) => {
   } = useForm({
     resolver: yupResolver(schema),
   });
-
-  // Submissions
-  const onSubmitHobbies = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      hobbies: data.hobbies,
-    }));
-    nextStep();
-  };
-
-  const onSubmitInterests = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      interests: data.interests,
-    }));
-    nextStep();
-  };
-
-  const onSubmitFavorites = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      favorites: data.favorites,
-    }));
-    nextStep();
-  };
-
-  const onSubmitMbti = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      mbti: data.mbti,
-    }));
-    nextStep();
-  };
-
-  const onSubmit = async () => {
-    try {
-      const response = await axios.post(
-        "https://localhost:5000/auth/createProfile",
-        formData
-      );
-      console.log("Data submitted successfully: ", response.data);
-    } catch (error) {
-      console.error("Error submitting data: ", error);
-    }
-  };
 
   const nextStep = () => {
     if (currentStep < stepsCount) {
@@ -192,28 +113,6 @@ const AccountSetupScreen = ({ navigation }) => {
       setCurrentStep(currentStep + 1);
     } else {
       navigation.navigate("Home");
-    }
-  };
-
-  // Check what handler to use
-  const currentHandler = () => {
-    switch (currentStep) {
-      case 1:
-        handleSubmit(handleSubmitHobbies)();
-        break;
-      case 2:
-        handleSubmit(handleSubmitInterests)();
-        break;
-      case 3:
-        handleSubmit(handleSubmitFavorites)();
-        break;
-      case 4:
-        handleSubmit(handleSubmitMbti)();
-        break;
-      case 5:
-        handleSubmit(handleSubmit)();
-      default:
-        break;
     }
   };
 
