@@ -117,8 +117,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 2,
-    marginRight:-8,
-    marginLeft:-8,
+    
+    
   },
   leftSection: {
     flex: 1,
@@ -205,8 +205,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 buttonContainer2:{
-    
-    direction:'row',
+  flexDirection: 'row',
+  gap:10,
+
   },
   button: {
     backgroundColor: '#F7931E',
