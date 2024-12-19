@@ -46,11 +46,12 @@ const TestWebSocket = () => {
         placeholder="Type a message"
       />
       <Button title="Send" onPress={sendMessage} />
-      {chatMessages.map((msg) => (
-        <Text style={ styles.text } >
-          {msg.sender_id}: {msg.message}
+      {/* {chatMessages.map((msg) => ( */}
+        <Text style={ styles.text }>
+          {chatMessages}
+          {/* {msg.sender_id}: {msg.message} */}
         </Text>
-      ))}
+      {/* ))} */}
     </View>
   );
 };
