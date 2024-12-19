@@ -47,23 +47,18 @@ const LogInScreen = ({ navigation }) => {
     const onSubmit = async (data) => {
         try{
             console.log("data", data);
-            const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}`, {
+            const response = await axios.post("http://10.2.88.190:5000/auth/login", {
                 email: data.email,
                 password: data.password,
             });
             console.log("response", response.data);
 
-            const { accessToken, refreshToken } = response.data;
+            const { access_token: accessToken, refresh_token: refreshToken } = response.data;
 
-      // Store tokens securely
-      await storeToken("accessToken", accessToken);
-      await storeToken("refreshToken", refreshToken);
-
-      console.log("Tokens stored successfully");
+            await storeToken("accessToken", accessToken);
+            await storeToken("refreshToken", refreshToken);
             navigation.navigate('HomeScreen');
             console.log("login succesfull !")
-
-            //wa er moet gebeuren als er een error is
         } catch(error){
             console.error("Login error:", error);
             const errorMessage = 
