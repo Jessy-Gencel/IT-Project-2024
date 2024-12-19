@@ -21,6 +21,8 @@ import mbti from "../config/mbti";
 import interests from "../config/interests";
 import RNPickerSelect from "react-native-picker-select";
 import axios from "axios";
+import PhotoPickerButton from "../components/PhotoPickerButton"; // Update the path as necessary
+
 
 //weghalen van een hobby badge moet nog gebeuren 
 //pas op het einde alles doorsturen naar backend via axios
@@ -542,6 +544,10 @@ const AccountSetupScreen = ({ navigation }) => {
           {formData.books.map((book, index) => (
             <Badge key={index} title={book} isHighlighted />
           ))}
+        </View>
+
+        <View>
+        <PhotoPickerButton />
         </View>
       </View>
     )}
