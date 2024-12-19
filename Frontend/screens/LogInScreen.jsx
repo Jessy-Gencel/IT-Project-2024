@@ -132,7 +132,7 @@ const LogInScreen = ({ navigation }) => {
             <View style={styles.logInBtn}>
                 <PrimaryButtonPill style={styles.logInBtn}
                     title="Log In"
-                    onPress={handleSubmit(onSubmit)}
+                    onPress={handleSubmit(onSubmit)} /* deleted the [] around handlesubmit check whether it broke anything */
                 />
             </View>
 
