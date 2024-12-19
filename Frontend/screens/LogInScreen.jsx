@@ -9,6 +9,9 @@ import {yupResolver} from '@hookform/resolvers/yup';
 import { Controller } from 'react-hook-form';
 import axios from 'axios';
 import GradientBackground from "../components/LinearBackground";
+import Constants from 'expo-constants';
+import * as SecureStore from "expo-secure-store"; // Secure storage library
+import {getToken} from "../services/GetToken";
 
 
 
@@ -25,26 +28,37 @@ const schema = yup.object({
 
 const LogInScreen = ({ navigation }) => {
 
-    const {
-        control,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
+    const {control, handleSubmit, formState: { errors },} = useForm({
         resolver: yupResolver(schema),
     });
 
+    const storeToken = async (key, value) => {
+        try {
+          await SecureStore.setItemAsync(key, value);
+          console.log(`${key} stored successfully`);
+        } catch (error) {
+          console.error(`Error storing ${key}:`, error);
+        }
+      };
+
     const onSubmit = async (data) => {
         try{
-            console.log("data", data);
-            const response = await axios.post('http://10.2.88.210:5000/auth/login', {
+            const response = await axios.post("http://10.2.88.190:5000/auth/login", {
                 email: data.email,
                 password: data.password,
             });
-            console.log("response", response.data);
-            navigation.navigate('HomeScreen');
+            const { access_token: accessToken, refresh_token: refreshToken } = response.data;
+            await storeToken("accessToken", accessToken);
+            await storeToken("refreshToken", refreshToken);
+            access = await getToken("accessToken");
+            refresh = await getToken("refreshToken");
+
+            console.log(access);
+            console.log(refresh);
+
+            navigation.navigate('Main');
             console.log("login succesfull !")
 
-            //wa er moet gebeuren als er een error is
         } catch(error){
             console.error("Login error:", error);
             const errorMessage = 
@@ -115,7 +129,7 @@ const LogInScreen = ({ navigation }) => {
             <View style={styles.logInBtn}>
                 <PrimaryButtonPill style={styles.logInBtn}
                     title="Log In"
-                    onPress={handleSubmit(onSubmit)}
+                    onPress={handleSubmit(onSubmit)} /* deleted the [] around handlesubmit check whether it broke anything */
                 />
             </View>
 

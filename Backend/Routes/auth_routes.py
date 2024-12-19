@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
 from Utils.password_hashing import hash_password, verify_password
-from Utils.jwt_encode import jwt_full_encode, jwt_get_access_token, jwt_get_refresh_token, jwt_decode
+from Utils.jwt_encode import jwt_full_encode, token_refresh
 from Utils.sanitize_input import sanitize_input, santize_array
 from Services.couchbase_reads import find_user_by_email,find_user_by_id
 from Services.couchbase_writes import store_user,store_profile
 from Utils.extract_name import extract_name
 from Services.embedding import embed_MiniLM
+from Utils.jwt_encode import token_required
 import jwt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -38,15 +39,20 @@ def register():
     print(password_hash)
     print(type(password_hash))
     first_name,last_name = extract_name(email=email)
-    user = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
-    store_user(user=user)
-    
-    return jsonify({"message": "User created successfully"}), 201
+    user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
+    user = store_user(user=user_dict)
+    access_token, refresh_token = jwt_full_encode(user)
+    return jsonify({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "message": "User created correctly"
+    })
 
 @auth_bp.route('/createProfile', methods=['POST'])
-def create_profile():
+@token_required
+def create_profile(payload):
     data = request.get_json()
-    id = sanitize_input(str(data['id']))
+    id = payload['user_id']
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
     hobbies = santize_array(data['hobbies'])
@@ -72,27 +78,14 @@ def create_profile():
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh():
     data = request.get_json()
-    refresh_token = data.get('refresh_token')
-    if not refresh_token:
-        return jsonify({"message": "Refresh token required"}), 400
-    try:
-        decoded_token = jwt_decode(refresh_token)
-        user_id = decoded_token['user_id']
-        user = find_user_by_id(user_id)
-        if not user:
-            return jsonify({"message": "User not found"}), 404
-
-        new_token = jwt_get_access_token(user)
-
-        return jsonify({"token": new_token})
-
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Refresh token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid refresh token"}), 401
+    token = token_refresh(data)
+    return token
 
 @auth_bp.route('/users', methods=['GET'])
-def get_users():
+@token_required
+def get_users(payload):
+    user_id = payload['user_id']
+    print(user_id)
     # return jsonify(users)
     return "Yippie users", 200
 
