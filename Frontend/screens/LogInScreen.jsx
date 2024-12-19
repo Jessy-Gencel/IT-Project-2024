@@ -9,6 +9,8 @@ import {yupResolver} from '@hookform/resolvers/yup';
 import { Controller } from 'react-hook-form';
 import axios from 'axios';
 import GradientBackground from "../components/LinearBackground";
+import Constants from 'expo-constants';
+import * as SecureStore from "expo-secure-store"; // Secure storage library
 
 
 
@@ -33,14 +35,31 @@ const LogInScreen = ({ navigation }) => {
         resolver: yupResolver(schema),
     });
 
+    const storeToken = async (key, value) => {
+        try {
+          await SecureStore.setItemAsync(key, value);
+          console.log(`${key} stored successfully`);
+        } catch (error) {
+          console.error(`Error storing ${key}:`, error);
+        }
+      };
+
     const onSubmit = async (data) => {
         try{
             console.log("data", data);
-            const response = await axios.post('http://10.2.88.210:5000/auth/login', {
+            const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}`, {
                 email: data.email,
                 password: data.password,
             });
             console.log("response", response.data);
+
+            const { accessToken, refreshToken } = response.data;
+
+      // Store tokens securely
+      await storeToken("accessToken", accessToken);
+      await storeToken("refreshToken", refreshToken);
+
+      console.log("Tokens stored successfully");
             navigation.navigate('HomeScreen');
             console.log("login succesfull !")
 
