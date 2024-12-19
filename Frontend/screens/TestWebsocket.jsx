@@ -3,7 +3,7 @@ import { View, TextInput, Button, Text } from "react-native";
 import io from "socket.io-client";
 import Constant from "expo-constants";
 
-const socket = io("http://127.0.0.1:5000");
+const socket = io("http://10.2.88.71:5000");
 
 const TestWebSocket = () => {
   const [message, setMessage] = useState("");
@@ -18,6 +18,7 @@ const TestWebSocket = () => {
     // Listen for new messages
     socket.on("new_message", (data) => {
       setChatMessage((prevMessages) => [...prevMessages, data]);
+      console.log("New message received:", data);
     });
 
     return () => {
@@ -38,20 +39,29 @@ const TestWebSocket = () => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <TextInput
         value={message}
         onChangeText={setMessage}
         placeholder="Type a message"
       />
       <Button title="Send" onPress={sendMessage} />
-      {chatMessages.map((msg, index) => (
-        <Text key={index}>
-          {msg.sender}: {msg.message}
+      {chatMessages.map((msg) => (
+        <Text style={ styles.text } >
+          {msg.sender_id}: {msg.message}
         </Text>
       ))}
     </View>
   );
 };
+
+const styles = {
+  container: {
+    marginTop: 50,
+  },
+  text: {
+    backgroundColor: "#b81212"
+  },
+}
 
 export default TestWebSocket;

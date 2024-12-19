@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from Services.couchbase_reads import get_predefined_lists
 from Services.embedding import embed_singular_vectors
 from flask_socketio import SocketIO
-from Services.websocket import init_websockets
+from Services.websockets.listeners import init_websockets
 
 load_dotenv()
 
