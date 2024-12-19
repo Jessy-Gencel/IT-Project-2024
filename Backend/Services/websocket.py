@@ -1,6 +1,8 @@
 from flask_socketio import SocketIO, emit
 from Services.couchbase_writes import store_chats
 
+
+
 def init_websockets(socketio):
     """
     Initializes WebSocket routes for the given Flask app and SocketIO instance.
@@ -15,6 +17,10 @@ def init_websockets(socketio):
         """Handles new WebSocket connections."""
         print(f"Client connected: yay")
         emit('server_response', {'message': 'Welcome to the WebSocket server!'})
+        
+    # @socketio.on('new_chat')
+    # def handle_new_chat():
+        
 
     @socketio.on('send_message')
     def handle_send_message(data):
@@ -50,4 +56,7 @@ def init_websockets(socketio):
 
         except Exception as e:
             emit('response', {'status': 'error', 'message': str(e)})
-
+            
+    @socketio.on('disconnect')
+    def handle_disconnect():
+        print("Client disconnected")

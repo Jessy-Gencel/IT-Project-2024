@@ -142,3 +142,10 @@ def find_chat_by_id(chat_id: int):
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
+    
+# def find_chat(user1_id: int, user2_id: int):
+#     try:
+#         chat = get_collection("user-data", "chats").get("")
+#                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
+
+    
