@@ -2,7 +2,11 @@ import jwt
 import datetime
 import os
 from dotenv import load_dotenv
+from flask import request,jsonify
+from jwt import ExpiredSignatureError, InvalidTokenError
 from Models.user import User
+from functools import wraps
+
 
 load_dotenv()
 
@@ -70,3 +74,31 @@ def jwt_decode(token: str) -> dict:
     """
     return jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
+def extract_token():
+    auth_header = request.headers.get('Authorization')
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header.split(" ")[1]  # Extract the token part
+    return None
+
+def verify_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload 
+    except ExpiredSignatureError:
+        return {"error": "Token has expired"}, 401
+    except InvalidTokenError:
+        return {"error": "Invalid token"}, 403
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = extract_token()
+        if not token:
+            return jsonify({"error": "Token is missing"}), 401
+
+        result = verify_token(token)
+        if isinstance(result, dict) and "error" in result:
+            return jsonify(result), result[1]
+        return f(payload=result, *args, **kwargs)
+
+    return decorated

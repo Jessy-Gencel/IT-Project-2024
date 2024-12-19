@@ -6,6 +6,7 @@ from Services.couchbase_reads import find_user_by_email,find_user_by_id
 from Services.couchbase_writes import store_user,store_profile
 from Utils.extract_name import extract_name
 from Services.embedding import embed_MiniLM
+from Utils.jwt_encode import token_required
 import jwt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -96,7 +97,10 @@ def refresh():
         return jsonify({"message": "Invalid refresh token"}), 401
 
 @auth_bp.route('/users', methods=['GET'])
-def get_users():
+@token_required
+def get_users(payload):
+    user_id = payload['user_id']
+    print(user_id)
     # return jsonify(users)
     return "Yippie users", 200
 
