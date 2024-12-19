@@ -27,7 +27,7 @@ const getHomeMatches = async () => {
       },
     });
     console.log("Home Matches:", response.data);
-    return response.data; // Return the data if needed elsewhere
+    return response.data;   // Return the data if needed elsewh
   } catch (error) {
     console.error(
       "Error fetching home matches:",
@@ -64,12 +64,7 @@ const HomePage = () => {
       progress: 90,
       profilePicture: require("../assets/brent_klein.png"),
     },
-    {
-      id: "5",
-      name: "Eve",
-      progress: 75,
-      profilePicture: require("../assets/brent_klein.png"),
-    },
+    
   ];
 
   const events = [
