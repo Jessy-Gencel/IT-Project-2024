@@ -6,6 +6,7 @@ from flask import request,jsonify
 from jwt import ExpiredSignatureError, InvalidTokenError
 from Models.user import User
 from functools import wraps
+from Services.couchbase_reads import find_user_by_id
 
 
 load_dotenv()
@@ -102,3 +103,22 @@ def token_required(f):
         return f(payload=result, *args, **kwargs)
 
     return decorated
+
+def token_refresh(data):
+    refresh_token = data.get('refresh_token')
+    if not refresh_token:
+        return jsonify({"message": "Refresh token required"}), 400
+    try:
+        decoded_token = jwt_decode(refresh_token)
+        user_id = decoded_token['user_id']
+        user = find_user_by_id(user_id)
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+
+        new_token = jwt_get_access_token(user)
+
+        return jsonify({"token": new_token})
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Refresh token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid refresh token"}), 401

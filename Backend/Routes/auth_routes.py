@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from Utils.password_hashing import hash_password, verify_password
-from Utils.jwt_encode import jwt_full_encode, jwt_get_access_token, jwt_get_refresh_token, jwt_decode
+from Utils.jwt_encode import jwt_full_encode, token_refresh
 from Utils.sanitize_input import sanitize_input, santize_array
 from Services.couchbase_reads import find_user_by_email,find_user_by_id
 from Services.couchbase_writes import store_user,store_profile
@@ -49,9 +49,10 @@ def register():
     })
 
 @auth_bp.route('/createProfile', methods=['POST'])
-def create_profile():
+@token_required
+def create_profile(payload):
     data = request.get_json()
-    id = sanitize_input(str(data['id']))
+    id = payload['user_id']
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
     hobbies = santize_array(data['hobbies'])
@@ -77,24 +78,8 @@ def create_profile():
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh():
     data = request.get_json()
-    refresh_token = data.get('refresh_token')
-    if not refresh_token:
-        return jsonify({"message": "Refresh token required"}), 400
-    try:
-        decoded_token = jwt_decode(refresh_token)
-        user_id = decoded_token['user_id']
-        user = find_user_by_id(user_id)
-        if not user:
-            return jsonify({"message": "User not found"}), 404
-
-        new_token = jwt_get_access_token(user)
-
-        return jsonify({"token": new_token})
-
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Refresh token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid refresh token"}), 401
+    token = token_refresh(data)
+    return token
 
 @auth_bp.route('/users', methods=['GET'])
 @token_required
