@@ -24,9 +24,9 @@ def init_websockets(socketio):
 
     socketio.on('join_room')
     def on_join(data):
-        user1_id = data['user1_id']
-        user2_id = data['user2_id']
-        room = f'room:{min(user1_id, user2_id)}:{max(user1_id, user2_id)}'
+        sender_id = data.get('user1_id')
+        recipient_id = data.get('user2_id')
+        room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
         
         join_room(room)
         print(f'User {request.sid} joined room {room}')
@@ -51,7 +51,10 @@ def init_websockets(socketio):
         message = data.get('message')
         room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
         print(f'message recieved from {sender_id} to {recipient_id} message: {message}')
+        print('Emitting new_message')
         emit('new_message', {'sender_id': sender_id, 'message': message}, room=room)
+        print('Emitted new_message')
+        
             # Store message in the database
             # message_dict = {
             #     "conversation_id": conversation_id,

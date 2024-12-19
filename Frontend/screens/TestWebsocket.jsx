@@ -17,8 +17,8 @@ const TestWebSocket = () => {
 
     // Listen for new messages
     socket.on("new_message", (data) => {
-      setChatMessage((prevMessages) => [...prevMessages, data]);
-      console.log("New message received:", data);
+      console.log("new_message triggered with data:", data);
+      setChatMessage((prevMessages) => [...prevMessages, data.message]);
     });
 
     return () => {
