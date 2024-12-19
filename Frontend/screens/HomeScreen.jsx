@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
+import MatchingCard from '../components/MatchingCard';
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
 import EventCardWithSection from "../components/EventCardWithSection"; // Assuming EventCardWithSection is in the same directory
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
@@ -67,9 +68,9 @@ const HomePage = () => {
 
   const events = [
     {
-      id: "1",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
+      id: '1',
+      profilePicture: require('../assets/brent_klein.png'),
+      creatorName: 'John Doe',
       isGroup: false,
       eventName: "Football Afternoon",
       eventDate: "4/12",
@@ -88,9 +89,9 @@ const HomePage = () => {
         "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
     },
     {
-      id: "3",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
+      id: '3',
+      profilePicture: require('../assets/brent_klein.png'),
+      creatorName: 'John Doe',
       isGroup: false,
       eventName: "Football Afternoon",
       eventDate: "4/12",
@@ -98,9 +99,9 @@ const HomePage = () => {
       description: "Join us for a fun football afternoon!",
     },
     {
-      id: "4",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
+      id: '4',
+      profilePicture: require('../assets/brent_klein.png'),
+      creatorName: 'John Doe',
       isGroup: false,
       eventName: "Football Afternoon",
       eventDate: "4/12",
@@ -118,8 +119,9 @@ const HomePage = () => {
         <Header showBackArrow={false} notificationCount={5} />
 
         {/* Matching Section */}
-
-        <View style={styles.matchingSection}>
+        <MatchingCard name="Brent" age={19} src={require('../assets/gabimaru.jpg')} matchPercentage={69} interests={["Skiing", "Bears"]} />
+        
+                <View style={styles.matchingSection}>
           <Text style={styles.sectionTitle}>Matching</Text>
           <View style={{ height: 300 }}>
             {" "}
