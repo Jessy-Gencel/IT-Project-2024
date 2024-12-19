@@ -13,6 +13,7 @@ import TestScreen from "../screens/Test";
 import AccountSetupScreen from "../screens/AccountSetupScreen";
 import ChatList from "../screens/ChatList";
 import  WebSocket  from "../screens/TestWebsocket";
+import JWSTesting from "../screens/JWStokensTest";
 
 const Tab = createBottomTabNavigator();
 
@@ -49,6 +50,7 @@ const BottomTabNavigator = () => {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Gateways" component={GatewaysScreen} />
+      <Tab.Screen name="FUN" component={JWSTesting} />
       <Tab.Screen name="LogIn" component={LogInScreen} />
       <Tab.Screen name="Register" component={RegisterScreen} />
       <Tab.Screen name="Chat" component={ChatScreen} />

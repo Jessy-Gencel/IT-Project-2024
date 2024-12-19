@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect,useState} from "react";
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   ScrollView,
   FlatList,
   Image,
-  TouchableOpacity,
+  TouchableOpacity, 
 } from "react-native";
 import MatchingCard from '../components/MatchingCard';
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
@@ -15,12 +15,20 @@ import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar com
 import GradientBackground from "../components/LinearBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
+import { getAuthTokens } from "../services/GetToken";
+import Constants from "expo-constants";
 
 const getHomeMatches = async () => {
   try {
-    const response = await axiosInstance.get("/vector/getHomeMatches/1");
+    const { accessToken,refreshToken } = await getAuthTokens();
+    const response = await axiosInstance.get(`${Constants.expoConfig.extra.BASE_URL}/vector/getHomeMatches`,{
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization
+        "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
+      },
+    });
     console.log("Home Matches:", response.data);
-    return response.data; // Return the data if needed elsewhere
+    return response.data;   // Return the data if needed elsewh
   } catch (error) {
     console.error(
       "Error fetching home matches:",
@@ -30,41 +38,24 @@ const getHomeMatches = async () => {
   }
 };
 
-console.log(getHomeMatches());
-
 const HomePage = () => {
-  const matchingProfiles = [
-    {
-      id: "1",
-      name: "Alice",
-      progress: 70,
-      profilePicture: require("../assets/brent_klein.png"),
-    },
-    {
-      id: "2",
-      name: "Bob",
-      progress: 85,
-      profilePicture: require("../assets/brent_klein.png"),
-    },
-    {
-      id: "3",
-      name: "Charlie",
-      progress: 60,
-      profilePicture: require("../assets/brent_klein.png"),
-    },
-    {
-      id: "4",
-      name: "Diana",
-      progress: 90,
-      profilePicture: require("../assets/brent_klein.png"),
-    },
-    {
-      id: "5",
-      name: "Eve",
-      progress: 75,
-      profilePicture: require("../assets/brent_klein.png"),
-    },
-  ];
+  
+ 
+  const [matchingProfiles, setMatchingProfiles] = useState([]);
+
+  // Fetch matching profiles when component mounts
+  useEffect(() => {
+    const fetchMatchingProfiles = async () => {
+      try {
+        const data = await getHomeMatches(); // Fetch data from API
+        setMatchingProfiles(data); // Set the fetched data in state
+      } catch (error) {
+        console.error("Error fetching matching profiles:", error);
+      }
+    };
+
+    fetchMatchingProfiles(); // Fetch data
+  }, []);
 
   const events = [
     {
@@ -120,65 +111,65 @@ const HomePage = () => {
 
         {/* Matching Section */}
         <MatchingCard name="Brent" age={19} src={require('../assets/gabimaru.jpg')} matchPercentage={69} interests={["Skiing", "Bears"]} />
-        
                 <View style={styles.matchingSection}>
-          <Text style={styles.sectionTitle}>Matching</Text>
-          <View style={{ height: 300 }}>
-            {" "}
-            {/* Explicit height for the FlatList */}
-            <FlatList
-              data={matchingProfiles}
-              keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique keys
-              showsVerticalScrollIndicator={false}
-              nestedScrollEnabled={true} // Allow nested scrolling inside ScrollView
-              renderItem={({ item }) => (
-                <View style={styles.matchingCard}>
-                  <View style={styles.cardContent}>
-                    <Image
-                      source={
-                        typeof item.profilePicture === "string"
-                          ? { uri: item.profilePicture }
-                          : item.profilePicture
-                      }
-                      style={styles.pfp}
-                    />
-
-                    <View style={styles.cardText}>
-                      <Text style={styles.cardName}>{item.name}</Text>
-                      <View style={styles.progressBarCard}>
-                        <Text style={styles.progressBarText}>
-                          {item.progress}%
-                        </Text>
-                        <ProgressBar
-                          fillWidth={item.progress}
-                          height={15}
-                          borderRadius={10}
-                          barColor="#5F63E2"
-                        />
-                      </View>
-                    </View>
-                    <View style={styles.cardActions}>
-                      <TouchableOpacity>
-                        <Ionicons
-                          name="chatbubble-ellipses"
-                          size={20}
-                          color="black"
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity>
-                        <Ionicons
-                          name="information-circle-outline"
-                          size={20}
-                          color="black"
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              )}
+  <Text style={styles.sectionTitle}>Matching</Text>
+  <View style={{ height: 300 }}>
+    {" "}
+    {/* Explicit height for the FlatList */}
+    <FlatList
+      data={matchingProfiles} // This is now dynamic data fetched from the backend
+      keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique keys
+      showsVerticalScrollIndicator={false}
+      nestedScrollEnabled={true} // Allow nested scrolling inside ScrollView
+      renderItem={({ item }) => (
+        <View style={styles.matchingCard}>
+          <View style={styles.cardContent}>
+            <Image
+              source={
+                typeof item.profilePicture === "string"
+                  ? { uri: item.profilePicture }
+                  : item.profilePicture
+              }
+              style={styles.pfp}
             />
+
+            <View style={styles.cardText}>
+              <Text style={styles.cardName}>{item.name}</Text>
+              <View style={styles.progressBarCard}>
+                <Text style={styles.progressBarText}>
+                  {item.match_score}%
+                </Text>
+                <ProgressBar
+                  fillWidth={item.match_score}
+                  height={15}
+                  borderRadius={10}
+                  barColor="#5F63E2"
+                />
+              </View>
+            </View>
+            <View style={styles.cardActions}>
+              <TouchableOpacity>
+                <Ionicons
+                  name="chatbubble-ellipses"
+                  size={20}
+                  color="black"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Ionicons
+                  name="information-circle-outline"
+                  size={20}
+                  color="black"
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
+      )}
+    />
+  </View>
+</View>
+
 
         {/* Event Section */}
         <ScrollView

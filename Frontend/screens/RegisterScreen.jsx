@@ -147,7 +147,7 @@ const RegisterScreen = ({ navigation }) => {
             <PrimaryButtonPill
               style={styles.logInBtn}
               title="Register"
-              onPress={[handleSubmit(onSubmit)]}
+              onPress={handleSubmit(onSubmit)}
             />
           </View>
 

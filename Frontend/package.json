@@ -41,7 +41,8 @@
     "react-native-web": "~0.19.13",
     "react-navigation": "^5.0.0",
     "socket.io-client": "^4.8.1",
-    "yup": "^1.5.0"
+    "yup": "^1.5.0",
+    "expo-secure-store": "~14.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
