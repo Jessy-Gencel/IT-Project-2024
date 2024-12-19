@@ -1,7 +1,7 @@
 import re
 from flask import abort
 
-def sanitize_input(input_str):
+def sanitize_input(input_str : str) -> str:
     """
     Basic sanitization function to detect potentially harmful SQL characters.
     """
@@ -22,3 +22,8 @@ def sanitize_input(input_str):
         abort(400, description="Invalid characters in input.")
     
     return input_str
+def santize_array(input_list : list) -> list:
+    """
+    Function to sanitize a list of strings.
+    """
+    return [sanitize_input(item) for item in input_list]

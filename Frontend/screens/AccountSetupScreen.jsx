@@ -22,12 +22,16 @@ import interests from "../config/interests";
 import RNPickerSelect from "react-native-picker-select";
 import axios from "axios";
 
+//weghalen van een hobby badge moet nog gebeuren 
+//pas op het einde alles doorsturen naar backend via axios
+//validatie moet nog gebeuren
+
 const AccountSetupScreen = ({ navigation }) => {
+  const [inputValue, setInputValue] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedValue, setSelectedValue] = useState("");
   const stepsCount = 5;
   const [formData, setFormData] = useState({
-    id: "12345",
+    id: "12345", //id wordt opgehaald maar nu hardcoded
     mbti: "",
     interests: [],
     hobbies: [],
@@ -89,39 +93,6 @@ const AccountSetupScreen = ({ navigation }) => {
     mbti: mbtiSchema,
   });
 
-  // Form Handlers
-  const {
-    register: registerHobbies,
-    handleSubmit: handleSubmitHobbies,
-    formState: { errors: errorsHobbies },
-  } = useForm({
-    resolver: yupResolver(hobbiesSchema),
-  });
-
-  const {
-    register: registerInterests,
-    handleSubmit: handleSubmitInterests,
-    formState: { errors: errorsInterests },
-  } = useForm({
-    resolver: yupResolver(interestsSchema),
-  });
-
-  const {
-    register: registerFavorites,
-    handleSubmit: handleSubmitFavorites,
-    formState: { errors: errorsFavorites },
-  } = useForm({
-    resolver: yupResolver(favoritesSchema),
-  });
-
-  const {
-    register: registerMbti,
-    handleSubmit: handleSubmitMbti,
-    formState: { errors: errorsMbti },
-  } = useForm({
-    resolver: yupResolver(mbtiSchema),
-  });
-
   const {
     control,
     handleSubmit,
@@ -130,55 +101,36 @@ const AccountSetupScreen = ({ navigation }) => {
     resolver: yupResolver(schema),
   });
 
-  // Submissions
-  const onSubmitHobbies = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      hobbies: data.hobbies,
-    }));
-    nextStep();
-  };
-
-  const onSubmitInterests = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      interests: data.interests,
-    }));
-    nextStep();
-  };
-
-  const onSubmitFavorites = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      favorites: data.favorites,
-    }));
-    nextStep();
-  };
-
-  const onSubmitMbti = (data) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      mbti: data.mbti,
-    }));
-    nextStep();
-  };
-
-  const onSubmit = async () => {
-    try {
-      const response = await axios.post(
-        "https://localhost:5000/auth/createProfile",
-        formData
-      );
-      console.log("Data submitted successfully: ", response.data);
-    } catch (error) {
-      console.error("Error submitting data: ", error);
-    }
-  };
-
-  const nextStep = () => {
+  const nextStep = () => { //moet validatie bij toegevoegd worde
     if (currentStep < stepsCount) {
       setCurrentStep(currentStep + 1);
     }
+
+    //triggered een validatie afhankelijk van op welke step je zit
+    let validationSchema;
+    switch (currentStep){
+      case 1:
+        validationSchema = hobbiesSchema;
+        break;
+      case 2:
+        validationSchema = interestsSchema;
+        break;
+      case 3:
+        // favorites is een issue wnt je moet eigenlijk zorgen dat je 1 field kan invullen en de rest ni
+        validationSchema = favoritesSchema;
+        break;
+      case 4:
+        validationSchema = mbtiSchema;
+        break;
+      default:
+        validationSchema = null; 
+        // voor step 5 moet er ook geen apart validatieschema zijn omdat 
+        //da gwn alles submit dus default is null
+    }
+
+    //error messages voor als de form niet gevalideerd wordt
+    // in deze code doen? of gwn in schema's? -> valt nog te bezien
+
   };
 
   const previousStep = () => {
@@ -195,27 +147,25 @@ const AccountSetupScreen = ({ navigation }) => {
     }
   };
 
-  // Check what handler to use
-  const currentHandler = () => {
-    switch (currentStep) {
-      case 1:
-        handleSubmit(handleSubmitHobbies)();
-        break;
-      case 2:
-        handleSubmit(handleSubmitInterests)();
-        break;
-      case 3:
-        handleSubmit(handleSubmitFavorites)();
-        break;
-      case 4:
-        handleSubmit(handleSubmitMbti)();
-        break;
-      case 5:
-        handleSubmit(handleSubmit)();
-      default:
-        break;
+  const addItem = (field) => {
+    if (inputValue.trim()) {
+      // prev is voor de previous data op te halen
+      //setFormData(prev) nodig omdat je telkens je form reset
+      setFormData((prev) => ({
+        ...prev,
+        [field]: [...prev[field], inputValue.trim()]
+      }))
     }
-  };
+    setInputValue("");
+  }
+
+  const removeItem = (field, index) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: prev[field].filter((_, i) => i !== index),
+      }));
+  }
+
 
   // Screen
   return (
@@ -225,10 +175,16 @@ const AccountSetupScreen = ({ navigation }) => {
           source={require("../assets/logo-main.png")}
           style={styles.logo}
         />
-        <Text style={styles.title}>
-          Hi, Nils!{"\n"}Let's set up your account.
-        </Text>
-        <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
+        {currentStep !== stepsCount && (
+  <Text style={styles.title}>
+    Hi, Nils!{"\n"}Let's set up your account.
+  </Text>
+)}
+{currentStep === stepsCount && (
+  <Text style={styles.title}>
+    Account Setup{"\n"}Overview.
+  </Text>
+)}
         {/* Step 1 */}
         {currentStep == 1 && (
           <>
@@ -239,7 +195,7 @@ const AccountSetupScreen = ({ navigation }) => {
               <Controller
                 control={control}
                 name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
+                render={({ field: {onBlur, value } }) => (
                   <TextInput
                     style={[
                       loginStyles.input,
@@ -248,33 +204,40 @@ const AccountSetupScreen = ({ navigation }) => {
                         : {},
                     ]}
                     onBlur={onBlur}
-                    onChangeText={onChange}
+                    onChangeText={setInputValue}
                     value={value}
                     placeholder="Hobby"
                     placeholderTextColor={colors.placeholder}
-                    secureTextEntry
+                    onSubmitEditing={() => addItem("hobbies")}
                   />
                 )}
               />
             </View>
             <View style={[styles.badgeList, styles.alignLeft]}>
-              <Badge title="Gym" isHighlighted />
-              <Badge title="Opera" />
+              {formData.hobbies.map((hobby, index) => (
+                    <Badge
+                    key={index}
+                    title={hobby}
+                    isHighlighted
+                    onPress={() => removeItem("hobbies", index)}
+                  />
+                ))}
             </View>
           </>
         )}
 
         {/* Step 2 */}
         {currentStep == 2 && (
+          // bij het invoegen van een interesse zal een lijst te zien worden
           <>
             <View style={styles.alignLeft}>
-              <Text style={styles.titleMedium}>What are your interests?</Text>
+              <Text style={styles.titleMedium}>What are your interests?</Text>  
               <Text style={styles.subtitle}>Add at least 3.</Text>
 
               <Controller
                 control={control}
                 name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
+                render={({ field: {onBlur, inputValue } }) => (
                   <TextInput
                     style={[
                       loginStyles.input,
@@ -283,18 +246,23 @@ const AccountSetupScreen = ({ navigation }) => {
                         : {},
                     ]}
                     onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
+                    onChangeText={setInputValue}
+                    value={inputValue}
                     placeholder="Interest"
                     placeholderTextColor={colors.placeholder}
-                    secureTextEntry
+                    onSubmitEditing={() => addItem("interests")}
                   />
                 )}
               />
             </View>
             <View style={[styles.badgeList, styles.alignLeft]}>
-              <Badge title="Investing" isHighlighted />
-              <Badge title="MILFs" />
+            {formData.interests.map((interests, index) => (
+                  <Badge
+                    key={index}
+                    title={interests}
+                    isHighlighted
+                  />
+                ))}
             </View>
           </>
         )}
@@ -312,7 +280,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="movies"
-                  render={({ field: { onChange, onBlur, value } }) => (
+                  render={({ field: {onBlur, value } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -321,17 +289,23 @@ const AccountSetupScreen = ({ navigation }) => {
                           : {},
                       ]}
                       onBlur={onBlur}
-                      onChangeText={onChange}
+                      onChangeText={setInputValue}
                       value={value}
                       placeholder="Enter a movie"
                       placeholderTextColor={colors.placeholder}
+                      onSubmitEditing={() => addItem("movies")}
                     />
                   )}
                 />
               </View>
               <View style={[styles.badgeList, styles.alignLeft]}>
-                <Badge title="Interstellar" isHighlighted />
-                <Badge title="The Godfather" />
+                {formData.movies.map((movies, index) => (
+                    <Badge
+                      key={index}
+                      title={movies}
+                      isHighlighted
+                    />
+                  ))}
               </View>
             </View>
 
@@ -345,7 +319,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="music"
-                  render={({ field: { onChange, onBlur, value } }) => (
+                  render={({ field: {onBlur, value } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -354,17 +328,23 @@ const AccountSetupScreen = ({ navigation }) => {
                           : {},
                       ]}
                       onBlur={onBlur}
-                      onChangeText={onChange}
+                      onChangeText={setInputValue}
                       value={value}
                       placeholder="Enter a song or artist"
                       placeholderTextColor={colors.placeholder}
+                      onSubmitEditing={() => addItem("music")}
                     />
                   )}
                 />
               </View>
               <View style={[styles.badgeList, styles.alignLeft]}>
-                <Badge title="Unlike Pluto" isHighlighted />
-                <Badge title="Purple Rain" />
+              {formData.music.map((music, index) => (
+                  <Badge
+                    key={index}
+                    title={music}
+                    isHighlighted
+                  />
+                ))}
               </View>
             </View>
 
@@ -378,7 +358,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="games"
-                  render={({ field: { onChange, onBlur, value } }) => (
+                  render={({ field: {onBlur, value } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -387,17 +367,23 @@ const AccountSetupScreen = ({ navigation }) => {
                           : {},
                       ]}
                       onBlur={onBlur}
-                      onChangeText={onChange}
+                      onChangeText={setInputValue}
                       value={value}
                       placeholder="Enter a game"
                       placeholderTextColor={colors.placeholder}
+                      onSubmitEditing={() => addItem("games")}
                     />
                   )}
                 />
               </View>
               <View style={[styles.badgeList, styles.alignLeft]}>
-                <Badge title="Elden Ring" isHighlighted />
-                <Badge title="Mass Effect" />
+              {formData.games.map((games, index) => (
+                  <Badge
+                    key={index}
+                    title={games}
+                    isHighlighted
+                  />
+                ))}
               </View>
             </View>
 
@@ -411,7 +397,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="books"
-                  render={({ field: { onChange, onBlur, value } }) => (
+                  render={({ field: {onBlur, value } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -420,17 +406,23 @@ const AccountSetupScreen = ({ navigation }) => {
                           : {},
                       ]}
                       onBlur={onBlur}
-                      onChangeText={onChange}
+                      onChangeText={setInputValue}
                       value={value}
                       placeholder="Enter a game"
                       placeholderTextColor={colors.placeholder}
+                      onSubmitEditing={() => addItem("books")}
                     />
                   )}
                 />
               </View>
               <View style={[styles.badgeList, styles.alignLeft]}>
-                <Badge title="Sun Tzu: The Art of War" isHighlighted />
-                <Badge title="The Circle" />
+              {formData.books.map((books, index) => (
+                  <Badge
+                    key={index}
+                    title={books}
+                    isHighlighted
+                  />
+                ))}
               </View>
             </View>
           </View>
@@ -459,6 +451,104 @@ const AccountSetupScreen = ({ navigation }) => {
           </>
         )}
 
+                {/* Step 5 */}
+{currentStep == stepsCount && (
+  <>
+    
+    
+    {/* MBTI */}
+    {formData.mbti && (
+      <View style={styles.section}>
+        <View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>MBTI</Text>
+    </View>
+        <Text style={styles.sectionContent}>{formData.mbti}</Text>
+      </View>
+    )}
+
+    {/* Interests */}
+    {formData.interests.length > 0 && (
+      <View style={styles.section}>
+        <View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Interests</Text>
+    </View>
+        <View style={styles.badgeList2}>
+          {formData.interests.map((interest, index) => (
+            <Badge key={index} title={interest} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Hobbies */}
+    {formData.hobbies.length > 0 && (
+      <View style={styles.section}>
+        <View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Hobbies</Text>
+    </View>
+        <View style={styles.badgeList2}>
+          {formData.hobbies.map((hobby, index) => (
+            <Badge key={index} title={hobby} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Movies */}
+    {formData.movies.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Favourite movies</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.movies.map((movie, index) => (
+            <Badge key={index} title={movie} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Music */}
+    {formData.music.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Favourite Music</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.music.map((song, index) => (
+            <Badge key={index} title={song} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Games */}
+    {formData.games.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Favourite Games</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.games.map((game, index) => (
+            <Badge key={index} title={game} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+
+    {/* Books */}
+    {formData.books.length > 0 && (
+      <View style={styles.section}>
+<View style={styles.alignLeft}>
+      <Text style={styles.titleMedium}>Favourite books</Text>
+    </View>        <View style={styles.badgeList2}>
+          {formData.books.map((book, index) => (
+            <Badge key={index} title={book} isHighlighted />
+          ))}
+        </View>
+      </View>
+    )}
+  </>
+)}
+
+
         {/* Validate */}
         {currentStep < stepsCount && (
           <View style={styles.btnPrimary}>
@@ -466,12 +556,13 @@ const AccountSetupScreen = ({ navigation }) => {
           </View>
         )}
 
-        {/* Submit */}
+        {/* Submit */} 
+        {/* routen naar home momenteel -> is later voor sturen naar backend */}
         {currentStep == stepsCount && (
           <View style={styles.btnPrimary}>
             <PrimaryButtonPill
               title="Complete Setup"
-              onPress={handleSubmit(onSubmit)}
+              
             />
           </View>
         )}
@@ -483,7 +574,8 @@ const AccountSetupScreen = ({ navigation }) => {
           </View>
         )}
 
-        {/* Skip Step */}
+        {/* Skip Step */} 
+        {/* mag niet getoond worden bij laatste stap */}
         <View>
           <TertiaryButon title="Skip >" onPress={skipStep} />
         </View>
@@ -516,6 +608,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
   },
   titleMedium: {
+    marginBottom: 10,
     fontSize: 20,
     fontWeight: "medium",
   },
@@ -527,6 +620,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   badgeList: {
+    
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
@@ -541,6 +635,24 @@ const styles = StyleSheet.create({
   },
   step3Wrapper: {
     marginTop: 15,
+  },section: {
+    flex:1,
+    alignSelf: "flex-start",
+    marginVertical: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  sectionContent: {
+    fontSize: 16,
+    color: colors.textBlack,
+  },badgeList2: {
+    marginLeft: 25,
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    gap: 10,
   },
 });
 
