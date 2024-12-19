@@ -3,17 +3,17 @@ import { View, TextInput, Button, Text } from "react-native";
 import io from "socket.io-client";
 import Constant from "expo-constants";
 
-const socket = io("http://10.2.88.71:5000");
+const socket = io("http://localhost:5000");
 
 const TestWebSocket = () => {
   const [message, setMessage] = useState("");
-  const [chatMessages, setChatMessage] = useState([]);
+  const [chatMessages, setChatMessages] = useState([]);
   const [user1Id, setUser1Id] = useState("7");
   const [user2Id, setUser2Id] = useState("42069");
 
   useEffect(() => {
     socket.on('connect', () => {
-      console.log('Socket connected to the server');
+        console.log('Socket connected to the server');
     });
 
     socket.on('disconnect', () => {
@@ -25,8 +25,10 @@ const TestWebSocket = () => {
 
     // Listen for new messages
     socket.on("new_message", (data) => {
-      console.log("new_message triggered with data:", data);
-      setChatMessage((prevMessages) => [...prevMessages, data.message]);
+      setTimeout(() =>{
+        console.log("new_message triggered with data:", data);
+      }, 1);
+      setChatMessages((prevMessages) => [...prevMessages, data.message]);
     });
 
     return () => {
@@ -38,6 +40,7 @@ const TestWebSocket = () => {
 
   const sendMessage = () => {
     // Emit message to the backend
+    console.log("se nding message");
     socket.emit("send_message", {
       sender_id: user1Id,
       recipient_id: user2Id,

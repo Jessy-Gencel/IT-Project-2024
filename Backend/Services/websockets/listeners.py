@@ -22,10 +22,12 @@ def init_websockets(socketio):
     # @socketio.on('new_chat')
     # def handle_new_chat():
 
-    socketio.on('join_room')
+    @socketio.on('join_room')
     def on_join(data):
         sender_id = data.get('user1_id')
         recipient_id = data.get('user2_id')
+        print("min", min(sender_id, recipient_id))
+        print("max",max(sender_id, recipient_id))
         room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
         
         join_room(room)
@@ -44,17 +46,18 @@ def init_websockets(socketio):
                 "content": "Hello, World!"
             }
         """
-        # try:
+        try:
             # Extract message details
-        sender_id = data.get('sender_id')
-        recipient_id = data.get('recipient_id')
-        message = data.get('message')
-        room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
-        print(f'message recieved from {sender_id} to {recipient_id} message: {message}')
-        print('Emitting new_message')
-        emit('new_message', {'sender_id': sender_id, 'message': message}, room=room)
-        print('Emitted new_message')
-        
+            sender_id = data.get('sender_id')
+            recipient_id = data.get('recipient_id')
+            message = data.get('message')
+            room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
+            print(f'message recieved from {sender_id} to {recipient_id} message: {message}')
+            print('Emitting new_message')
+            emit('new_message', {'sender_id': sender_id, 'message': message}, room=room)
+            print('Emitted new_message')
+            print(room)
+            
             # Store message in the database
             # message_dict = {
             #     "conversation_id": conversation_id,
@@ -67,8 +70,8 @@ def init_websockets(socketio):
 
 
 
-        # except Exception as e:
-        #     emit('response', {'status': 'error', 'message': str(e)})
+        except Exception as e:
+            emit('response', {'status': 'error', 'message': str(e)})
             
     @socketio.on('disconnect')
     def handle_disconnect():
