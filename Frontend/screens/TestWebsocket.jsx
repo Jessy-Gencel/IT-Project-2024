@@ -1,20 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { View, TextInput, Button, Text } from "react-native";
 import io from "socket.io-client";
-import { IP_ADDRESS_SERVER } from '@env'
-
+import { IP_ADDRESS_SERVER } from "@env";
+import { getUserData } from "../services/GetToken";
 
 const socket = io(`http://${IP_ADDRESS_SERVER}:5000`);
 
 const TestWebSocket = () => {
   const [message, setMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  const [user1Id, setUser1Id] = useState("7");
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [user2Id, setUser2Id] = useState("42069");
 
   useEffect(() => {
+    // Fetch the current user's ID when the component mounts
+    const fetchUserId = async () => {
+      try {
+        const userId = await getUserData("id"); // Retrieve user ID
+        setCurrentUserId(userId); // Update state
+        socket.emit("join_room", {
+          user1_id: currentUserId,
+          user2_id: user2Id,
+        });
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserId(); // Call the async function
+
     // Join the room when component mounts
-    socket.emit("join_room", { user1_id: user1Id, user2_id: user2Id });
 
     // Listen for new messages
     socket.on("new_message", (data) => {
@@ -22,14 +37,14 @@ const TestWebSocket = () => {
     });
 
     return () => {
-      socket.off('new_message');
+      socket.off("new_message");
     };
   }, []);
 
   const sendMessage = () => {
     // Emit message to the backend
     socket.emit("send_message", {
-      sender_id: user1Id,
+      sender_id: currentUserId,
       recipient_id: user2Id,
       message: message,
     });
@@ -47,10 +62,10 @@ const TestWebSocket = () => {
       />
       <Button title="Send" onPress={sendMessage} />
       {/* {chatMessages.map((msg) => ( */}
-        <Text style={ styles.text }>
-          {chatMessages}
-          {/* {msg.sender_id}: {msg.message} */}
-        </Text>
+      <Text style={styles.text}>
+        {chatMessages}
+        {/* {msg.sender_id}: {msg.message} */}
+      </Text>
       {/* ))} */}
     </View>
   );
@@ -61,8 +76,8 @@ const styles = {
     marginTop: 50,
   },
   text: {
-    backgroundColor: "#b81212"
+    backgroundColor: "#b81212",
   },
-}
+};
 
 export default TestWebSocket;

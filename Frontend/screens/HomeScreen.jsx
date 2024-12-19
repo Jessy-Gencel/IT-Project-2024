@@ -16,12 +16,13 @@ import GradientBackground from "../components/LinearBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import { getAuthTokens } from "../services/GetToken";
-import Constants from "expo-constants";
+import { IP_ADDRESS_SERVER } from '@env';
+
 
 const getHomeMatches = async () => {
   try {
     const { accessToken,refreshToken } = await getAuthTokens();
-    const response = await axiosInstance.get(`${Constants.expoConfig.extra.BASE_URL}/vector/getHomeMatches`,{
+    const response = await axiosInstance.get(`http://${IP_ADDRESS_SERVER}/vector/getHomeMatches`,{
       headers: {
         Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization
         "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header

@@ -24,9 +24,11 @@ def login():
         return jsonify({"message": "Invalid credentials"}), 401
     
     access_token, refresh_token = jwt_full_encode(user)
+    
+    print(f'ID: {user["id"]}')
 
     return jsonify({
-        "id" : user["id"],
+        "id" : str(user["id"]),
         "access_token": access_token,
         "refresh_token": refresh_token
     })

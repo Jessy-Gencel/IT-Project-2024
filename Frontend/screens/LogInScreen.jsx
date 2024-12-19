@@ -11,7 +11,9 @@ import axios from 'axios';
 import GradientBackground from "../components/LinearBackground";
 import Constants from 'expo-constants';
 import * as SecureStore from "expo-secure-store"; // Secure storage library
-import {getToken} from "../services/GetToken";
+import {getUserData} from "../services/GetToken";
+import { IP_ADDRESS_SERVER } from '@env';
+
 
 
 
@@ -32,7 +34,7 @@ const LogInScreen = ({ navigation }) => {
         resolver: yupResolver(schema),
     });
 
-    const storeToken = async (key, value) => {
+    const storeSecretStorage = async (key, value) => {
         try {
           await SecureStore.setItemAsync(key, value);
           console.log(`${key} stored successfully`);
@@ -43,18 +45,20 @@ const LogInScreen = ({ navigation }) => {
 
     const onSubmit = async (data) => {
         try{
-            const response = await axios.post("http://10.2.88.190:5000/auth/login", {
+            const response = await axios.post(`http://${IP_ADDRESS_SERVER}:5000/auth/login`, {
                 email: data.email,
                 password: data.password,
             });
-            const { access_token: accessToken, refresh_token: refreshToken } = response.data;
-            await storeToken("accessToken", accessToken);
-            await storeToken("refreshToken", refreshToken);
-            access = await getToken("accessToken");
-            refresh = await getToken("refreshToken");
+            const { access_token: accessToken, refresh_token: refreshToken, id: userId } = response.data;
+            await storeSecretStorage("accessToken", accessToken);
+            await storeSecretStorage("refreshToken", refreshToken);
+            await storeSecretStorage("id", userId);
+            access = await getUserData("accessToken");
+            refresh = await getUserData("refreshToken");
 
             console.log(access);
             console.log(refresh);
+            console.log(userId);
 
             navigation.navigate('Main');
             console.log("login succesfull !")
