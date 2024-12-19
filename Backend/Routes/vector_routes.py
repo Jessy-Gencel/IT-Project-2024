@@ -10,7 +10,7 @@ vector_bp = Blueprint('vector', __name__, url_prefix='/vector')
 def make_vector():
     return jsonify({"message": "Vector created"})
 
-@vector_bp.route('/getHomeMatches/<int:userid>', methods=['GET'])
+@vector_bp.route('/getHomeMatches', methods=['GET'])
 @token_required
 def get_matching_vector(payload):
     id = payload['user_id']

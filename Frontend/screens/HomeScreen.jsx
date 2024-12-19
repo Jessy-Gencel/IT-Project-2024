@@ -14,10 +14,18 @@ import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar com
 import GradientBackground from "../components/LinearBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
+import { getAuthTokens } from "../services/GetToken";
+import Constants from "expo-constants";
 
 const getHomeMatches = async () => {
   try {
-    const response = await axiosInstance.get("/vector/getHomeMatches/1");
+    const { accessToken,refreshToken } = await getAuthTokens();
+    const response = await axiosInstance.get(`${Constants.expoConfig.extra.BASE_URL}/vector/getHomeMatches`,{
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization
+        "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
+      },
+    });
     console.log("Home Matches:", response.data);
     return response.data; // Return the data if needed elsewhere
   } catch (error) {
@@ -29,9 +37,8 @@ const getHomeMatches = async () => {
   }
 };
 
-console.log(getHomeMatches());
-
 const HomePage = () => {
+  console.log(getHomeMatches());
   const matchingProfiles = [
     {
       id: "1",

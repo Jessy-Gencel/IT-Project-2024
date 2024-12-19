@@ -56,7 +56,7 @@ const LogInScreen = ({ navigation }) => {
             console.log(access);
             console.log(refresh);
 
-            navigation.navigate('HomeScreen');
+            navigation.navigate('Main');
             console.log("login succesfull !")
 
         } catch(error){
