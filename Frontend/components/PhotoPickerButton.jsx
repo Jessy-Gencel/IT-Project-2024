@@ -1,36 +1,73 @@
 import React, { useState } from "react";
-import { Button, Image, StyleSheet, View } from "react-native";
+import { Button, Image, StyleSheet, View, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Assets } from "../path/to/Assets";  // Replace with your actual Assets map path
+import * as FileSystem from "expo-file-system";
+import { Assets } from "../assets"; // Adjust path as necessary
 
 const PhotoPickerButton = () => {
   const [photoUri, setPhotoUri] = useState(null);
 
+  // Directory where we want to store the images in the app's file system
+  const assetsDirectory = FileSystem.documentDirectory + "assets/";
+
+  // Create the directory if it doesn't exist
+  const createDirectory = async () => {
+    try {
+      const directoryInfo = await FileSystem.readDirectoryAsync(assetsDirectory);
+      if (!directoryInfo) {
+        await FileSystem.makeDirectoryAsync(assetsDirectory, {
+          intermediates: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error creating directory:", error);
+    }
+  };
+
+  // Function to pick an image and save it to the file system
   const pickImage = async () => {
-    // Request permission to access the device's photo library (if not already granted)
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (permission.granted) {
-      // Open the image picker
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow images
-        allowsEditing: false, // Don't allow editing
-        quality: 1, // Maximum quality
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
       });
 
       if (!result.cancelled) {
         const uri = result.uri;
         setPhotoUri(uri);
 
-        // Store the image in the Assets map
-        const imageKey = `image_${new Date().getTime()}`; // Generate a unique key for each image
-        Assets.set(imageKey, uri);  // Store the URI in the Assets map
-        console.log("Stored Image URI:", uri);
+        // Create directory if it doesn't exist
+        await createDirectory();
+
+        // Get the file extension (e.g., .jpg, .png)
+        const fileExtension = uri.split(".").pop();
+        const fileName = `photo_${new Date().getTime()}.${fileExtension}`;
+
+        try {
+          // Copy the image to the app's assets directory
+          await FileSystem.copyAsync({
+            from: uri,
+            to: assetsDirectory + fileName,
+          });
+
+          // Store the file path in the Assets map (or elsewhere)
+          Assets.set(fileName, assetsDirectory + fileName);
+
+          Alert.alert("Success", "Image stored successfully.");
+          console.log("Stored Image at:", assetsDirectory + fileName);
+        } catch (error) {
+          console.error("Error saving image:", error);
+          Alert.alert("Error", "Failed to save image.");
+        }
       } else {
         console.log("Image picking was cancelled");
       }
     } else {
-      console.log("Permission to access media library was denied");
+      console.log("Permission denied");
+      Alert.alert("Permission Denied", "Please grant media library access.");
     }
   };
 
