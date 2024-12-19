@@ -9,6 +9,7 @@ const getToken = async (key) => {
     return null;
   }
 };
+export {getToken};
 
 // Example usage
 //const accessToken = await getToken("accessToken");

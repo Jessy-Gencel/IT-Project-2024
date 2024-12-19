@@ -11,6 +11,7 @@ import axios from 'axios';
 import GradientBackground from "../components/LinearBackground";
 import Constants from 'expo-constants';
 import * as SecureStore from "expo-secure-store"; // Secure storage library
+import {getToken} from "../services/GetToken";
 
 
 
@@ -46,17 +47,19 @@ const LogInScreen = ({ navigation }) => {
 
     const onSubmit = async (data) => {
         try{
-            console.log("data", data);
             const response = await axios.post("http://10.2.88.190:5000/auth/login", {
                 email: data.email,
                 password: data.password,
             });
-            console.log("response", response.data);
-
             const { access_token: accessToken, refresh_token: refreshToken } = response.data;
-
             await storeToken("accessToken", accessToken);
             await storeToken("refreshToken", refreshToken);
+            access = await getToken("accessToken");
+            refresh = await getToken("refreshToken");
+
+            console.log(access);
+            console.log(refresh);
+
             navigation.navigate('HomeScreen');
             console.log("login succesfull !")
         } catch(error){
