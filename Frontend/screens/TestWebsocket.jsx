@@ -12,6 +12,14 @@ const TestWebSocket = () => {
   const [user2Id, setUser2Id] = useState("42069");
 
   useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Socket connected to the server');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected from the server');
+    });
+    
     // Join the room when component mounts
     socket.emit("join_room", { user1_id: user1Id, user2_id: user2Id });
 
@@ -22,7 +30,9 @@ const TestWebSocket = () => {
     });
 
     return () => {
-      socket.off("new_message"); // Clean up the listener
+      socket.off('new_message');
+      socket.off('connect');
+      socket.off('disconnect');
     };
   }, []);
 
