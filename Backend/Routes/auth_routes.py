@@ -26,6 +26,7 @@ def login():
     access_token, refresh_token = jwt_full_encode(user)
 
     return jsonify({
+        "id" : user["id"],
         "access_token": access_token,
         "refresh_token": refresh_token
     })
@@ -43,6 +44,7 @@ def register():
     user = store_user(user=user_dict)
     access_token, refresh_token = jwt_full_encode(user)
     return jsonify({
+        "id" : user["id"],
         "access_token": access_token,
         "refresh_token": refresh_token,
         "message": "User created correctly"
