@@ -28,11 +28,7 @@ const schema = yup.object({
 
 const LogInScreen = ({ navigation }) => {
 
-    const {
-        control,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
+    const {control, handleSubmit, formState: { errors },} = useForm({
         resolver: yupResolver(schema),
     });
 
@@ -62,6 +58,7 @@ const LogInScreen = ({ navigation }) => {
 
             navigation.navigate('HomeScreen');
             console.log("login succesfull !")
+
         } catch(error){
             console.error("Login error:", error);
             const errorMessage = 
