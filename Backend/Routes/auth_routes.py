@@ -38,10 +38,14 @@ def register():
     print(password_hash)
     print(type(password_hash))
     first_name,last_name = extract_name(email=email)
-    user = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
-    store_user(user=user)
-    
-    return jsonify({"message": "User created successfully"}), 201
+    user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
+    user = store_user(user=user_dict)
+    access_token, refresh_token = jwt_full_encode(user)
+    return jsonify({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "message": "User created correctly"
+    })
 
 @auth_bp.route('/createProfile', methods=['POST'])
 def create_profile():
