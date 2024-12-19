@@ -16,6 +16,10 @@ import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import {getToken} from "../services/GetToken";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import PrimaryButtonPill from "../components/PrimaryButtonPill";
+import axios from "axios";
+import { Alert } from "react-native";
+
 
 
 const JWSTesting = () => {
@@ -23,15 +27,12 @@ const JWSTesting = () => {
     const onSubmit = async (data) => {
         
         try{
-            const accessToken = getToken("accessToken");
-            const refreshToken = getToken("refreshToken");
+            const accessToken = await getToken("accessToken");
+            const refreshToken = await getToken("refreshToken");
+            console.log("accessToken", accessToken);
 
-            const response = await axios.post(
-                "http://10.2.88.190:5000/auth/login",
-                {
-                  email: data.email,
-                  password: data.password,
-                },
+            const response = await axios.get(
+                "http://10.2.88.190:5000/auth/users",
                 {
                   headers: {
                     Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization header
@@ -75,4 +76,4 @@ const styles = StyleSheet.create({
   
 });
 
-export default HomePage;
+export default JWSTesting;
