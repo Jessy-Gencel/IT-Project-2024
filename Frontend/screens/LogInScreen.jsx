@@ -43,15 +43,15 @@ const LogInScreen = ({ navigation }) => {
 
     const onSubmit = async (data) => {
         try{
-            const response = await axios.post("http://10.2.88.190:5000/auth/login", {
+            const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/login`, {
                 email: data.email,
                 password: data.password,
             });
             const { access_token: accessToken, refresh_token: refreshToken } = response.data;
             await storeToken("accessToken", accessToken);
             await storeToken("refreshToken", refreshToken);
-            access = await getToken("accessToken");
-            refresh = await getToken("refreshToken");
+            const access = await getToken("accessToken");
+            const refresh = await getToken("refreshToken");
 
             console.log(access);
             console.log(refresh);

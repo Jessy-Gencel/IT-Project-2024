@@ -19,6 +19,8 @@ import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import axios from "axios";
 import { Alert } from "react-native";
+import Constants from 'expo-constants';
+
 
 
 
@@ -30,9 +32,8 @@ const JWSTesting = () => {
             const accessToken = await getToken("accessToken");
             const refreshToken = await getToken("refreshToken");
             console.log("accessToken", accessToken);
-
             const response = await axios.get(
-                "http://10.2.88.190:5000/auth/users",
+                `${Constants.expoConfig.extra.BASE_URL}/auth/users`,
                 {
                   headers: {
                     Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization header

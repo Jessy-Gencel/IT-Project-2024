@@ -32,5 +32,5 @@ def home():
     
 
 if __name__ == '__main__':
-    socketio.run(app, host=os.getenv('IP_ADRESS_SERVER'), port=5000, debug=True)
+    socketio.run(app, host=os.getenv('IP_ADDRESS_SERVER'), port=5000, debug=True)
 

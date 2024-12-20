@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 import io from 'socket.io-client';
+import Constants from 'expo-constants';
+
 
 const App = () => {
   const [message, setMessage] = useState('');
@@ -9,7 +11,7 @@ const App = () => {
 
   useEffect(() => {
     // Connect to Flask WebSocket server
-    const socketInstance = io('http://10.2.88.71:5000', {
+    const socketInstance = io(`${Constants.expoConfig.extra.BASE_URL}`, {
       transports: ['websocket'], // Use WebSocket transport
       reconnectionAttempts: 5,  // Retry connection 5 times
       reconnectionDelay: 1000,  // 1-second delay between retries
