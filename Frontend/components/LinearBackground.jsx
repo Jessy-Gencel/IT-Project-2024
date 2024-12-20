@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { StyleSheet, ScrollView, View, FlatList } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const GradientBackground = ({ children }) => {
@@ -14,7 +14,8 @@ const GradientBackground = ({ children }) => {
         style={styles.gradient}
       />
       {/* Scrollable Content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent}
+      nestedScrollEnabled={true}>
         {children}
       </ScrollView>
     </View>
