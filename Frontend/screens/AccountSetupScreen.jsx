@@ -50,12 +50,13 @@ const AccountSetupScreen = ({ navigation }) => {
     .min(3, "Please provide at least 3 hobbies")
     .required("Please provide at least 3 hobbies");
 
-  const interestsSchema = yup.array().of(
-   yup
-          .string()
-          .required("Please provide at least 3 interests.")
-          .oneOf(interests, "Please select a valid interest.")
-      )
+  const interestsSchema = yup.array().of( 
+      yup
+        .string()
+        .required("Please provide at least 3 interests.")
+        .oneOf(interests, "Please select a valid interest."))
+        //hierbij moet er ook eigenlijk nog gekeken worden of er geen dubbele zijn
+        // en er moet ook gezorgd worden da het tolowercase is wnt anders komt het niet overeen met interests
       .min(3, "Please provide at least 3 interests.")
       .required("Please provide at least 3 interests.");
 
@@ -112,6 +113,7 @@ const AccountSetupScreen = ({ navigation }) => {
   });
 
   const nextStep = async () => {
+    console.log(formData["interests"]);
     const stepFields = {
       1: ["hobbies"],
       2: ["interests"],
@@ -131,9 +133,6 @@ const AccountSetupScreen = ({ navigation }) => {
     }
   };
   
-  
-  
-
   const previousStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -150,12 +149,11 @@ const AccountSetupScreen = ({ navigation }) => {
 
   const addItem = (field) => {
     if (inputValue.trim()) {
-        const currentValue = getValues(field);
         setFormData((prev) => ({
         ...prev,
         [field]: [...prev[field], inputValue.trim()]
       }))
-        setValue(field, formData[field],{shouldValidate: true});
+        setValue(field, formData[field]);
         setInputValue(""); // Clear the input field
     }
 }
@@ -231,7 +229,7 @@ const AccountSetupScreen = ({ navigation }) => {
               <Controller
                 control={control}
                 name="interests"
-                render={({ field: {onBlur, inputValue } }) => (
+                render={({ field: {onBlur} }) => (
                   <TextInput
                     style={[
                       loginStyles.input,
@@ -248,6 +246,7 @@ const AccountSetupScreen = ({ navigation }) => {
                   />
                 )}
               />
+              {errors.interests && <Text style={{ color: 'red' }}>{errors.interests.message}</Text>}
             </View>
             <View style={[styles.badgeList, styles.alignLeft]}>
             {formData.interests.map((interests, index) => (
@@ -274,7 +273,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="movies"
-                  render={({ field: {onBlur, value } }) => (
+                  render={({ field: {onBlur } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -284,7 +283,7 @@ const AccountSetupScreen = ({ navigation }) => {
                       ]}
                       onBlur={onBlur}
                       onChangeText={setInputValue}
-                      value={value}
+                      value={inputValue}
                       placeholder="Enter a movie"
                       placeholderTextColor={colors.placeholder}
                       onSubmitEditing={() => addItem("movies")}
@@ -313,7 +312,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="music"
-                  render={({ field: {onBlur, value } }) => (
+                  render={({ field: {onBlur } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -352,7 +351,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="games"
-                  render={({ field: {onBlur, value } }) => (
+                  render={({ field: {onBlur } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -362,7 +361,7 @@ const AccountSetupScreen = ({ navigation }) => {
                       ]}
                       onBlur={onBlur}
                       onChangeText={setInputValue}
-                      value={value}
+                      value={inputValue}
                       placeholder="Enter a game"
                       placeholderTextColor={colors.placeholder}
                       onSubmitEditing={() => addItem("games")}
@@ -391,7 +390,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Controller
                   control={control}
                   name="books"
-                  render={({ field: {onBlur, value } }) => (
+                  render={({ field: {onBlur } }) => (
                     <TextInput
                       style={[
                         loginStyles.input,
@@ -401,7 +400,7 @@ const AccountSetupScreen = ({ navigation }) => {
                       ]}
                       onBlur={onBlur}
                       onChangeText={setInputValue}
-                      value={value}
+                      value={inputValue}
                       placeholder="Enter a game"
                       placeholderTextColor={colors.placeholder}
                       onSubmitEditing={() => addItem("books")}
@@ -445,6 +444,99 @@ const AccountSetupScreen = ({ navigation }) => {
           </>
         )}
 
+        {/* Step 5 */}
+
+        {currentStep == 5 && (
+          <>
+            <View style={styles.alignLeft}>
+              <Text style={styles.titleMedium}>Here's what you filled in:</Text>
+            </View>
+
+            {/* Hobbies */}
+            <View style={styles.alignLeft}>
+              <Text style={styles.titleMedium}>Hobbies:</Text>
+              {formData.hobbies.length > 0 ? (
+                formData.hobbies.map((hobby, index) => (
+                  <Badge key={index} title={hobby} isHighlighted />
+                ))
+              ) : (
+                <Text>No hobbies added yet.</Text>
+              )}
+            </View>
+
+            {/* Interests */}
+            <View style={styles.alignLeft}>
+              <Text style={styles.titleMedium}>Interests:</Text>
+              {formData.interests.length > 0 ? (
+                formData.interests.map((interest, index) => (
+                  <Badge key={index} title={interest} isHighlighted />
+                ))
+              ) : (
+                <Text>No interests added yet.</Text>
+              )}
+            </View>
+
+            {/* Favorites */}
+            <View style={styles.step3Container}>
+              <View style={styles.step3Wrapper}>
+                {/* Movies */}
+                <View style={styles.alignLeft}>
+                  <Text style={styles.titleMedium}>Movies:</Text>
+                  {formData.movies.length > 0 ? (
+                    formData.movies.map((movie, index) => (
+                      <Badge key={index} title={movie} isHighlighted />
+                    ))
+                  ) : (
+                    <Text>No movies added yet.</Text>
+                  )}
+                </View>
+
+                {/* Music */}
+                <View style={styles.step3Wrapper}>
+                  <View style={styles.alignLeft}>
+                    <Text style={styles.titleMedium}>Music:</Text>
+                    {formData.music.length > 0 ? (
+                      formData.music.map((music, index) => (
+                        <Badge key={index} title={music} isHighlighted />
+                      ))
+                    ) : (
+                      <Text>No music added yet.</Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Games */}
+                <View style={styles.step3Wrapper}>
+                  <View style={styles.alignLeft}>
+                    <Text style={styles.titleMedium}>Games:</Text>
+                    {formData.games.length > 0 ? (
+                      formData.games.map((game, index) => (
+                        <Badge key={index} title={game} isHighlighted />
+                      ))
+                    ) : (
+                      <Text>No games added yet.</Text>
+                    )}
+                  </View>
+                </View>
+
+                {/* Books */}
+                <View style={styles.step3Wrapper}>
+                  <View style={styles.alignLeft}>
+                    <Text style={styles.titleMedium}>Books:</Text>
+                    {formData.books.length > 0 ? (
+                      formData.books.map((book, index) => (
+                        <Badge key={index} title={book} isHighlighted />
+                      ))
+                    ) : (
+                      <Text>No books added yet.</Text>
+                    )}
+                  </View>
+                </View>
+              </View>
+            </View>
+          </>
+        )}
+
         {/* Validate */}
         {currentStep < stepsCount && (
           <View style={styles.btnPrimary}>
@@ -458,7 +550,7 @@ const AccountSetupScreen = ({ navigation }) => {
           <View style={styles.btnPrimary}>
             <PrimaryButtonPill
               title="Complete Setup"
-              onPress={handleSubmit(onSubmit)}
+              onPress={handleSubmit(nextStep)}
             />
           </View>
         )}
