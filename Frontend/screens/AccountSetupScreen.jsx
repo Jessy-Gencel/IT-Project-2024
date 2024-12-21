@@ -21,6 +21,7 @@ import mbti from "../config/mbti";
 import interests from "../config/interests";
 import RNPickerSelect from "react-native-picker-select";
 import axios from "axios";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 //weghalen van een hobby badge moet nog gebeuren 
 //pas op het einde alles doorsturen naar backend via axios
@@ -43,11 +44,15 @@ const AccountSetupScreen = ({ navigation }) => {
 
   // Schema's
   const hobbiesSchema = yup.object({
-    hobby: yup
-      .array()
-      .of(yup.string().required("Please provide at least 3 hobbies"))
-      .min(3, "Please provide at least 3 hobbies")
-      .required("Please provide at least 3 hobbies"),
+    hobbies: yup
+    .array()
+    .of(
+      yup
+      .string()
+      .required("Please provide at least 3 hobbies")
+    )
+    .min(3, "Please provide at least 3 hobbies")
+    .required("Please provide at least 3 hobbies")
   });
 
   const interestsSchema = yup.object({
@@ -97,12 +102,27 @@ const AccountSetupScreen = ({ navigation }) => {
     control,
     handleSubmit,
     formState: { errors },
+    trigger,
+    setValue,
+    getValues,
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      hobbies: [],
+      interests: [],
+      favorites: {
+        games: [],
+        movies: [],
+        books: [],
+        music: [],
+      },
+      mbti: "",
+    },
   });
 
-  const nextStep = () => { //moet validatie bij toegevoegd worde
-    if (currentStep < stepsCount) {
+  const nextStep = async () => { //moet validatie bij toegevoegd worde
+    const isValid = await trigger();
+    if (isValid && currentStep < stepsCount) {
       setCurrentStep(currentStep + 1);
     }
 
@@ -148,22 +168,21 @@ const AccountSetupScreen = ({ navigation }) => {
   };
 
   const addItem = (field) => {
+    console.log(inputValue);
     if (inputValue.trim()) {
-      // prev is voor de previous data op te halen
-      //setFormData(prev) nodig omdat je telkens je form reset
-      setFormData((prev) => ({
-        ...prev,
-        [field]: [...prev[field], inputValue.trim()]
-      }))
+        const currentValues = getValues(field);
+        console.log(getValues(field));
+        const updatedValues = [...currentValues, inputValue.trim()];
+        console.log('Adding item:', updatedValues);
+        setValue(field, updatedValues);
+        setInputValue(""); // Clear the input field
     }
-    setInputValue("");
-  }
+}
 
   const removeItem = (field, index) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: prev[field].filter((_, i) => i !== index),
-      }));
+    const currentValues = getValues(field);
+    const updatedValues = currentValues.filter((_, i) => i !== index);
+    setValue(field, updatedValues);
   }
 
 
@@ -189,7 +208,7 @@ const AccountSetupScreen = ({ navigation }) => {
               <Controller
                 control={control}
                 name="hobbies"
-                render={({ field: {onBlur, value } }) => (
+                render={({ field: {onBlur } }) => (
                   <TextInput
                     style={[
                       loginStyles.input,
@@ -199,16 +218,17 @@ const AccountSetupScreen = ({ navigation }) => {
                     ]}
                     onBlur={onBlur}
                     onChangeText={setInputValue}
-                    value={value}
+                    value={inputValue}
                     placeholder="Hobby"
                     placeholderTextColor={colors.placeholder}
                     onSubmitEditing={() => addItem("hobbies")}
                   />
                 )}
               />
+               {errors.hobbies && <Text style={{ color: 'red' }}>{errors.hobbies.message}</Text>}
             </View>
             <View style={[styles.badgeList, styles.alignLeft]}>
-              {formData.hobbies.map((hobby, index) => (
+              {getValues("hobbies")?.map((hobby, index) => (
                     <Badge
                     key={index}
                     title={hobby}
