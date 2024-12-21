@@ -9,9 +9,9 @@ import ComponentsScreen from "../screens/ComponentsScreen";
 import colors from "../theme/colors";
 import ChatScreen from "../screens/ChatScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-import TestScreen from "../screens/Test";
 import AccountSetupScreen from "../screens/AccountSetupScreen";
 import ChatList from "../screens/ChatList";
+import SettingsScreen from "../screens/SettingsScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -53,6 +53,7 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Components" component={ComponentsScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
       
       <Tab.Screen name="AccountSetup" component={AccountSetupScreen} />
       <Tab.Screen name="ChatList" component={ChatList} />

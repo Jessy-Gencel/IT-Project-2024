@@ -43,30 +43,21 @@ const AccountSetupScreen = ({ navigation }) => {
   });
 
   // Schema's
-  const hobbiesSchema = yup.object({
-    hobbies: yup
-    .array()
-    .of(
+  const hobbiesSchema = yup.array().of(
       yup
-      .string()
-      .required("Please provide at least 3 hobbies")
-    )
+    .string()
+    .required("Please provide at least 3 hobbies"))
     .min(3, "Please provide at least 3 hobbies")
-    .required("Please provide at least 3 hobbies")
-  });
+    .required("Please provide at least 3 hobbies");
 
-  const interestsSchema = yup.object({
-    interest: yup
-      .array()
-      .of(
-        yup
+  const interestsSchema = yup.array().of(
+   yup
           .string()
           .required("Please provide at least 3 interests.")
           .oneOf(interests, "Please select a valid interest.")
       )
       .min(3, "Please provide at least 3 interests.")
-      .required("Please provide at least 3 interests."),
-  });
+      .required("Please provide at least 3 interests.");
 
   const favoritesSchema = yup.object({
     games: yup
@@ -120,38 +111,28 @@ const AccountSetupScreen = ({ navigation }) => {
     },
   });
 
-  const nextStep = async () => { //moet validatie bij toegevoegd worde
-    const isValid = await trigger();
-    if (isValid && currentStep < stepsCount) {
-      setCurrentStep(currentStep + 1);
+  const nextStep = async () => {
+    const stepFields = {
+      1: ["hobbies"],
+      2: ["interests"],
+      3: ["favorites.games", "favorites.movies", "favorites.books", "favorites.music"],
+      4: ["mbti"],
+    };
+  
+    const fieldsToValidate = stepFields[currentStep];
+    const isValid = await trigger(fieldsToValidate);
+  
+    if (isValid) {
+      if (currentStep < stepsCount) {
+        setCurrentStep((prevStep) => prevStep + 1);
+      }
+    } else {
+      console.log("Validation failed:", errors);
     }
-
-    //triggered een validatie afhankelijk van op welke step je zit
-    let validationSchema;
-    switch (currentStep){
-      case 1:
-        validationSchema = hobbiesSchema;
-        break;
-      case 2:
-        validationSchema = interestsSchema;
-        break;
-      case 3:
-        // favorites is een issue wnt je moet eigenlijk zorgen dat je 1 field kan invullen en de rest ni
-        validationSchema = favoritesSchema;
-        break;
-      case 4:
-        validationSchema = mbtiSchema;
-        break;
-      default:
-        validationSchema = null; 
-        // voor step 5 moet er ook geen apart validatieschema zijn omdat 
-        //da gwn alles submit dus default is null
-    }
-
-    //error messages voor als de form niet gevalideerd wordt
-    // in deze code doen? of gwn in schema's? -> valt nog te bezien
-
   };
+  
+  
+  
 
   const previousStep = () => {
     if (currentStep > 1) {
@@ -168,13 +149,13 @@ const AccountSetupScreen = ({ navigation }) => {
   };
 
   const addItem = (field) => {
-    console.log(inputValue);
     if (inputValue.trim()) {
-        const currentValues = getValues(field);
-        console.log(getValues(field));
-        const updatedValues = [...currentValues, inputValue.trim()];
-        console.log('Adding item:', updatedValues);
-        setValue(field, updatedValues);
+        const currentValue = getValues(field);
+        setFormData((prev) => ({
+        ...prev,
+        [field]: [...prev[field], inputValue.trim()]
+      }))
+        setValue(field, formData[field],{shouldValidate: true});
         setInputValue(""); // Clear the input field
     }
 }
@@ -184,7 +165,6 @@ const AccountSetupScreen = ({ navigation }) => {
     const updatedValues = currentValues.filter((_, i) => i !== index);
     setValue(field, updatedValues);
   }
-
 
   // Screen
   return (
@@ -228,7 +208,7 @@ const AccountSetupScreen = ({ navigation }) => {
                {errors.hobbies && <Text style={{ color: 'red' }}>{errors.hobbies.message}</Text>}
             </View>
             <View style={[styles.badgeList, styles.alignLeft]}>
-              {getValues("hobbies")?.map((hobby, index) => (
+              {formData.hobbies.map((hobby, index) => (
                     <Badge
                     key={index}
                     title={hobby}
@@ -468,7 +448,7 @@ const AccountSetupScreen = ({ navigation }) => {
         {/* Validate */}
         {currentStep < stepsCount && (
           <View style={styles.btnPrimary}>
-            <PrimaryButtonPill title="Continue" onPress={handleSubmit(nextStep)} />
+            <PrimaryButtonPill title="Continue" onPress={nextStep}/>
           </View>
         )}
 
