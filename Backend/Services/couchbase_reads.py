@@ -11,6 +11,43 @@ def get_scope(scope_name: str) -> Scope:
 	CB_scope = db.scope(scope_name)
 	return CB_scope
 
+def transform_presets(presets_list):
+    """
+    Transform a list of preset dictionaries into a single dictionary
+    with category names as keys and their corresponding lists as values.
+    
+    Args:
+        presets_list (list): A list of dictionaries containing preset categories
+    
+    Returns:
+        dict: A dictionary with category names and their lists
+    """
+    result = {}
+    
+    for preset_dict in presets_list:
+        for category, items in preset_dict.get('presets', {}).items():
+            result[category] = items
+    
+    return result
+
+def get_predefined_lists():
+    try:
+        query = "SELECT * FROM `ehb-link`.`service-data`.presets"
+        result = cluster.query(query)
+        rows = list(result)  # Convert result to a list
+        if rows:
+            return transform_presets(rows)  # Return the first predefined lists record
+        else:
+            print(f"Predefined lists not found.")
+            return None
+        
+    except CouchbaseException as e:
+        print(f"An error occurred while querying the database: {e}")
+        return None
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
 def find_user_by_email(email: str):
     try:
         query = "SELECT * FROM `ehb-link`.`user-data`.users WHERE email = $email"
@@ -35,7 +72,6 @@ def find_user_by_id(user_id: int):
     try:
         user_document = get_collection("user-data", "users").get("user::" + user_id)
         user_data = user_document.content_as[dict]
-        user_data["user_id"] = user_document.key
         return user_data
     
     except DocumentNotFoundException:
@@ -55,7 +91,6 @@ def find_profile_by_id(user_id: int):
     try:
         profile_document = get_collection("user-data", "profiles").get("profile::" + user_id)
         profile_data = profile_document.content_as[dict]
-        profile_data["user_id"] = profile_document.key
         return profile_data
     
     except DocumentNotFoundException:
@@ -75,7 +110,6 @@ def find_event_by_id(event_id: int):
     try:
         event_document = get_collection("event-data", "events").get("event::" + event_id)
         event_data = event_document.content_as[dict]
-        event_data["event_id"] = event_document.key
         return event_data
     
     except DocumentNotFoundException:
@@ -89,31 +123,12 @@ def find_event_by_id(event_id: int):
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
-def find_message_by_id(message_id: int):
-    message_id = str(message_id)
-    try:
-        message_document = get_collection("message-data", "messages").get("message::" + message_id)
-        message_data = message_document.content_as[dict]
-        message_data["message_id"] = message_document.key
-        return message_data
-    
-    except DocumentNotFoundException:
-        print(f"Message with ID {message_id} not found.")
-        return None
-    
-    except CouchbaseException as e:
-        print(f"An error occurred while retrieving message with ID {message_id}: {e}")
-        return None
 
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        return None
 def find_chat_by_id(chat_id: int):
     chat_id = str(chat_id)
     try:
-        chat_document = get_collection("message-data", "chats").get("chat::" + chat_id)
+        chat_document = get_collection("user-data", "chats").get("chat::" + chat_id)
         chat_data = chat_document.content_as[dict]
-        chat_data["chat_id"] = chat_document.key
         return chat_data
     
     except DocumentNotFoundException:
@@ -127,3 +142,10 @@ def find_chat_by_id(chat_id: int):
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
+    
+# def find_chat(user1_id: int, user2_id: int):
+#     try:
+#         chat = get_collection("user-data", "chats").get("")
+#                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
+
+    

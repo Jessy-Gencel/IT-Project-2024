@@ -7,8 +7,10 @@ import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller } from "react-hook-form";
-import GradientBackground from "../components/LinearBackground";
+import GradientBackground from "../components/GradientBackground";
 import axios from "axios";
+import Constants from 'expo-constants';
+
 
 const schema = yup.object({
   email: yup
@@ -37,7 +39,7 @@ const RegisterScreen = ({ navigation }) => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "http://10.2.88.210:5000/auth/register",
+        `${Constants.expoConfig.extra.BASE_URL}/auth/register`,
         {
           email: data.email,
           password: data.password,
@@ -147,7 +149,7 @@ const RegisterScreen = ({ navigation }) => {
             <PrimaryButtonPill
               style={styles.logInBtn}
               title="Register"
-              onPress={[handleSubmit(onSubmit)]}
+              onPress={handleSubmit(onSubmit)}
             />
           </View>
 

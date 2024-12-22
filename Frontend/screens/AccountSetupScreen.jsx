@@ -172,10 +172,16 @@ const AccountSetupScreen = ({ navigation }) => {
           source={require("../assets/logo-main.png")}
           style={styles.logo}
         />
-        <Text style={styles.title}>
-          Hi, Nils!{"\n"}Let's set up your account.
-        </Text>
-        <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
+        {currentStep !== stepsCount && (
+  <Text style={styles.title}>
+    Hi, Nils!{"\n"}Let's set up your account.
+  </Text>
+)}
+{currentStep === stepsCount && (
+  <Text style={styles.title}>
+    Account Setup{"\n"}Overview.
+  </Text>
+)}
         {/* Step 1 */}
         {currentStep == 1 && (
           <>
@@ -445,7 +451,6 @@ const AccountSetupScreen = ({ navigation }) => {
         )}
 
         {/* Step 5 */}
-
         {currentStep == 5 && (
           <>
             <View style={styles.alignLeft}>
@@ -536,7 +541,6 @@ const AccountSetupScreen = ({ navigation }) => {
             </View>
           </>
         )}
-
         {/* Validate */}
         {currentStep < stepsCount && (
           <View style={styles.btnPrimary}>
@@ -596,6 +600,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
   },
   titleMedium: {
+    marginBottom: 10,
     fontSize: 20,
     fontWeight: "medium",
   },
@@ -607,6 +612,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   badgeList: {
+    
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
@@ -621,6 +627,24 @@ const styles = StyleSheet.create({
   },
   step3Wrapper: {
     marginTop: 15,
+  },section: {
+    flex:1,
+    alignSelf: "flex-start",
+    marginVertical: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  sectionContent: {
+    fontSize: 16,
+    color: colors.textBlack,
+  },badgeList2: {
+    marginLeft: 25,
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    gap: 10,
   },
 });
 
