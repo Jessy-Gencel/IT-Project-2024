@@ -8,7 +8,7 @@ import {useForm} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import { Controller } from 'react-hook-form';
 import axios from 'axios';
-import GradientBackground from "../components/LinearBackground";
+import GradientBackground from "../components/GradientBackground";
 import Constants from 'expo-constants';
 import * as SecureStore from "expo-secure-store"; // Secure storage library
 import {getToken} from "../services/GetToken";

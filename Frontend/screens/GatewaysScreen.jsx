@@ -11,7 +11,7 @@ import {
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
 import EventCardWithSection from "../components/EventCardWithSection"; // Assuming EventCardWithSection is in the same directory
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
-import GradientBackground from "../components/LinearBackground";
+import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 
 const events = [
