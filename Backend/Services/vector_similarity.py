@@ -12,14 +12,6 @@ def get_global_matches(userid : int,amount_of_results : int, global_vector : lis
     reranker = WeightedRanker(0.165,0.230,0.225,0.38)
     res = global_vector_DB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, 
                                          limit = amount_of_results)
-    for result in res[0]:
-        print(result)
-        print(userid)
-        print(type(result["id"]))
-        print(type(userid))
-        if result["id"] == int(userid):
-            res[0].remove(result)
-            break
     return res[0]
 
 def make_ANN_request(vector : list, amount_of_results : int, target_field : str,black_list : list = []):
