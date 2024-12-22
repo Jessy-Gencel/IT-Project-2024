@@ -143,6 +143,69 @@ def find_chat_by_id(chat_id: int):
         print(f"Unexpected error: {e}")
         return None
     
+def get_users_with_matching_categories(category : str, vector_ids : list):
+    valid_categories = ["book", "game", "hobby", 
+                        "interest", "movie", "music"]
+    if category not in valid_categories:
+        raise ValueError(f"Invalid category: {category}")
+    try:
+        query = f"""
+            SELECT *
+            FROM `ehb-link`.`user-data`.profiles AS user
+            WHERE ANY vector_id IN {vector_ids} 
+                SATISFIES vector_id IN user.trait_vectors.{category}_vectors
+            END;
+            """
+        result = cluster.query(query)
+        rows = list(result) 
+        if rows:
+            return rows 
+        else:
+            print(f"Users with matching {category} vectors not found.")
+            return None
+        
+    except CouchbaseException as e:
+        print(f"An error occurred while querying the database: {e}")
+        return None
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
+    
+def order_users_by_matches(category: str, vector_ids: list, user_rows: list):
+    """
+    Orders users by the number of matching vector IDs in the given category.
+
+    Args:
+        category (str): The category to check (e.g., "book", "game").
+        vector_ids (list): The list of vector IDs to match against.
+        user_rows (list): The result of `get_users_with_matching_categories`.
+
+    Returns:
+        list: A list of users sorted by the number of matches (descending), 
+              with match details for each user.
+    """
+    if not user_rows:
+        print("No user rows provided for processing.")
+        return []
+    
+    user_matches = []
+    for row in user_rows:
+        user_id = row.get("user", {}).get("id", "unknown_user") 
+        user_vectors = row.get("user", {}).get("trait_vectors", {}).get(f"{category}_vectors", [])
+        matching_vectors = set(vector_ids) & set(user_vectors)
+        match_count = len(matching_vectors)
+        if match_count > 0: 
+            user_matches.append({
+                "user_id": user_id,
+                "match_count": match_count,
+                "matching_vectors": list(matching_vectors)
+            })
+    user_matches.sort(key=lambda x: x["match_count"], reverse=True)
+
+    return user_matches
+
+
 # def find_chat(user1_id: int, user2_id: int):
 #     try:
 #         chat = get_collection("user-data", "chats").get("")

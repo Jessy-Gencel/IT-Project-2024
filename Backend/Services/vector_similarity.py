@@ -3,11 +3,12 @@ from DB.milvus_connection import global_vector_DB,category_vector_DB,predefined_
 import numpy as np
 
 
-def get_global_matches(userid : int,amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list):
-    requests = [make_ANN_request(global_vector, amount_of_results, "global_vectors"), 
-                make_ANN_request(mbti_vector, amount_of_results, "mbti_vectors"), 
-                make_ANN_request(hobby_vector, amount_of_results, "hobby_vectors"), 
-                make_ANN_request(interest_vector, amount_of_results, "interest_vectors")]
+def get_global_matches(userid : int,amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list,black_list : list = []):
+    black_list.append(userid)
+    requests = [make_ANN_request(global_vector, amount_of_results, "global_vectors",black_list), 
+                make_ANN_request(mbti_vector, amount_of_results, "mbti_vectors",black_list), 
+                make_ANN_request(hobby_vector, amount_of_results, "hobby_vectors",black_list), 
+                make_ANN_request(interest_vector, amount_of_results, "interest_vectors",black_list)]
     reranker = WeightedRanker(0.165,0.230,0.225,0.38)
     res = global_vector_DB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, 
                                          limit = amount_of_results)
@@ -21,7 +22,7 @@ def get_global_matches(userid : int,amount_of_results : int, global_vector : lis
             break
     return res[0]
 
-def make_ANN_request(vector : list, amount_of_results : int, target_field : str):
+def make_ANN_request(vector : list, amount_of_results : int, target_field : str,black_list : list = []):
     search_param = {
         "data" : vector,
         "anns_field" : target_field,
@@ -30,11 +31,17 @@ def make_ANN_request(vector : list, amount_of_results : int, target_field : str)
             "params": {"nprobe": 10}
         },
         "limit" : amount_of_results,
+        "expr" : f"id not in {black_list}"
     }
     request = AnnSearchRequest(**search_param)
     return request
-def get_by_id(id : int):
-    res = global_vector_DB.get(collection_name="global_vectors", ids=id)
+def get_by_id(id : int,db_name = "global_vector_DB" ,collection_name : str ="global_vectors"):
+    if db_name == "global_vector_DB":
+        res = global_vector_DB.get(collection_name=collection_name, ids=id)
+    elif db_name == "category_vector_DB":
+        res = category_vector_DB.get(collection_name=collection_name, ids=id)
+    else:
+        res = predefined_vector_DB1.get(collection_name=collection_name, ids=id)
     return res
 def get_by_category_and_id(category : str, id : int):
     if category == "game":
@@ -43,42 +50,33 @@ def get_by_category_and_id(category : str, id : int):
         res = predefined_vector_DB1.get(collection_name=f"{category}_predefined_vectors", ids=id, output_fields=["word"])
     return res[0]["word"]
 
-def curve_scores(scores, curve_type="exponential", **kwargs):
-    # Normalize scores
-    min_score = min(scores)
-    max_score = max(scores)
-    normalized_scores = [(s - min_score) / (max_score - min_score) for s in scores]
-    
-    # Apply curve
-    if curve_type == "exponential":
-        p = kwargs.get("power", 2)  # Default power is 2
-        curved_scores = [n**p for n in normalized_scores]
-    elif curve_type == "logarithmic":
-        k = kwargs.get("scale", 10)  # Default scale is 10
-        curved_scores = [np.log(k * n + 1) / np.log(k + 1) if n > 0 else 0 for n in normalized_scores]
-    elif curve_type == "custom":
-        a = kwargs.get("min_value", 20) / 100  # Default 20%
-        b = kwargs.get("max_value", 95) / 100  # Default 95%
-        curved_scores = [a + n * (b - a) for n in normalized_scores]
-    else:
-        raise ValueError("Invalid curve type specified.")
-    
-    # Map back to percentages
-    final_scores = [round(c * 100, 1) for c in curved_scores]
-    return final_scores
-def check_with_predefined_vectors(category : str, vector : list):
+
+def check_with_predefined_vectors(category : str, vector : list,make_bucket : bool = True):
     vector = [vector]
     res = None
     if category == "game":
         res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
     else:
         res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
-    #print(res)
-    ids = [interest['id'] for interest in res[0]]
-    distances = [interest['distance'] for interest in res[0]]
-    #print(ids)
-    #print(distances)
-    return distances,ids
+    if make_bucket:
+        ids = [interest['id'] for interest in res[0]]
+        distances = [interest['distance'] for interest in res[0]]
+        return distances,ids
+    else:
+        return res[0]
+
+
+def get_category_matches(id : int, db_name : str = "global_vector_DB", collection_name : str = "global_vectors",black_list : list = []):
+    black_list.append(id)
+    user_vector = get_by_id(id=id,db_name=db_name,collection_name=collection_name)[0]
+    if db_name == "global_vector_DB":
+        res = global_vector_DB.search(collection_name=collection_name, data=user_vector, limit=5,filter=f"id not in {black_list}")
+        pass
+    elif db_name == "category_vector_DB":
+        res = category_vector_DB.search(collection_name=collection_name, data=user_vector, limit=5,filter=f"id not in {black_list}")
+    else:
+        print("Brother what DB are you trying to access?!?!?!")
+    return res[0]
 
 def make_category_bucket_array(similarities : list, ids : list, category : str):
     """

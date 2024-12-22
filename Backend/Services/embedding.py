@@ -96,6 +96,17 @@ def embed_singular_vectors(category : str, words : list[str]):
             insert_vectors(predefined_vector_DB1, f"{category}_predefined_vectors", {f"{category}_predefined_vectors": vector.tolist(), "word": word})            
     return "All vectors added"
 
+def embed_singular_vector(word : str):
+    """
+    Embeds a single word into a vector and returns the mean vector of the embeddings.
+    Args:
+        category (str): The category of the word.
+        word (str): The word to be embedded.
+    """
+    word = word.lower()
+    vector = model.encode(word)
+    return vector
+
 def embed_MiniLM(id : int, category_dict : dict):
     final_vector_array = []
     id_category_dict = {}
@@ -125,9 +136,8 @@ def embed_MiniLM(id : int, category_dict : dict):
         if category in ["interest","hobby","game"]:
             if category in ["interest","hobby"]:
                 global_user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
-            else:
-                insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
                 pass
+            insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
         elif category in ["music","movie","book"]: 
             insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
             pass
