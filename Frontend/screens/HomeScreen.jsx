@@ -12,7 +12,7 @@ import MatchingCard from '../components/MatchingCard';
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
 import EventCardWithSection from "../components/EventCardWithSection"; // Assuming EventCardWithSection is in the same directory
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
-import GradientBackground from "../components/LinearBackground";
+import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import { getAuthTokens } from "../services/GetToken";
@@ -104,7 +104,7 @@ const HomePage = () => {
   ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <GradientBackground style={styles.background}>
         {/* Header */}
         <Header showBackArrow={false} notificationCount={5} />
@@ -177,7 +177,7 @@ const HomePage = () => {
           ))}
         </ScrollView>
       </GradientBackground>
-    </View>
+    </ScrollView>
   );
 };
 

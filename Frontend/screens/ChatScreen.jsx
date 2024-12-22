@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Button, Image, ScrollView, TextInput,KeyboardAv
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Badge from "../components/Badge";
 import MessageBubble from '../components/MessageBubble';
-import LinearBackground from '../components/LinearBackground';
+import LinearBackground from '../components/GradientBackground';
 
 const ChatScreen = ({ navigation }) => {
   const messages = [

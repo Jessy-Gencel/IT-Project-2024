@@ -24,6 +24,8 @@ const interests = [
   "Fishing",
   "Fitness",
   "Gardening",
+  "Gym",
+  "Gaming",
   "Hiking",
   "Health",
   "History",

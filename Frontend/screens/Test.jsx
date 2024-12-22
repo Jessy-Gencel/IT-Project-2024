@@ -9,7 +9,7 @@ import ScrollableList from '../components/ScrollList'; // Adjust the path if nec
 import MessageBubble from '../components/MessageBubble';
 import Header from '../components/DefaultHeader'; // Adjust path if necessary
 import MessageListHeader from '../components/MessageListHeader'; // Adjust path accordingly
-import GradientBackground from '../components/LinearBackground'; // Adjust the path as needed
+import GradientBackground from '../components/GradientBackground'; // Adjust the path as needed
 
 
 
