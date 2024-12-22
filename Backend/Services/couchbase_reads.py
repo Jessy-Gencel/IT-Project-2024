@@ -148,4 +148,27 @@ def find_chat_by_id(chat_id: int):
 #         chat = get_collection("user-data", "chats").get("")
 #                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
 
+def get_user_chats(user_id: int):
     
+    user = find_user_by_id(user_id)
+    if user is None:
+        print(f"User with ID {user_id} not found.")
+        return None
+    # user1 should be {user_id}, the db is not correctly set up
+    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE sender_id = 'user{user_id}' OR recipient_id = 'user{user_id}'"
+    print(chats_query)
+    chats_data = cluster.query(chats_query).execute()
+    chats_list = [row for row in chats_data]
+
+    # still need to fetch the pfp but the documents dont have them yet (just fetching all the data for now)
+    profile = find_profile_by_id(user_id)
+    if profile is None:
+        print(f"Profile with ID {user_id} not found.")
+        return None
+    result = {
+        "user": user,
+        "chats": chats_list,
+        "profile": profile
+    }
+
+    return result

@@ -24,8 +24,8 @@ def init_websockets(socketio):
 
     @socketio.on('join_room')
     def on_join(data):
-        sender_id = data.get('user1_id')
-        recipient_id = data.get('user2_id')
+        sender_id = data.get('currentUser')
+        recipient_id = data.get('recipient')
         print(f'sender: {sender_id} recip: {recipient_id}')
         room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
         

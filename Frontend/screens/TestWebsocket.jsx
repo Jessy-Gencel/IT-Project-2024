@@ -19,8 +19,8 @@ const TestWebSocket = () => {
         const userId = await getUserData("id"); // Retrieve user ID
         setCurrentUserId(userId); // Update state
         socket.emit("join_room", {
-          user1_id: currentUserId,
-          user2_id: user2Id,
+          currentUser: userId,
+          recipient: user2Id,
         });
       } catch (error) {
         console.error("Error fetching user ID:", error);
