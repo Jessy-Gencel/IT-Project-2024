@@ -150,13 +150,13 @@ def find_chat_by_id(chat_id: int):
 
 def get_user_chats(user_id: int):
     
-    user = find_user_by_id(user_id)
-    if user is None:
-        print(f"User with ID {user_id} not found.")
-        return None
-    # user1 should be {user_id}, the db is not correctly set up
-    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE sender_id = 'user{user_id}' OR recipient_id = 'user{user_id}'"
-    print(chats_query)
+    #fetch a users first and last name
+    user_query = f"SELECT first_name, last_name FROM `ehb-link`.`user-data`.users WHERE id = '{user_id}'"
+    user_data = cluster.query(user_query).execute()
+    user_list = [row for row in user_data]
+    
+    #fetch all chats where the user is involved
+    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id LIKE 'room:{user_id}:%' OR chat_id LIKE 'room:%:{user_id}'"
     chats_data = cluster.query(chats_query).execute()
     chats_list = [row for row in chats_data]
 
@@ -166,7 +166,7 @@ def get_user_chats(user_id: int):
         print(f"Profile with ID {user_id} not found.")
         return None
     result = {
-        "user": user,
+        "user": user_list,
         "chats": chats_list,
         "profile": profile
     }
