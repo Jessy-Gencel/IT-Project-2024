@@ -12,7 +12,7 @@ import MatchingCard from '../components/MatchingCard';
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
 import EventCardWithSection from "../components/EventCardWithSection"; // Assuming EventCardWithSection is in the same directory
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
-import GradientBackground from "../components/LinearBackground";
+import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import { getAuthTokens } from "../services/GetToken";
@@ -105,85 +105,80 @@ const HomePage = () => {
   ];
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <GradientBackground style={styles.background}>
         {/* Header */}
         <Header showBackArrow={false} notificationCount={5} />
-
         {/* Matching Section */}
         <MatchingCard name="Brent" age={19} src={require('../assets/gabimaru.jpg')} matchPercentage={69} interests={["Skiing", "Bears"]} />
-                <View style={styles.matchingSection}>
-  <Text style={styles.sectionTitle}>Matching</Text>
-  <View style={{ height: 300 }}>
-    {" "}
-    {/* Explicit height for the FlatList */}
-    <FlatList
-      data={matchingProfiles} // This is now dynamic data fetched from the backend
-      keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique keys
-      showsVerticalScrollIndicator={false}
-      nestedScrollEnabled={true} // Allow nested scrolling inside ScrollView
-      renderItem={({ item }) => (
-        <View style={styles.matchingCard}>
-          <View style={styles.cardContent}>
-            <Image
-              source={
-                typeof item.profilePicture === "string"
-                  ? { uri: item.profilePicture }
-                  : item.profilePicture
-              }
-              style={styles.pfp}
-            />
-
-            <View style={styles.cardText}>
-              <Text style={styles.cardName}>{item.name}</Text>
-              <View style={styles.progressBarCard}>
-                <Text style={styles.progressBarText}>
-                  {item.match_score}%
-                </Text>
-                <ProgressBar
-                  fillWidth={item.match_score}
-                  height={15}
-                  borderRadius={10}
-                  barColor="#5F63E2"
+        <View style={styles.matchingSection}>
+          <Text style={styles.sectionTitle}>Matching</Text>
+          {/* Explicit height for the FlatList */}
+          <View style={{ height: 300 }}>
+            <FlatList
+              data={matchingProfiles} // This is now dynamic data fetched from the backend
+              keyExtractor={(item, index) => `${item.id}-${index}`} // Ensure unique keys
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={false} // Disable scrolling
+              renderItem={({ item }) => (
+              <View style={styles.matchingCard}>
+                <View style={styles.cardContent}>
+                <Image
+                  source={
+                  typeof item.profilePicture === "string"
+                    ? { uri: item.profilePicture }
+                    : item.profilePicture
+                  }
+                  style={styles.pfp}
                 />
+                <View style={styles.cardText}>
+                  <Text style={styles.cardName}>{item.name}</Text>
+                  <View style={styles.progressBarCard}>
+                  <Text style={styles.progressBarText}>
+                    {item.match_score}%
+                  </Text>
+                  <ProgressBar
+                    fillWidth={item.match_score}
+                    height={15}
+                    borderRadius={10}
+                    barColor="#5F63E2"
+                  />
+                  </View>
+                </View>
+                <View style={styles.cardActions}>
+                  <TouchableOpacity>
+                  <Ionicons
+                    name="chatbubble-ellipses"
+                    size={20}
+                    color="black"
+                  />
+                  </TouchableOpacity>
+                  <TouchableOpacity>
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={20}
+                    color="black"
+                  />
+                      </TouchableOpacity>
+                </View>
+                </View>
               </View>
-            </View>
-            <View style={styles.cardActions}>
-              <TouchableOpacity>
-                <Ionicons
-                  name="chatbubble-ellipses"
-                  size={20}
-                  color="black"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Ionicons
-                  name="information-circle-outline"
-                  size={20}
-                  color="black"
-                />
-              </TouchableOpacity>
-            </View>
+              )}
+            />
           </View>
         </View>
-      )}
-    />
-  </View>
-</View>
-
-
         {/* Event Section */}
         <ScrollView
           style={styles.eventSection}
           showsVerticalScrollIndicator={false}
-        >
+          scrollEnabled={false}>
           <Text style={styles.sectionTitle}>Events</Text>
           {events.map((event) => (
             <EventCardWithSection key={event.id} {...event} />
           ))}
         </ScrollView>
       </GradientBackground>
-    </View>
+    </ScrollView>
   );
 };
 

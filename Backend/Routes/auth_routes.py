@@ -7,6 +7,7 @@ from Services.couchbase_writes import store_user,store_profile
 from Utils.extract_name import extract_name
 from Services.embedding import embed_MiniLM
 from Utils.jwt_encode import token_required
+from Utils.image_upload import save_profile_picture
 import jwt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -57,6 +58,7 @@ def register():
 def create_profile(payload):
     data = request.get_json()
     id = payload['user_id']
+    age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
     hobbies = santize_array(data['hobbies'])
@@ -65,6 +67,12 @@ def create_profile(payload):
     books = santize_array(data['books'])
     music = santize_array(data['music'])
     ############################## SANITIZATION ###############################
+    profile_pick = data['pfp']
+    pfp_result = save_profile_picture(profile_pick,id)
+    if pfp_result["status"] == "error":
+        return pfp_result["message"], 400  # Return error if PFP upload fails
+    pfp = pfp_result["image_url"]
+    ############################## HANDLE IMAGE UPLOAD ###############################
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
     predefined_matching_categories = embed_MiniLM(int(id),traits)
@@ -74,7 +82,7 @@ def create_profile(payload):
     events = []
     trait_vectors = predefined_matching_categories
     user = find_user_by_id(id)
-    user_profile = {"id" : id,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
+    user_profile = {"id" : id,"age": age,"pfp" : pfp,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
     profile = store_profile(user_profile)
     return "User created correctly", 200

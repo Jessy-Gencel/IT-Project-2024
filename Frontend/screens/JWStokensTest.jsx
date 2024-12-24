@@ -11,7 +11,7 @@ import {
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
 import EventCardWithSection from "../components/EventCardWithSection"; // Assuming EventCardWithSection is in the same directory
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
-import GradientBackground from "../components/LinearBackground";
+import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import {getToken} from "../services/GetToken";
@@ -19,6 +19,8 @@ import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import axios from "axios";
 import { Alert } from "react-native";
+import Constants from 'expo-constants';
+
 
 
 
@@ -30,9 +32,8 @@ const JWSTesting = () => {
             const accessToken = await getToken("accessToken");
             const refreshToken = await getToken("refreshToken");
             console.log("accessToken", accessToken);
-
             const response = await axios.get(
-                "http://10.2.88.190:5000/auth/users",
+                `${Constants.expoConfig.extra.BASE_URL}/auth/users`,
                 {
                   headers: {
                     Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization header

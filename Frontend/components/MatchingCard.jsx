@@ -44,8 +44,8 @@ const MatchingCard = ({
         <View style={styles.badgeContainer}>
           <Text style={styles.badgeTitle}>Interests</Text>
           <View style={styles.badgeList}>
-            {interests.map((title) => {
-              return <Badge title={title} />;
+            {interests.map((title,index) => {
+              return <Badge key={index} title={title} />;
             })}
           </View>
         </View>
@@ -53,8 +53,8 @@ const MatchingCard = ({
         <View style={styles.badgeContainer}>
           <Text style={styles.badgeTitle}>Hobbies</Text>
           <View style={styles.badgeList}>
-            {interests.map((title) => {
-              return <Badge title={title} />;
+            {interests.map((title,index) => {
+              return <Badge key={index} title={title} />;
             })}
           </View>
         </View>
@@ -62,8 +62,8 @@ const MatchingCard = ({
         <View style={styles.badgeContainer}>
           <Text style={styles.badgeTitle}>Books</Text>
           <View style={styles.badgeList}>
-            {interests.map((title) => {
-              return <Badge title={title} />;
+            {interests.map((title,index) => {
+              return <Badge key={index} title={title} />;
             })}
           </View>
         </View>
