@@ -1,5 +1,6 @@
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from Services.couchbase_writes import store_chats
+from Services.couchbase_writes import store_chats, store_room
+from Services.couchbase_reads import check_room_exists
 from flask import request
 
 
@@ -18,17 +19,19 @@ def init_websockets(socketio):
         """Handles new WebSocket connections."""
         print(f"Client connected: yay")
         emit('server_response', {'message': 'Welcome to the WebSocket server!'})
-        
-    # @socketio.on('new_chat')
-    # def handle_new_chat():
+
 
     @socketio.on('join_room')
     def on_join(data):
-        sender_id = data.get('currentUser')
-        recipient_id = data.get('recipient')
-        print(f'sender: {sender_id} recip: {recipient_id}')
-        room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
-        
+        current_user_id = data.get('current_user_id')
+        match_user_id = data.get('match_user_id')
+        print(f'current user: {current_user_id} match id: {match_user_id}')
+        room = f'room:{min(current_user_id, match_user_id)}:{max(current_user_id, match_user_id)}'
+
+        # Check if room exists, if not add to db
+        if not check_room_exists(room):
+            store_room(room)
+
         join_room(room)
         print(f'User {request.sid} joined room {room}')
         emit('server_response', {'message': f'You joined room {room}'}, room=room)

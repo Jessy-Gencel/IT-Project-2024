@@ -45,3 +45,12 @@ def store_chats(message : dict):
         print(f"An error occurred while storing the message: {e}")
         return None
     
+def store_room(room: str):
+    try:
+        collection = get_collection("user-data", "chats")
+        collection.insert(room)
+        return True
+
+    except CouchbaseException as e:
+        print(f"An error occurred while storing the room: {e}")
+        return None

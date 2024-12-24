@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import colors from "../theme/colors";
-import LinearBackground from "../components/LinearBackground";
+import LinearBackground from "../components/GradientBackground";
 import SecondaryButtonPill from "../components/SecondaryButtonPill";
 
 const SettingsScreen = ({ navigation }) => {
