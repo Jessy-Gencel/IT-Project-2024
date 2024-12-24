@@ -174,10 +174,12 @@ def get_user_chats(user_id: int):
     return result
 
 def check_room_exists(room: str):
-    query = f"SELECT room_id FROM `ehb-link`.`user-data`.`chats` WHERE room_id = {room}"
+    query = f"SELECT room_id FROM `ehb-link`.`user-data`.`chats` WHERE room_id = '{room}'"
     query_data = cluster.query(query).execute()
 
     if query_data is None:
+        print('room does not exist')
         return False
     else:
+        print('room exists')
         return True

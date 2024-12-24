@@ -21,7 +21,6 @@ import mbti from "../config/mbti";
 import interests from "../config/interests";
 import RNPickerSelect from "react-native-picker-select";
 import axios from "axios";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 //weghalen van een hobby badge moet nog gebeuren 
 //pas op het einde alles doorsturen naar backend via axios

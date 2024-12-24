@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Button, Image } from "react-native";
 import MessageListHeader from "../components/MessageListHeader";
 import Ionicons from "react-native-vector-icons/Ionicons";

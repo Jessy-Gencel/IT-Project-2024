@@ -26,7 +26,7 @@ def init_websockets(socketio):
         current_user_id = data.get('current_user_id')
         match_user_id = data.get('match_user_id')
         print(f'current user: {current_user_id} match id: {match_user_id}')
-        room = f'room:{min(current_user_id, match_user_id)}:{max(current_user_id, match_user_id)}'
+        room = f'room:{min(int(current_user_id), int(match_user_id))}:{max(int(current_user_id), int(match_user_id))}'
 
         # Check if room exists, if not add to db
         if not check_room_exists(room):

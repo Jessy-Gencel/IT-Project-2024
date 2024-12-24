@@ -49,6 +49,7 @@ def store_room(room: str):
     try:
         collection = get_collection("user-data", "chats")
         collection.insert(room)
+        print('room stored')
         return True
 
     except CouchbaseException as e:
