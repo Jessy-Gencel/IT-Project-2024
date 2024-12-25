@@ -48,7 +48,7 @@ def store_chats(message : dict):
 def store_room(room: str):
     try:
         collection = get_collection("user-data", "chats")
-        collection.insert(room)
+        collection.insert(room, {"room_id": room})
         print('room stored')
         return True
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from Services.couchbase_reads import get_user_chats
+from Services.couchbase_reads import get_user_chats, get_room_messages
 
 # Define the blueprint for messages
 message_bp = Blueprint('messages', __name__, url_prefix='/messages')
@@ -41,4 +41,13 @@ def user_chats(user_id):
     if result is None:
         return jsonify({"error": "User not found"}), 404
     return jsonify(result), 200
+
+@message_bp.route('/<string:room_id>', methods=['GET'])
+def get_messages_by_room_id(room_id):
+    result = get_room_messages(room_id)
+    print('messages: ', result)
+    
+    if not result:
+        return jsonify({"error": "Messages not found"}), 404
+    return result, 200
 

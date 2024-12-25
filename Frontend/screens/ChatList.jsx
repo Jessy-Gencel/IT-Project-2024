@@ -30,6 +30,7 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
       current_user_id: currentUserId,
       match_user_id: userId,
     });
+    navigation.navigate('Chat', { room: "room:1:2"})
   };
 
   return (

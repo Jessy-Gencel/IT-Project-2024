@@ -176,10 +176,21 @@ def get_user_chats(user_id: int):
 def check_room_exists(room: str):
     query = f"SELECT room_id FROM `ehb-link`.`user-data`.`chats` WHERE room_id = '{room}'"
     query_data = cluster.query(query).execute()
-
-    if query_data is None:
+    
+    if not query_data:
         print('room does not exist')
         return False
     else:
         print('room exists')
         return True
+    
+def get_room_messages(room: str):
+    try:
+        query = f"SELECT * FROM `ehb-link`.`user-data`.`messages` WHERE room_id = '{room}'"
+        query_data = cluster.query(query).execute()
+        
+        return query_data
+
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving messages from room {room}: {e}")
+        return None
