@@ -188,8 +188,9 @@ def get_room_messages(room: str):
     try:
         query = f"SELECT * FROM `ehb-link`.`user-data`.`messages` WHERE room_id = '{room}'"
         query_data = cluster.query(query).execute()
+        messages_list = [row['messages'] for row in query_data]
         
-        return query_data
+        return messages_list
 
     except CouchbaseException as e:
         print(f"An error occurred while retrieving messages from room {room}: {e}")

@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Button, Image } from "react-native";
 import MessageListHeader from "../components/MessageListHeader";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import io from "socket.io-client";
-import { IP_ADDRESS_SERVER } from "@env";
+import socket from "../services/websockets";
 import { getUserData } from "../services/GetToken";
 
-const socket = io(`http://${IP_ADDRESS_SERVER}:5000`);
 
 const ChatList = ({ navigation, isUnread, isMuted }) => {
   const [currentUserId, setCurrentUserId] = useState(null);

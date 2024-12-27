@@ -17,6 +17,7 @@ import LinearBackground from "../components/GradientBackground";
 import { IP_ADDRESS_SERVER } from "@env";
 import axiosInstance from "../services/AxiosConfig";
 import { getUserData } from "../services/GetToken";
+import socket from "../services/websockets";
 
 const getMessages = async (room) => {
   const response = await axiosInstance.get(
@@ -31,11 +32,11 @@ const getMessages = async (room) => {
   console.log("response: ", response.data);
 
   const sortedMessages = response.data.sort((a, b) => {
-    const timestampA = new Date(a.messages.timestamp);
-    const timestampB = new Date(b.messages.timestamp);
+    const timestampA = new Date(a.timestamp);
+    const timestampB = new Date(b.timestamp);
     return timestampA - timestampB; // This will sort in ascending order (oldest first)
   });
-  
+
   return sortedMessages;
 };
 
@@ -43,6 +44,16 @@ const ChatScreen = ({ navigation, route }) => {
   const { room } = route.params;
   const [messages, setMessages] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
+
+  const sendMessage = (room, sender_id, message) => {
+    const timestamp = new Date().toISOString();
+    socket.emit("send_message", {
+      room: room,
+      sender_id: sender_id,
+      message: message,
+      timestamp: timestamp,
+    });
+  };
 
   useEffect(() => {
     const fetchMessages = async (room) => {
@@ -66,7 +77,16 @@ const ChatScreen = ({ navigation, route }) => {
 
     fetchMessages(room);
     fetchUserId();
-  }, []);
+
+    socket.on("new_message", (data) => {
+      console.log("data: ", data);
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
+    
+    return () => {
+      socket.off("new_message");
+    };
+  }, [room]);
 
   useEffect(() => {
     console.log("Updated messages: ", messages);
@@ -103,21 +123,22 @@ const ChatScreen = ({ navigation, route }) => {
             <Badge text="MILFs" />
           </View>
         </View>
-        <View
+        <ScrollView
           style={styles.chatSection}
-          contentContainerStyle={{ paddingBottom: 20 }}>
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
           {Array.isArray(messages) && messages.length > 0 ? (
             messages.map((item) => (
               <MessageBubble
-                key={item.messages.message_id}
-                message={item.messages.message}
-                sender={item.messages.sender_id == currentUserId}
+                key={item.message_id}
+                message={item.message}
+                sender={item.sender_id == currentUserId}
               />
             ))
           ) : (
             <Text>No messages available</Text> // Display a fallback message if no messages
           )}
-        </View>
+        </ScrollView>
 
         {/* Input Field */}
         <View style={styles.inputContainer}>
@@ -129,6 +150,10 @@ const ChatScreen = ({ navigation, route }) => {
             style={styles.sendIcon}
           />
         </View>
+        <Button
+          onPress={() => sendMessage(room, currentUserId, "message")}
+          title="Send message"
+        />
       </View>
     </LinearBackground>
   );

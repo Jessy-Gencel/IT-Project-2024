@@ -1,5 +1,5 @@
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from Services.couchbase_writes import store_chats, store_room
+from Services.couchbase_writes import store_chats, store_room, store_message
 from Services.couchbase_reads import check_room_exists
 from flask import request
 
@@ -51,24 +51,13 @@ def init_websockets(socketio):
         try:
             # Extract message details
             sender_id = data.get('sender_id')
-            recipient_id = data.get('recipient_id')
             message = data.get('message')
-            room = f'room:{min(sender_id, recipient_id)}:{max(sender_id, recipient_id)}'
-            print(f'message recieved from {sender_id} to {recipient_id} message: {message}')
-            emit('new_message', {'sender_id': sender_id, 'message': message}, room=room)
-            print(room)
-            
-            # Store message in the database
-            # message_dict = {
-            #     "conversation_id": conversation_id,
-            #     "sender_id": sender_id,
-            #     "recipient_id": recipient_id,
-            #     "messages": []
-            # }
-            # store_chats(message_dict)
-            # return "Message Sent"
-
-
+            room = data.get('room')
+            timestamp = data.get('timestamp')
+            message_id = store_message(room, sender_id, message, timestamp)
+            print("emitting")
+            emit('new_message', {'message_id': message_id, 'sender_id': sender_id, 'message': message, 'timestamp': timestamp}, room=room)
+            print("emitted")
 
         except Exception as e:
             emit('response', {'status': 'error', 'message': str(e)})
@@ -76,3 +65,5 @@ def init_websockets(socketio):
     @socketio.on('disconnect')
     def handle_disconnect():
         print("Client disconnected")
+
+
