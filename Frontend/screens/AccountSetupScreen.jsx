@@ -18,8 +18,6 @@ import Badge from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import TertiaryButon from "../components/TertiaryButton";
 import ImageUploadComponent from '../components/ImageUploadComponent'; // Image upload component
-
-
 // Import the MBTI and interests data from your configuration
 import mbti from "../config/mbti";
 import interests from "../config/interests";
@@ -65,7 +63,6 @@ const AccountSetupScreen = ({ navigation }) => {
     movies: [],
     books: [],
     music: [],
-    profilePicture: "", // Added profile picture field
   });
 
   const handleUploadSuccess = (blob) => {
@@ -146,18 +143,8 @@ const AccountSetupScreen = ({ navigation }) => {
     const updatedValues = currentValues.filter((_, i) => i !== index);
     setValue(field, updatedValues);
   };
-
+ 
   const handleFormSubmit = async () => {
-    const dataToSend = new FormData();
-
-    // Append all form data fields
-    Object.keys(formData).forEach((key) => {
-      if (key !== 'profilePicture') {
-        dataToSend.append(key, formData[key]);
-      }
-    });
-
-    
     dataToSend.append("mbti", formData.mbti);  // Store the MBTI as a string
 
       
@@ -413,17 +400,16 @@ const AccountSetupScreen = ({ navigation }) => {
               
               {/* Debugging: Log the mbti data */}
               {console.log(mbti)} 
-              
-              
+      
               <RNPickerSelect
-              onValueChange={(value) => console.log(value)
-          
-              }
-              
-              items={mbti.map((type) => ({
-                label: type,
-                value: type,
-              }))}
+                onValueChange={
+                  (value) => setFormData((prev) => ({ ...prev, mbti: value }))
+                }
+                items={mbti.map((type) => ({
+                    label: type,
+                    value: type,
+                  })
+                )}
               />
                 
               
