@@ -1,38 +1,118 @@
-import React from "react";
-import { View, Text, StyleSheet, Button, Image, ScrollView, TextInput,KeyboardAvoidingView, Platform } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Image,
+  ScrollView,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Badge from "../components/Badge";
-import MessageBubble from '../components/MessageBubble';
-import LinearBackground from '../components/GradientBackground';
-
-const ChatScreen = ({ navigation }) => {
-  const messages = [
-    { id: "1", message: "Imperial Nuns Admonished Truffles For Activists Blissfully.", sender: true },
-    { id: "2", message: "Insensitive Nutritionists Attacked Turkish Foolish Accordions Bashfully.", sender: false },
-    { id: "3", message: "Inexpensive Nude Apollo Tripped Fanged Apollo Busily.", sender: true },
-    { id: "4", message: "Iconic Naked Aladdin Tasted Fat Aprons Brashly.", sender: false },
-  ];
+import MessageBubble from "../components/MessageBubble";
+import LinearBackground from "../components/GradientBackground";
+import axiosInstance from "../services/AxiosConfig";
+import { getUserData } from "../services/GetToken";
+import socket from "../services/websockets";
+import Constants from 'expo-constants';
 
 
+const getMessages = async (room) => {
+  const response = await axiosInstance.get(
+    `${Constants.expoConfig.extra.BASE_URL}/messages/${room}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    }
+  );
+  console.log("response: ", response.data);
+
+  const sortedMessages = response.data.sort((a, b) => {
+    const timestampA = new Date(a.timestamp);
+    const timestampB = new Date(b.timestamp);
+    return timestampA - timestampB; // This will sort in ascending order (oldest first)
+  });
+
+  return sortedMessages;
+};
+
+const ChatScreen = ({ navigation, route }) => {
+  const { room } = route.params;
+  const [messages, setMessages] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  const sendMessage = (room, sender_id, message) => {
+    const timestamp = new Date().toISOString();
+    socket.emit("send_message", {
+      room: room,
+      sender_id: sender_id,
+      message: message,
+      timestamp: timestamp,
+    });
+  };
+
+  useEffect(() => {
+    const fetchMessages = async (room) => {
+      try {
+        const data = await getMessages(room);
+        setMessages(data);
+        console.log("data: ", data);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    };
+
+    const fetchUserId = async () => {
+      try {
+        const userId = await getUserData("id"); // Retrieve user ID
+        setCurrentUserId(userId); // Update state
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchMessages(room);
+    fetchUserId();
+
+    socket.on("new_message", (data) => {
+      console.log("data: ", data);
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
+    
+    return () => {
+      socket.off("new_message");
+    };
+  }, [room]);
+
+  useEffect(() => {
+    console.log("Updated messages: ", messages);
+  }, [messages]);
 
   return (
     <LinearBackground>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Ionicons name="chevron-back-outline" style={styles.backIcon}/>
+          <Ionicons name="chevron-back-outline" style={styles.backIcon} />
           <Image
-            source={require('../assets/brent_klein.png')}
+            source={require("../assets/brent_klein.png")}
             style={styles.topPfp}
           />
           <Text style={styles.topName}>Brent Devroey</Text>
         </View>
         <View style={styles.profileShort}>
           <Image
-            source={require('../assets/brent_groot.png')}
+            source={require("../assets/brent_groot.png")}
             style={styles.pfpBig}
           />
           <Text style={styles.pfpName}>Brent Devroey</Text>
-          <Text style={styles.biography}>Ge moet naar de maan schieten en in de sterren belanden</Text>
+          <Text style={styles.biography}>
+            Ge moet naar de maan schieten en in de sterren belanden
+          </Text>
         </View>
         <View style={styles.matchSection}>
           <Text style={styles.matchText}>You matched on</Text>
@@ -44,23 +124,39 @@ const ChatScreen = ({ navigation }) => {
             <Badge text="MILFs" />
           </View>
         </View>
-        <ScrollView style={styles.chatSection} contentContainerStyle={{ paddingBottom: 20 }}>
-          {messages.map((item) => (
-            <MessageBubble
-              key={item.id}
-              message={item.message}
-              sender={item.sender}
-            />
-          ))}
+        <ScrollView
+          style={styles.chatSection}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        >
+          {Array.isArray(messages) && messages.length > 0 ? (
+            messages.map((item) => (
+              <MessageBubble
+                key={item.message_id}
+                message={item.message}
+                sender={item.sender_id == currentUserId}
+              />
+            ))
+          ) : (
+            <Text>No messages available</Text> // Display a fallback message if no messages
+          )}
         </ScrollView>
 
         {/* Input Field */}
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} placeholder="Write a message..." />
-          <Ionicons name="send-outline" size={24} color="#F7931E" style={styles.sendIcon} />
+          <Ionicons
+            name="send-outline"
+            size={24}
+            color="#F7931E"
+            style={styles.sendIcon}
+          />
         </View>
+        <Button
+          onPress={() => sendMessage(room, currentUserId, "message")}
+          title="Send message"
+        />
       </View>
-</LinearBackground>
+    </LinearBackground>
   );
 };
 

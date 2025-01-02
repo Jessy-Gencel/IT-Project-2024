@@ -12,7 +12,6 @@ import RegisterScreen from "../screens/RegisterScreen";
 import AccountSetupScreen from "../screens/AccountSetupScreen";
 import ChatList from "../screens/ChatList";
 import SettingsScreen from "../screens/SettingsScreen";
-import  WebSocket  from "../screens/TestWebsocket";
 import JWSTesting from "../screens/JWStokensTest";
 
 const Tab = createBottomTabNavigator();
@@ -57,7 +56,6 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Components" component={ComponentsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
-      <Tab.Screen name="websockets" component={WebSocket} />
       <Tab.Screen name="AccountSetup" component={AccountSetupScreen} />
       <Tab.Screen name="ChatList" component={ChatList} />
       

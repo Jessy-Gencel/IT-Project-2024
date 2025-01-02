@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {View, Image, TextInput, Text, StyleSheet, Button} from "react-native";
+import {View, Image, TextInput, Text, StyleSheet, Button, TouchableOpacity} from "react-native";
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import styles from '../styles/LogIn';
 import PrimaryButtonPill from '../components/PrimaryButtonPill';
@@ -11,7 +11,8 @@ import axios from 'axios';
 import GradientBackground from "../components/GradientBackground";
 import Constants from 'expo-constants';
 import * as SecureStore from "expo-secure-store"; // Secure storage library
-import {getToken} from "../services/GetToken";
+import {getUserData} from "../services/GetToken";
+
 
 
 
@@ -32,7 +33,7 @@ const LogInScreen = ({ navigation }) => {
         resolver: yupResolver(schema),
     });
 
-    const storeToken = async (key, value) => {
+    const storeSecretStorage = async (key, value) => {
         try {
           await SecureStore.setItemAsync(key, value);
           console.log(`${key} stored successfully`);
@@ -47,14 +48,16 @@ const LogInScreen = ({ navigation }) => {
                 email: data.email,
                 password: data.password,
             });
-            const { access_token: accessToken, refresh_token: refreshToken } = response.data;
-            await storeToken("accessToken", accessToken);
-            await storeToken("refreshToken", refreshToken);
-            const access = await getToken("accessToken");
-            const refresh = await getToken("refreshToken");
+            const { access_token: accessToken, refresh_token: refreshToken, id: userId } = response.data;
+            await storeSecretStorage("accessToken", accessToken);
+            await storeSecretStorage("refreshToken", refreshToken);
+            await storeSecretStorage("id", userId);
+            access = await getUserData("accessToken");
+            refresh = await getUserData("refreshToken");
 
             console.log(access);
             console.log(refresh);
+            console.log(userId);
 
             navigation.navigate('Main');
             console.log("login succesfull !")
@@ -140,7 +143,9 @@ const LogInScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.questionContainer}>
                     <Text style={styles.question}>Don't have an account yet?</Text>
-                    <Text style={styles.link}>Register</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                        <Text style={styles.link}>Register</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </SafeAreaView>

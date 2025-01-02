@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import colors from "../theme/colors";
+import LinearBackground from "../components/LinearBackgroundProfile";
 import SecondaryButtonPill from "../components/SecondaryButtonPill";
 
 const SettingsScreen = ({ navigation }) => {
@@ -79,30 +80,40 @@ const SettingsScreen = ({ navigation }) => {
 
         {/* Notification Settings */}
         <Text style={styles.sectionSubtitle}>Notification settings</Text>
-        <TouchableOpacity style={styles.option}>
-            <Text style={styles.optionText}>Change message notification preferences</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-            <Text style={styles.optionText}>Change gateway notification preferences</Text>
-        </TouchableOpacity>
+        <SecondaryButtonPill
+            title={
+              <Text style={styles.optionText}>
+                Change message notification preferences
+              </Text>
+            }
+          />
+          <SecondaryButtonPill
+            title={
+              <Text style={styles.optionText}>
+                Change gateway notification preferences
+              </Text>
+            }
+          />
 
         {/* Privacy Settings */}
         <Text style={styles.sectionSubtitle}>Privacy settings</Text>
-        <TouchableOpacity style={styles.option}>
-            <Text style={styles.optionText}>Block list</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-            <Text style={styles.optionText}>Data sharing preferences</Text>
-        </TouchableOpacity>
+        <SecondaryButtonPill
+            title={<Text style={styles.optionText}>Block list</Text>}
+          />
+          <SecondaryButtonPill
+            title={
+              <Text style={styles.optionText}>Data sharing preferences</Text>
+            }
+          />
 
         {/* Account Settings */}
         <Text style={styles.sectionSubtitle}>Account settings</Text>
-        <TouchableOpacity style={styles.option}>
-            <Text style={styles.optionText}>Profile settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-            <Text style={styles.optionText}>Change password</Text>
-        </TouchableOpacity>
+        <SecondaryButtonPill
+            title={<Text style={styles.optionText}>Profile settings</Text>}
+          />
+          <SecondaryButtonPill
+            title={<Text style={styles.optionText}>Change password</Text>}
+          />
 
         {/* Actions */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

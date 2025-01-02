@@ -21,35 +21,13 @@ import ImageUploadComponent from '../components/ImageUploadComponent'; // Image 
 // Import the MBTI and interests data from your configuration
 import mbti from "../config/mbti";
 import interests from "../config/interests";
+import RNPickerSelect from "react-native-picker-select";
+import axios from "axios";
 
-// Define validation schemas using Yup
-const hobbiesSchema = yup.array().of(
-  yup.string().required("Please provide at least 3 hobbies")
-).min(3, "Please provide at least 3 hobbies");
+//weghalen van een hobby badge moet nog gebeuren 
+//pas op het einde alles doorsturen naar backend via axios
+//validatie moet nog gebeuren
 
-const interestsSchema = yup.array().of(
-  yup.string().required("Please provide at least 3 interests.")
-).min(3, "Please provide at least 3 interests.");
-
-const favoritesSchema = yup.object({
-  games: yup.array().of(yup.string().required("Each game should be a string")).nullable(),
-  movies: yup.array().of(yup.string().required("Each movie should be a string")).nullable(),
-  books: yup.array().of(yup.string().required("Each book should be a string")).nullable(),
-  music: yup.array().of(yup.string().required("Each song or artist should be a string")).nullable(),
-});
-
-const mbtiSchema = yup.string({
-  mbti: yup.string().required("Please select your MBTI"), // Expecting a string value here
-});
-
-const schema = yup.object({
-  hobbies: hobbiesSchema,
-  interests: interestsSchema,
-  favorites: favoritesSchema,
-  mbti: mbtiSchema,
-});
-
-// Account Setup Screen Component
 const AccountSetupScreen = ({ navigation }) => {
   const [inputValue, setInputValue] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
@@ -179,18 +157,11 @@ const AccountSetupScreen = ({ navigation }) => {
           source={require("../assets/logo-main.png")}
           style={styles.logo}
         />
-        {currentStep !== stepsCount && (
-          <Text style={styles.title}>
-            Hi, Nils!{"\n"}Let's set up your account.
-          </Text>
-        )}
-        {currentStep === stepsCount && (
-          <Text style={styles.title}>
-            Account Setup{"\n"}Overview.
-          </Text>
-        )}
-
-        {/* Step 1 */}
+  <Text style={styles.title}>
+    Hi, Nils!{"\n"}Let's set up your account.
+  </Text>
+  <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
+     {/* Step 1 */}
         {currentStep == 1 && (
           <>
             <View style={styles.alignLeft}>
@@ -456,7 +427,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#ffffff",
+    paddingTop: 65,
+    gap: 10,
   },
   logo: {
     width: 100,
@@ -492,6 +464,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   badgeList: {
+    flexWrap: "wrap",
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 10,

@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,9 @@ import {
   ScrollView,
   FlatList,
   Image,
-  TouchableOpacity, 
+  TouchableOpacity,
 } from "react-native";
-import MatchingCard from '../components/MatchingCard';
+import MatchingCard from "../components/MatchingCard";
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
 import EventCardWithSection from "../components/EventCardWithSection"; // Assuming EventCardWithSection is in the same directory
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
@@ -16,19 +16,25 @@ import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import { getAuthTokens } from "../services/GetToken";
-import Constants from "expo-constants";
+import Constants from 'expo-constants';
+
 
 const getHomeMatches = async () => {
   try {
-    const { accessToken,refreshToken } = await getAuthTokens();
-    const response = await axiosInstance.get(`${Constants.expoConfig.extra.BASE_URL}/vector/getHomeMatches`,{
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization
-        "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
-      },
-    });
+    const { accessToken, refreshToken } = await getAuthTokens();
+    const response = await axiosInstance.get(
+      `${Constants.expoConfig.extra.BASE_URL}/vector/getHomeMatches`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization
+          "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
+        },
+      }
+    );
     console.log("Home Matches:", response.data);
-    return response.data;   // Return the data if needed elsewh
+    return response.data; // Return the data if needed elsewh
   } catch (error) {
     console.error(
       "Error fetching home matches:",
@@ -39,8 +45,6 @@ const getHomeMatches = async () => {
 };
 
 const HomePage = () => {
-  
- 
   const [matchingProfiles, setMatchingProfiles] = useState([]);
 
   // Fetch matching profiles when component mounts
@@ -59,9 +63,9 @@ const HomePage = () => {
 
   const events = [
     {
-      id: '1',
-      profilePicture: require('../assets/brent_klein.png'),
-      creatorName: 'John Doe',
+      id: "1",
+      profilePicture: require("../assets/brent_klein.png"),
+      creatorName: "John Doe",
       isGroup: false,
       eventName: "Football Afternoon",
       eventDate: "4/12",
@@ -80,9 +84,9 @@ const HomePage = () => {
         "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
     },
     {
-      id: '3',
-      profilePicture: require('../assets/brent_klein.png'),
-      creatorName: 'John Doe',
+      id: "3",
+      profilePicture: require("../assets/brent_klein.png"),
+      creatorName: "John Doe",
       isGroup: false,
       eventName: "Football Afternoon",
       eventDate: "4/12",
@@ -90,9 +94,9 @@ const HomePage = () => {
       description: "Join us for a fun football afternoon!",
     },
     {
-      id: '4',
-      profilePicture: require('../assets/brent_klein.png'),
-      creatorName: 'John Doe',
+      id: "4",
+      profilePicture: require("../assets/brent_klein.png"),
+      creatorName: "John Doe",
       isGroup: false,
       eventName: "Football Afternoon",
       eventDate: "4/12",
@@ -109,7 +113,13 @@ const HomePage = () => {
         {/* Header */}
         <Header showBackArrow={false} notificationCount={5} />
         {/* Matching Section */}
-        <MatchingCard name="Brent" age={19} src={require('../assets/gabimaru.jpg')} matchPercentage={69} interests={["Skiing", "Bears"]} />
+        <MatchingCard
+          name="Brent"
+          age={19}
+          src={require("../assets/gabimaru.jpg")}
+          matchPercentage={69}
+          interests={["Skiing", "Bears"]}
+        />
         <View style={styles.matchingSection}>
           <Text style={styles.sectionTitle}>Matching</Text>
           {/* Explicit height for the FlatList */}
@@ -120,48 +130,48 @@ const HomePage = () => {
               showsVerticalScrollIndicator={false}
               scrollEnabled={false} // Disable scrolling
               renderItem={({ item }) => (
-              <View style={styles.matchingCard}>
-                <View style={styles.cardContent}>
-                <Image
-                  source={
-                  typeof item.profilePicture === "string"
-                    ? { uri: item.profilePicture }
-                    : item.profilePicture
-                  }
-                  style={styles.pfp}
-                />
-                <View style={styles.cardText}>
-                  <Text style={styles.cardName}>{item.name}</Text>
-                  <View style={styles.progressBarCard}>
-                  <Text style={styles.progressBarText}>
-                    {item.match_score}%
-                  </Text>
-                  <ProgressBar
-                    fillWidth={item.match_score}
-                    height={15}
-                    borderRadius={10}
-                    barColor="#5F63E2"
-                  />
+                <View style={styles.matchingCard}>
+                  <View style={styles.cardContent}>
+                    <Image
+                      source={
+                        typeof item.profilePicture === "string"
+                          ? { uri: item.profilePicture }
+                          : item.profilePicture
+                      }
+                      style={styles.pfp}
+                    />
+                    <View style={styles.cardText}>
+                      <Text style={styles.cardName}>{item.name}</Text>
+                      <View style={styles.progressBarCard}>
+                        <Text style={styles.progressBarText}>
+                          {item.match_score}%
+                        </Text>
+                        <ProgressBar
+                          fillWidth={item.match_score}
+                          height={15}
+                          borderRadius={10}
+                          barColor="#5F63E2"
+                        />
+                      </View>
+                    </View>
+                    <View style={styles.cardActions}>
+                      <TouchableOpacity>
+                        <Ionicons
+                          name="chatbubble-ellipses"
+                          size={20}
+                          color="black"
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity>
+                        <Ionicons
+                          name="information-circle-outline"
+                          size={20}
+                          color="black"
+                        />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
-                <View style={styles.cardActions}>
-                  <TouchableOpacity>
-                  <Ionicons
-                    name="chatbubble-ellipses"
-                    size={20}
-                    color="black"
-                  />
-                  </TouchableOpacity>
-                  <TouchableOpacity>
-                  <Ionicons
-                    name="information-circle-outline"
-                    size={20}
-                    color="black"
-                  />
-                      </TouchableOpacity>
-                </View>
-                </View>
-              </View>
               )}
             />
           </View>

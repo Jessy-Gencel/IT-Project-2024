@@ -43,7 +43,9 @@ def save_profile_picture(file : FileStorage, user_id : str) -> dict:
             filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
             
             # Save the file to the designated folder
+            print("we got here")
             file.save(filepath)
+            print("We also got here")
 
             # Generate a public URL (relative path for now)
             image_url = f"/{UPLOAD_FOLDER}/{unique_filename}"

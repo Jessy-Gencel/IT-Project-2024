@@ -32,14 +32,16 @@ const EventCard = ({
           <View style={styles.nameWrapper}>
             {isGroup ? (
               <MaterialIcons name="shield" size={18} color="#000" />
-            ) : null} {/* No Icon for Users */}
+            ) : null} 
+            {/* No Icon for Users */}
             <Text style={[styles.creatorName, { marginLeft: isGroup ? 5 : 0 }]}>
               {creatorName}
             </Text>
           </View>
         </View>
         <TouchableOpacity>
-          <Entypo name="dots-three-horizontal" size={24} color="black" /> {/* Horizontal Dots */}
+          <Entypo name="dots-three-horizontal" size={24} color="black" /> 
+          {/* Horizontal Dots */}
         </TouchableOpacity>
       </View>
 
