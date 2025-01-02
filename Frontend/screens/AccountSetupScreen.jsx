@@ -172,17 +172,11 @@ const AccountSetupScreen = ({ navigation }) => {
           source={require("../assets/logo-main.png")}
           style={styles.logo}
         />
-        {currentStep !== stepsCount && (
   <Text style={styles.title}>
     Hi, Nils!{"\n"}Let's set up your account.
   </Text>
-)}
-{currentStep === stepsCount && (
-  <Text style={styles.title}>
-    Account Setup{"\n"}Overview.
-  </Text>
-)}
-        {/* Step 1 */}
+  <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
+     {/* Step 1 */}
         {currentStep == 1 && (
           <>
             <View style={styles.alignLeft}>
@@ -582,7 +576,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     padding: 20,
-    paddingTop: 40,
+    paddingTop: 65,
     gap: 10,
   },
   logo: {
@@ -612,7 +606,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   badgeList: {
-    
+    flexWrap: "wrap",
     flexDirection: "row",
     alignSelf: "flex-start",
     gap: 5,
