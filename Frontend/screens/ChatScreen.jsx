@@ -17,8 +17,8 @@ import LinearBackground from "../components/GradientBackground";
 import axiosInstance from "../services/AxiosConfig";
 import { getUserData } from "../services/GetToken";
 import socket from "../services/websockets";
-import Constants from 'expo-constants';
-
+import Constants from "expo-constants";
+import { useRef } from "react";
 
 const getMessages = async (room) => {
   const response = await axiosInstance.get(
@@ -30,7 +30,7 @@ const getMessages = async (room) => {
       },
     }
   );
-  console.log("response: ", response.data);
+  // console.log("response: ", response.data);
 
   const sortedMessages = response.data.sort((a, b) => {
     const timestampA = new Date(a.timestamp);
@@ -45,6 +45,8 @@ const ChatScreen = ({ navigation, route }) => {
   const { room } = route.params;
   const [messages, setMessages] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [message, setMessage] = useState("");
+  const scrollViewRef = useRef(null);
 
   const sendMessage = (room, sender_id, message) => {
     const timestamp = new Date().toISOString();
@@ -54,6 +56,7 @@ const ChatScreen = ({ navigation, route }) => {
       message: message,
       timestamp: timestamp,
     });
+    setMessage("");
   };
 
   useEffect(() => {
@@ -61,7 +64,7 @@ const ChatScreen = ({ navigation, route }) => {
       try {
         const data = await getMessages(room);
         setMessages(data);
-        console.log("data: ", data);
+        // console.log("data: ", data);
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
@@ -80,22 +83,27 @@ const ChatScreen = ({ navigation, route }) => {
     fetchUserId();
 
     socket.on("new_message", (data) => {
-      console.log("data: ", data);
+      // console.log("data: ", data);
       setMessages((prevMessages) => [...prevMessages, data]);
     });
-    
+
     return () => {
       socket.off("new_message");
     };
   }, [room]);
 
   useEffect(() => {
-    console.log("Updated messages: ", messages);
+    // console.log("Updated messages: ", messages);
   }, [messages]);
 
   return (
     <LinearBackground>
-      <View style={styles.container}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.chatSection}
+        contentContainerStyle={{ paddingBottom: 0 }}
+        onLayout={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
         <View style={styles.header}>
           <Ionicons name="chevron-back-outline" style={styles.backIcon} />
           <Image
@@ -124,36 +132,34 @@ const ChatScreen = ({ navigation, route }) => {
             <Badge text="MILFs" />
           </View>
         </View>
-        <ScrollView
-          style={styles.chatSection}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        >
-          {Array.isArray(messages) && messages.length > 0 ? (
-            messages.map((item) => (
-              <MessageBubble
-                key={item.message_id}
-                message={item.message}
-                sender={item.sender_id == currentUserId}
-              />
-            ))
-          ) : (
-            <Text>No messages available</Text> // Display a fallback message if no messages
-          )}
-        </ScrollView>
 
-        {/* Input Field */}
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder="Write a message..." />
-          <Ionicons
-            name="send-outline"
-            size={24}
-            color="#F7931E"
-            style={styles.sendIcon}
-          />
-        </View>
-        <Button
-          onPress={() => sendMessage(room, currentUserId, "message")}
-          title="Send message"
+        {Array.isArray(messages) && messages.length > 0 ? (
+          messages.map((item) => (
+            <MessageBubble
+              key={item.message_id}
+              message={item.message}
+              sender={item.sender_id == currentUserId}
+            />
+          ))
+        ) : (
+          <Text>No messages available</Text> // Display a fallback message if no messages
+        )}
+      </ScrollView>
+
+      {/* Input Field */}
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Write a message..."
+          value={message}
+          onChangeText={setMessage}
+        />
+        <Ionicons
+          onPress={() => sendMessage(room, currentUserId, message)}
+          name="send-outline"
+          size={24}
+          color="#F7931E"
+          style={styles.sendIcon}
         />
       </View>
     </LinearBackground>
