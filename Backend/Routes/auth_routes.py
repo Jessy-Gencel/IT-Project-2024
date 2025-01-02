@@ -9,6 +9,7 @@ from Services.embedding import embed_MiniLM
 from Utils.jwt_encode import token_required
 from Utils.image_upload import save_profile_picture
 import jwt
+import json
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -54,10 +55,12 @@ def register():
     })
 
 @auth_bp.route('/createProfile', methods=['POST'])
-@token_required
-def create_profile(payload):
-    data = request.get_json()
-    id = payload['user_id']
+def create_profile():
+    data = json.loads(request.form['data'])
+    pfp = request.files['pfp']
+    print(data)
+    print(pfp)
+    id = sanitize_input(str(data['id']))
     age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
@@ -66,25 +69,26 @@ def create_profile(payload):
     movies = santize_array(data['movies'])
     books = santize_array(data['books'])
     music = santize_array(data['music'])
+    print(age,mbti,interests,hobbies,games,movies,books,music)
     ############################## SANITIZATION ###############################
-    profile_pick = data['pfp']
-    pfp_result = save_profile_picture(profile_pick,id)
+    pfp_result = save_profile_picture(pfp,id)
     if pfp_result["status"] == "error":
         return pfp_result["message"], 400  # Return error if PFP upload fails
     pfp = pfp_result["image_url"]
+    print(pfp)
     ############################## HANDLE IMAGE UPLOAD ###############################
-    traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    #traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
-    predefined_matching_categories = embed_MiniLM(int(id),traits)
-    print(predefined_matching_categories)
+    #predefined_matching_categories = embed_MiniLM(int(id),traits)
+    #print(predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
-    chats = []
-    events = []
-    trait_vectors = predefined_matching_categories
-    user = find_user_by_id(id)
-    user_profile = {"id" : id,"age": age,"pfp" : pfp,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
+    #chats = []
+    #events = []
+    #trait_vectors = predefined_matching_categories
+    #user = find_user_by_id(id)
+    #user_profile = {"id" : id,"age": age,"pfp" : pfp,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
-    profile = store_profile(user_profile)
+    #profile = store_profile(user_profile)
     return "User created correctly", 200
 
 @auth_bp.route('/refresh', methods=['POST'])
