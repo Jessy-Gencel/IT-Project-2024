@@ -45,23 +45,25 @@ def register():
     print(type(password_hash))
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
-    user = store_user(user=user_dict)
-    access_token, refresh_token = jwt_full_encode(user)
+    #user = store_user(user=user_dict)
+    #access_token, refresh_token = jwt_full_encode(user)
     return jsonify({
-        "id" : user["id"],
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+        "id" : "1",
+        "access_token": "fsfjhlgkjksldfjlk",
+        "refresh_token": "jfjhsadklfjdsaifjlk",
         "message": "User created correctly"
     })
 
 @auth_bp.route('/createProfile', methods=['POST'])
 def create_profile():
-    data = json.loads(request.form['data'])
-    pfp = request.files['pfp']
-    print(data)
+    data_raw = request.form["data"]
+    pfp = request.form["pfp"]
+    data = json.loads(data_raw)
     print(pfp)
+
+    print(data)
     id = sanitize_input(str(data['id']))
-    age = sanitize_input(str(data['age']))
+    #age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
     hobbies = santize_array(data['hobbies'])
@@ -69,13 +71,13 @@ def create_profile():
     movies = santize_array(data['movies'])
     books = santize_array(data['books'])
     music = santize_array(data['music'])
-    print(age,mbti,interests,hobbies,games,movies,books,music)
+    print(mbti,interests,hobbies,games,movies,books,music)
     ############################## SANITIZATION ###############################
     pfp_result = save_profile_picture(pfp,id)
     if pfp_result["status"] == "error":
         return pfp_result["message"], 400  # Return error if PFP upload fails
-    pfp = pfp_result["image_url"]
-    print(pfp)
+    pfp_url = pfp_result["image_url"]
+    print(pfp_url)
     ############################## HANDLE IMAGE UPLOAD ###############################
     #traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################

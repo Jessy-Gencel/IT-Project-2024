@@ -18,6 +18,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
 socketio = SocketIO(app, cors_allowed_origins="*")
+MEGABYTE = (2 ** 10) ** 2
+app.config['MAX_CONTENT_LENGTH'] = None
+app.config['MAX_FORM_MEMORY_SIZE'] = 50 * MEGABYTE
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(vector_bp)

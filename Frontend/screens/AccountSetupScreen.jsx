@@ -21,12 +21,32 @@ import ImageUploadComponent from '../components/ImageUploadComponent'; // Image 
 // Import the MBTI and interests data from your configuration
 import mbti from "../config/mbti";
 import interests from "../config/interests";
-import RNPickerSelect from "react-native-picker-select";
-import axios from "axios";
 
 //weghalen van een hobby badge moet nog gebeuren 
 //pas op het einde alles doorsturen naar backend via axios
 //validatie moet nog gebeuren
+// Define validation schemas using Yup
+const hobbiesSchema = yup.array().of(
+  yup.string().required("Please provide at least 3 hobbies")
+).min(3, "Please provide at least 3 hobbies");
+const interestsSchema = yup.array().of(
+  yup.string().required("Please provide at least 3 interests.")
+).min(3, "Please provide at least 3 interests.");
+const favoritesSchema = yup.object({
+  games: yup.array().of(yup.string().required("Each game should be a string")).nullable(),
+  movies: yup.array().of(yup.string().required("Each movie should be a string")).nullable(),
+  books: yup.array().of(yup.string().required("Each book should be a string")).nullable(),
+  music: yup.array().of(yup.string().required("Each song or artist should be a string")).nullable(),
+});
+const mbtiSchema = yup.string({
+  mbti: yup.string().required("Please select your MBTI"), // Expecting a string value here
+});
+const schema = yup.object({
+  hobbies: hobbiesSchema,
+  interests: interestsSchema,
+  favorites: favoritesSchema,
+  mbti: mbtiSchema,
+});
 
 const AccountSetupScreen = ({ navigation }) => {
   const [inputValue, setInputValue] = useState("");
@@ -42,10 +62,13 @@ const AccountSetupScreen = ({ navigation }) => {
     books: [],
     music: [],
   });
+  const [mime,setMime] = useState(null);
+  const [base64Image,setBase64Image] = useState(null);
 
-  const handleUploadSuccess = (blob) => {
-    console.log("File uploaded successfully:", blob);
-    setFormData((prev) => ({ ...prev, profilePicture: blob }));
+  const handleUploadSuccess = (mime,base64) => {
+    console.log("File uploaded successfully:", mime,base64);
+    setMime(mime);
+    setBase64Image(base64);
   };
 
   // Form handling using React Hook Form
@@ -123,27 +146,22 @@ const AccountSetupScreen = ({ navigation }) => {
   };
  
   const handleFormSubmit = async () => {
-    dataToSend.append("mbti", formData.mbti);  // Store the MBTI as a string
-
-      
-
-    // Append the profile picture (if available)
-    if (formData.profilePicture) {
-      dataToSend.append("profilePicture", formData.profilePicture, "profile.jpg");  // "profile.jpg" is just a placeholder
-    }
-
-    // Send data to backend using Axios
+    console.log("Form data submitted:", formData);
+    const formattedData = new FormData();
+    formattedData.append("data", JSON.stringify(formData));  
+    formattedData.append('pfp', `data:${mime};base64,${base64Image}`);  
+    console.log("Form data after appending pfp:", formattedData);
+  
     try {
-      const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/createProfile`, dataToSend, {
+      const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/createProfile`, formattedData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "multipart/form-data",  // Set the content type for multipart
         },
       });
-
+  
       console.log("Form data submitted successfully:", response.data);
-      navigation.navigate("Home"); // Navigate to the home screen or another screen upon success
+      navigation.navigate("Home");  // Navigate to another screen upon success
     } catch (error) {
-      console.log(error)
       console.error("Error submitting form data:", error);
     }
   };
@@ -382,11 +400,6 @@ const AccountSetupScreen = ({ navigation }) => {
                   })
                 )}
               />
-                
-              
-              
-
-
             </View>
           </>
         )}

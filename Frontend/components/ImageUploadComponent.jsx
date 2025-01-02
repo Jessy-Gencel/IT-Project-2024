@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { act, useState } from 'react';
 import { View, TouchableOpacity, Image, Text, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const ImageUploadComponent = ({ onUploadSuccess }) => {
-  const [image, setImage] = useState(null);
-
+  const [imageUri, setImageUri] = useState(null);
+  const [imageMime, setImageMime] = useState(null);
+  const [base64, setBase64] = useState(null);
+  
   // Request permission to access media library
   const requestPermission = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -20,26 +22,47 @@ const ImageUploadComponent = ({ onUploadSuccess }) => {
 
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      includeBase64: true,
       allowsEditing: false,
       aspect: [4, 3],
       quality: 1,
     });
-
+    const uri = result.assets[0]["uri"];  // Replace with the URI of your image
+    const base64Image = await uriToBase64(uri);
+    console.log(`base64Image: ${base64Image}`);
     if (!result.canceled) {
-      setImage(result.assets[0].uri);  // Save the image URI to the state
+      setImageUri(uri);  // Save the image URI to the state
+      setImageMime(result.assets[0]["mimeType"]);  // Save the image MIME type to the state
+      setBase64(base64Image);  // Save the image base64 to the state
     }
   };
-
-  // Convert the image to a Blob and send it to the parent component
-  const convertToBlob = async (uri) => {
-    const response = await fetch(uri);
-    const blob = await response.blob(); // Convert URI to Blob
-    return blob;
+  const uriToBase64 = async (uri) => {
+    try {
+      // Fetch the image as a blob
+      const response = await fetch(uri);
+      const blob = await response.blob();
+  
+      // Convert blob to base64
+      const base64 = await blobToBase64(blob);
+      return base64;
+    } catch (error) {
+      console.error("Error converting image to base64", error);
+    }
+  };
+  const blobToBase64 = (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(',')[1]); // Remove the "data:image/png;base64," part
+      reader.onerror = reject;
+      reader.readAsDataURL(blob); // This converts the blob into a base64 string
+    });
   };
 
   // Function to upload the selected image (to the parent component)
   const uploadImage = async () => {
-    const uri = image;
+    const mime = imageMime;
+    const base64_image = base64;
+    console.log(`base: ${base64_image}`);
 
     if (!uri) {
       alert("Please select an image first!");
@@ -47,8 +70,9 @@ const ImageUploadComponent = ({ onUploadSuccess }) => {
     }
 
     try {
-      const blob = await convertToBlob(uri); // Convert URI to Blob
-      onUploadSuccess(blob);  // Send the Blob to the parent component
+      //const blob = await convertToBlob(uri); // Convert URI to Blob
+      //const file = await convertToFile(blob); // Convert Blob to File
+      onUploadSuccess(mime,base64);  // Send the file to the parent component
     } catch (error) {
       alert('Error processing the image: ' + error.message);
     }
@@ -62,9 +86,9 @@ const ImageUploadComponent = ({ onUploadSuccess }) => {
       </TouchableOpacity>
 
       {/* Display selected image preview */}
-      {image && (
+      {imageUri && (
         <View style={styles.imageContainer}>
-          <Image source={{ uri: image }} style={styles.imagePreview} />
+          <Image source={{ uri: imageUri }} style={styles.imagePreview} />
           <TouchableOpacity style={styles.uploadButton} onPress={uploadImage}>
             <Text style={styles.uploadText}>Upload Image</Text>
           </TouchableOpacity>
