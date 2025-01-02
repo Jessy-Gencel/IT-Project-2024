@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {View, Image, TextInput, Text, StyleSheet, Button} from "react-native";
+import {View, Image, TextInput, Text, StyleSheet, Button, TouchableOpacity} from "react-native";
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import styles from '../styles/LogIn';
 import PrimaryButtonPill from '../components/PrimaryButtonPill';
@@ -140,7 +140,9 @@ const LogInScreen = ({ navigation }) => {
                 </View>
                 <View style={styles.questionContainer}>
                     <Text style={styles.question}>Don't have an account yet?</Text>
-                    <Text style={styles.link}>Register</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                        <Text style={styles.link}>Register</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </SafeAreaView>
