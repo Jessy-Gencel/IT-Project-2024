@@ -16,13 +16,14 @@ import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import { getAuthTokens } from "../services/GetToken";
-import { IP_ADDRESS_SERVER } from "@env";
+import Constants from 'expo-constants';
+
 
 const getHomeMatches = async () => {
   try {
     const { accessToken, refreshToken } = await getAuthTokens();
     const response = await axiosInstance.get(
-      `http://${IP_ADDRESS_SERVER}:5000/vector/getHomeMatches`,
+      `${Constants.expoConfig.extra.BASE_URL}/vector/getHomeMatches`,
       {
         headers: {
           "Content-Type": "application/json",

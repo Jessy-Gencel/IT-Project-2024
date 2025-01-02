@@ -12,7 +12,6 @@ import GradientBackground from "../components/GradientBackground";
 import Constants from 'expo-constants';
 import * as SecureStore from "expo-secure-store"; // Secure storage library
 import {getUserData} from "../services/GetToken";
-import { IP_ADDRESS_SERVER } from '@env';
 
 
 
@@ -45,7 +44,7 @@ const LogInScreen = ({ navigation }) => {
 
     const onSubmit = async (data) => {
         try{
-            const response = await axios.post(`http://${IP_ADDRESS_SERVER}:5000/auth/login`, {
+            const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/login`, {
                 email: data.email,
                 password: data.password,
             });

@@ -14,14 +14,15 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Badge from "../components/Badge";
 import MessageBubble from "../components/MessageBubble";
 import LinearBackground from "../components/GradientBackground";
-import { IP_ADDRESS_SERVER } from "@env";
 import axiosInstance from "../services/AxiosConfig";
 import { getUserData } from "../services/GetToken";
 import socket from "../services/websockets";
+import Constants from 'expo-constants';
+
 
 const getMessages = async (room) => {
   const response = await axiosInstance.get(
-    `http://${IP_ADDRESS_SERVER}:5000/messages/${room}`,
+    `${Constants.expoConfig.extra.BASE_URL}/messages/${room}`,
     {
       headers: {
         "Content-Type": "application/json",

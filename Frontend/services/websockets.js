@@ -1,6 +1,6 @@
 import io from "socket.io-client";
-import { IP_ADDRESS_SERVER } from "@env";
+import Constants from 'expo-constants';
 
-const socket = io(`http://${IP_ADDRESS_SERVER}:5000`);
+const socket = io(Constants.expoConfig.extra.BASE_URL);
 
 export default socket
