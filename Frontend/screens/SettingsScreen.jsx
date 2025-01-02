@@ -9,7 +9,6 @@ import {
   Alert,
 } from "react-native";
 import colors from "../theme/colors";
-import LinearBackground from "../components/LinearBackground";
 import SecondaryButtonPill from "../components/SecondaryButtonPill";
 
 const SettingsScreen = ({ navigation }) => {
@@ -34,7 +33,7 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearBackground>
+    
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -117,7 +116,7 @@ const SettingsScreen = ({ navigation }) => {
         </TouchableOpacity>
         </ScrollView>
     </View>
-    </LinearBackground>
+    
   );
 };
 

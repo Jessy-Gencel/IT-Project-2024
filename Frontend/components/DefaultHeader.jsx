@@ -2,37 +2,46 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import LogoWrapper from './Logo';
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation hook
 
 const Header = ({ showBackArrow = false, notificationCount = 0 }) => {
+  const navigation = useNavigation(); // Access the navigation prop using the hook
+
   return (
     <View style={styles.headerContainer}>
       {/* Back Arrow */}
       {showBackArrow && (
-        <TouchableOpacity style={styles.backArrow}>
+        <TouchableOpacity style={styles.backArrow} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
       )}
 
       {/* Logo and App Name */}
       <View style={styles.logoContainer}>
-      <LogoWrapper 
-  logoSource={require('../assets/GatewayNoText_Logo.png')} 
-  width={50} 
-  height={50} 
-  />
-
-        
+        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+        <LogoWrapper 
+          logoSource={require('../assets/GatewayNoText_Logo.png')} 
+          width={50} 
+          height={50} 
+        />
+        </TouchableOpacity>
       </View>
 
       {/* Icons on the right */}
       <View style={styles.iconsContainer}>
         {/* Telegram-style Arrow */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity 
+          style={styles.iconButton} 
+          onPress={() => navigation.navigate('Chat')} // Navigate to 'Chat' screen
+        >
           <Ionicons name="paper-plane" size={24} color="black" />
         </TouchableOpacity>
 
         {/* Notifications Icon */}
-        <TouchableOpacity style={styles.notificationIconContainer}>
+        <TouchableOpacity 
+          style={styles.notificationIconContainer} 
+          onPress={() => navigation.navigate('Home')} // Navigate to 'Settings' screen
+        >
           <Ionicons name="notifications" size={24} color="black" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
@@ -42,7 +51,10 @@ const Header = ({ showBackArrow = false, notificationCount = 0 }) => {
         </TouchableOpacity>
 
         {/* Settings Icon */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity 
+          style={styles.iconButton} 
+          onPress={() => navigation.navigate('Settings')} // Navigate to 'Home' screen
+        >
           <FontAwesome name="gear" size={24} color="black" />
         </TouchableOpacity>
       </View>
@@ -56,7 +68,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
-    marginTop:40,
+    marginTop: 40,
   },
   backArrow: {
     marginRight: 10,
@@ -65,7 +77,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginLeft:20,
+    marginLeft: 20,
   },
   logo: {
     width: 40,
