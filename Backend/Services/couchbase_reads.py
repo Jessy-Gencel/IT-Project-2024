@@ -148,4 +148,50 @@ def find_chat_by_id(chat_id: int):
 #         chat = get_collection("user-data", "chats").get("")
 #                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
 
+def get_user_chats(user_id: int):
     
+    #fetch a users first and last name
+    user_query = f"SELECT first_name, last_name FROM `ehb-link`.`user-data`.users WHERE id = '{user_id}'"
+    user_data = cluster.query(user_query).execute()
+    user_list = [row for row in user_data]
+    
+    #fetch all chats where the user is involved
+    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id LIKE 'room:{user_id}:%' OR chat_id LIKE 'room:%:{user_id}'"
+    chats_data = cluster.query(chats_query).execute()
+    chats_list = [row for row in chats_data]
+
+    # still need to fetch the pfp but the documents dont have them yet (just fetching all the data for now)
+    profile = find_profile_by_id(user_id)
+    if profile is None:
+        print(f"Profile with ID {user_id} not found.")
+        return None
+    result = {
+        "user": user_list,
+        "chats": chats_list,
+        "profile": profile
+    }
+
+    return result
+
+def check_room_exists(room: str):
+    query = f"SELECT room_id FROM `ehb-link`.`user-data`.`chats` WHERE room_id = '{room}'"
+    query_data = cluster.query(query).execute()
+    
+    if not query_data:
+        print('room does not exist')
+        return False
+    else:
+        print('room exists')
+        return True
+    
+def get_room_messages(room: str):
+    try:
+        query = f"SELECT * FROM `ehb-link`.`user-data`.`messages` WHERE room_id = '{room}'"
+        query_data = cluster.query(query).execute()
+        messages_list = [row['messages'] for row in query_data]
+        
+        return messages_list
+
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving messages from room {room}: {e}")
+        return None

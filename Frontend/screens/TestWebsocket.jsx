@@ -1,88 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-import io from 'socket.io-client';
-import Constants from 'expo-constants';
+import React, { useState, useEffect } from "react";
+import { View, TextInput, Button, Text } from "react-native";
+import io from "socket.io-client";
+import { IP_ADDRESS_SERVER } from "@env";
+import { getUserData } from "../services/GetToken";
 
+const socket = io(`http://${IP_ADDRESS_SERVER}:5000`);
 
-const App = () => {
-  const [message, setMessage] = useState('');
-  const [response, setResponse] = useState('');
-  const [socket, setSocket] = useState(null);
+const TestWebSocket = () => {
+  const [message, setMessage] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [user2Id, setUser2Id] = useState("42069");
 
   useEffect(() => {
-    // Connect to Flask WebSocket server
-    const socketInstance = io(`${Constants.expoConfig.extra.BASE_URL}`, {
-      transports: ['websocket'], // Use WebSocket transport
-      reconnectionAttempts: 5,  // Retry connection 5 times
-      reconnectionDelay: 1000,  // 1-second delay between retries
+    // Fetch the current user's ID when the component mounts
+    const fetchUserId = async () => {
+      try {
+        const userId = await getUserData("id"); // Retrieve user ID
+        setCurrentUserId(userId); // Update state
+        socket.emit("join_room", {
+          currentUser: userId,
+          recipient: user2Id,
+        });
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserId(); // Call the async function
+
+    // Join the room when component mounts
+
+    // Listen for new messages
+    socket.on("new_message", (data) => {
+      setChatMessages((prevMessages) => [...prevMessages, data.message]);
     });
 
-    setSocket(socketInstance);
-
-    // Handle incoming responses from the server
-    socketInstance.on('response', (data) => {
-      console.log('Server Response:', data);
-      setResponse(data.message || 'No message');
-    });
-
-    // Handle connection errors
-    socketInstance.on('connect_error', (error) => {
-      console.error('Connection Error:', error);
-    });
-
-    // Clean up the socket connection when the component unmounts
     return () => {
-      socketInstance.disconnect();
+      socket.off("new_message");
     };
   }, []);
 
   const sendMessage = () => {
-    if (socket) {
-      // Emit the 'send_message' event to the server
-      socket.emit('send_message', {
-        conversation_id: 'conv123', // Example conversation ID
-        sender_id: 'user1',        // Example sender ID
-        recipient_id: 'user2',     // Example recipient ID
-        content: message,          // The actual message content
-      });
-    }
+    // Emit message to the backend
+    socket.emit("send_message", {
+      sender_id: currentUserId,
+      recipient_id: user2Id,
+      message: message,
+    });
+
+    // Clear the input
+    setMessage("");
   };
 
   return (
     <View style={styles.container}>
       <TextInput
-        style={styles.input}
-        placeholder="Enter your message"
         value={message}
         onChangeText={setMessage}
+        placeholder="Type a message"
       />
-      <Button title="Send Message" onPress={sendMessage} />
-      {response && <Text style={styles.response}>Response: {response}</Text>}
+      <Button title="Send" onPress={sendMessage} />
+      {/* {chatMessages.map((msg) => ( */}
+      <Text style={styles.text}>
+        {chatMessages}
+        {/* {msg.sender_id}: {msg.message} */}
+      </Text>
+      {/* ))} */}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    marginTop: 50,
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    width: '80%',
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
+  text: {
+    backgroundColor: "#b81212",
   },
-  response: {
-    marginTop: 20,
-    fontSize: 16,
-    color: 'green',
-  },
-});
+};
 
-export default App;
+export default TestWebSocket;
