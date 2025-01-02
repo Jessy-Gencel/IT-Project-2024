@@ -1,8 +1,8 @@
 import axios from "axios";
-import Constants from 'expo-constants';
+import { IP_ADDRESS_SERVER } from '@env'
 
 const axiosInstance = axios.create({
-    baseURL: Constants.expoConfig.extra.BASE_URL,
+    baseURL: IP_ADDRESS_SERVER,
     timeout: 10000,
     headers: {
         "Content-Type": "application/json",
