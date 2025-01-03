@@ -53,6 +53,11 @@ def register():
         "refresh_token": refresh_token,
         "message": "User created correctly"
     })
+@auth_bp.route('/users', methods=['GET'])
+def get_users():
+    users = {"users" : [find_user_by_id(1), find_user_by_id(2), find_user_by_id(3)]}
+    return jsonify(users), 200
+
 
 @auth_bp.route('/createProfile', methods=['POST'])
 def create_profile():
@@ -97,13 +102,7 @@ def refresh():
     token = token_refresh(data)
     return token
 
-@auth_bp.route('/users', methods=['GET'])
-@token_required
-def get_users(payload):
-    user_id = payload['user_id']
-    print(user_id)
-    # return jsonify(users)
-    return "Yippie users", 200
+
 
 @auth_bp.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
@@ -126,6 +125,5 @@ def get_profile(profile_id):
     # else:
     #     return jsonify({"error": "Profile not found"}), 404
     return "Yippie profiles/profile_id", 200
-
 
 
