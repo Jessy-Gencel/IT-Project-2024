@@ -29,7 +29,6 @@ const ImageUploadComponent = ({ onUploadSuccess }) => {
     });
     const uri = result.assets[0]["uri"];  // Replace with the URI of your image
     const base64Image = await uriToBase64(uri);
-    console.log(`base64Image: ${base64Image}`);
     if (!result.canceled) {
       setImageUri(uri);  // Save the image URI to the state
       setImageMime(result.assets[0]["mimeType"]);  // Save the image MIME type to the state
@@ -52,7 +51,7 @@ const ImageUploadComponent = ({ onUploadSuccess }) => {
   const blobToBase64 = (blob) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result.split(',')[1]); // Remove the "data:image/png;base64," part
+      reader.onloadend = () => resolve(reader.result); // Remove the "data:image/png;base64," part
       reader.onerror = reject;
       reader.readAsDataURL(blob); // This converts the blob into a base64 string
     });
@@ -60,19 +59,11 @@ const ImageUploadComponent = ({ onUploadSuccess }) => {
 
   // Function to upload the selected image (to the parent component)
   const uploadImage = async () => {
-    const mime = imageMime;
     const base64_image = base64;
-    console.log(`base: ${base64_image}`);
-
-    if (!uri) {
-      alert("Please select an image first!");
-      return;
-    }
-
     try {
       //const blob = await convertToBlob(uri); // Convert URI to Blob
       //const file = await convertToFile(blob); // Convert Blob to File
-      onUploadSuccess(mime,base64);  // Send the file to the parent component
+      onUploadSuccess(base64_image);  // Send the file to the parent component
     } catch (error) {
       alert('Error processing the image: ' + error.message);
     }

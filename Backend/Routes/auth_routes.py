@@ -65,7 +65,6 @@ def create_profile():
     pfp = request.form["pfp"]
     data = json.loads(data_raw)
     print(pfp)
-
     print(data)
     id = sanitize_input(str(data['id']))
     #age = sanitize_input(str(data['age']))
@@ -84,18 +83,17 @@ def create_profile():
     pfp_url = pfp_result["image_url"]
     print(pfp_url)
     ############################## HANDLE IMAGE UPLOAD ###############################
-    #traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
-    #predefined_matching_categories = embed_MiniLM(int(id),traits)
-    #print(predefined_matching_categories)
+    predefined_matching_categories = embed_MiniLM(int(id),traits)
+    print(predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
-    #chats = []
-    #events = []
-    #trait_vectors = predefined_matching_categories
-    #user = find_user_by_id(id)
-    #user_profile = {"id" : id,"age": age,"pfp" : pfp,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
+    trait_vectors = predefined_matching_categories
+    user = find_user_by_id(id)
+    user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
-    #profile = store_profile(user_profile)
+    profile = store_profile(user_profile)
+    print(profile)
     return "User created correctly", 200
 
 @auth_bp.route('/refresh', methods=['POST'])
