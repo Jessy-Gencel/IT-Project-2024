@@ -13,7 +13,7 @@ import EventCardWithSection from "../components/EventCardWithSection"; // Assumi
 import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar component is in the same directory
 import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
-
+import PrimaryButtonPill from "../components/PrimaryButtonPill";
 const events = [
   {
     id: "1",
@@ -63,17 +63,17 @@ const GatewaysScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <GradientBackground style={styles.background}>
-        {/* Header */}
-        <View style={styles.containerHeader}>
-            <Header showBackArrow={true} notificationCount={5} />
-            {/* Other components go here */}
-          </View>
+      <Header showBackArrow={false} notificationCount={5} />
+      <View></View>        
+          
         <ScrollView
           style={styles.eventSection}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.sectionTitle}>Events</Text>
-          {events.map((event) => (
+<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <Text style={styles.sectionTitle}>Events</Text>
+      <PrimaryButtonPill style={styles.eventButton} title="Create Event" onPress={() => navigation.navigate("CreateEvent")} />
+      </View>          {events.map((event) => (
             <EventCardWithSection key={event.id} {...event} />
           ))}
         </ScrollView>
@@ -134,7 +134,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flex:1,
     
-    width: "100%",
+    width: "95%",
+    marginHorizontal: "2.5%",
     
   },
   progressBarCard: {

@@ -15,7 +15,7 @@ import BottomTabNavigator from "./components/BottomTabNavigator";
 import LogInScreen from "./screens/LogInScreen";
 import HomePage from  "./screens/HomeScreen";
 import RegisterScreen from './screens/RegisterScreen';
-
+import CreateEvent from './screens/CreateEvent';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -28,6 +28,7 @@ export default function App() {
         <Stack.Screen name="Main" component={BottomTabNavigator} />
         <Stack.Screen name="AccountSetup" component={AccountSetupScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="CreateEvent" component={CreateEvent} />
       </Stack.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
