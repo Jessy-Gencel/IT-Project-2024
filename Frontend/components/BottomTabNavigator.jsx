@@ -2,7 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import HomeScreen from "../screens/HomeScreen";
-import ProfileScreen from "../screens/ProfileScreen";
+import ProfileScreenTest from "../screens/ProfileScreenTest";
 import GatewaysScreen from "../screens/GatewaysScreen";
 import LogInScreen from "../screens/LogInScreen";
 import ComponentsScreen from "../screens/ComponentsScreen";
@@ -51,7 +51,7 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Gateways" component={GatewaysScreen} />
       <Tab.Screen name="FUN" component={JWSTesting} />
       <Tab.Screen name="Chat" component={ChatScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreenTest} />
       <Tab.Screen name="Components" component={ComponentsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
       <Tab.Screen name="AccountSetup" component={AccountSetupScreen} />

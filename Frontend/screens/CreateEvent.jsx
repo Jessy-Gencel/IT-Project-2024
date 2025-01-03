@@ -9,8 +9,7 @@ import {
   ScrollView,
   Modal,
   Image,
-} from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker"; // You may need to install this library for date picker
+} from "react-native"; // You may need to install this library for date picker
 import GradientBackground from "../components/GradientBackground"; 
 import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
 import { Ionicons } from "@expo/vector-icons"; 
@@ -79,14 +78,6 @@ const GatewaysScreen = ({ navigation }) => {
               <Text style={styles.submitButtonText}>Create Event</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Date Picker Modal */}
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            mode="date"
-            onConfirm={handleDateConfirm}
-            onCancel={() => setDatePickerVisible(false)}
-          />
         </ScrollView>
       </GradientBackground>
     </View>
