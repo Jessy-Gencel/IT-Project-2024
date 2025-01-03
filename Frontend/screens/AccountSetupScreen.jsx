@@ -21,6 +21,7 @@ import ImageUploadComponent from '../components/ImageUploadComponent'; // Image 
 // Import the MBTI and interests data from your configuration
 import mbti from "../config/mbti";
 import interests from "../config/interests";
+import { getUserData } from "../services/GetToken";
 
 //weghalen van een hobby badge moet nog gebeuren 
 //pas op het einde alles doorsturen naar backend via axios
@@ -53,7 +54,7 @@ const AccountSetupScreen = ({ navigation }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const stepsCount = 5;
   const [formData, setFormData] = useState({
-    id: "12345", // id is hardcoded here for now
+    id: `${getUserData('id')}`, // id is hardcoded here for now
     mbti: "",  // Default to the first MBTI type
     interests: [],
     hobbies: [],

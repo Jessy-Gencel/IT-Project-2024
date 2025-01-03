@@ -45,12 +45,12 @@ def register():
     print(type(password_hash))
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
-    #user = store_user(user=user_dict)
-    #access_token, refresh_token = jwt_full_encode(user)
+    user = store_user(user=user_dict)
+    access_token, refresh_token = jwt_full_encode(user)
     return jsonify({
-        "id" : "1",
-        "access_token": "fsfjhlgkjksldfjlk",
-        "refresh_token": "jfjhsadklfjdsaifjlk",
+        "id" : str(user["id"]),
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "message": "User created correctly"
     })
 @auth_bp.route('/users', methods=['GET'])
