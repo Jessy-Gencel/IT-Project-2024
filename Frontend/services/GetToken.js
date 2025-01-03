@@ -25,8 +25,16 @@ const getAuthTokens = async () => {
     return { accessToken: null, refreshToken: null, userId: null };
   }
 };
+const storeSecretStorage = async (key, value) => {
+  try {
+    await SecureStore.setItemAsync(key, value);
+    console.log(`${key} stored successfully`);
+  } catch (error) {
+    console.error(`Error storing ${key}:`, error);
+  }
+};
 
-export {getUserData, getAuthTokens};
+export {getUserData, getAuthTokens,storeSecretStorage};
 
 // Example usage
 //const accessToken = await getToken("accessToken");

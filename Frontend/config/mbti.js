@@ -1,4 +1,4 @@
-const mbtiArray = [
+const mbti = [
   "ENTJ",
   "ENTP",
   "ENFJ",
@@ -17,9 +17,6 @@ const mbtiArray = [
   "ISFP",
 ];
 
-const mbti = mbtiArray.map((type) => ({
-  label: type,
-  value: type,
-}));
+
 
 export default mbti;

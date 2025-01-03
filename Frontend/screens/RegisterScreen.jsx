@@ -10,6 +10,7 @@ import { Controller } from "react-hook-form";
 import GradientBackground from "../components/GradientBackground";
 import axios from "axios";
 import Constants from 'expo-constants';
+import { getUserData, storeSecretStorage } from "../services/GetToken";
 
 
 const schema = yup.object({
@@ -45,8 +46,17 @@ const RegisterScreen = ({ navigation }) => {
           password: data.password,
         }
       );
+      const { access_token: accessToken, refresh_token: refreshToken, id: userId } = response.data;
+      await storeSecretStorage("accessToken", accessToken);
+      await storeSecretStorage("refreshToken", refreshToken);
+      await storeSecretStorage("id", userId);
+      const access = await getUserData("accessToken");
+      const refresh = await getUserData("refreshToken");
+      const id = await getUserData("id");
+      console.log(access);
+      console.log(refresh);
+      console.log(id);
       console.log("response", response.data);
-      console.log("Form Data:", data);
       navigation.navigate("AccountSetup");
     } catch (error) {
       console.error("Register error:", error);

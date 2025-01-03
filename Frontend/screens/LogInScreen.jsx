@@ -11,7 +11,7 @@ import axios from 'axios';
 import GradientBackground from "../components/GradientBackground";
 import Constants from 'expo-constants';
 import * as SecureStore from "expo-secure-store"; // Secure storage library
-import {getUserData} from "../services/GetToken";
+import {getUserData,storeSecretStorage} from "../services/GetToken";
 
 
 
@@ -33,15 +33,6 @@ const LogInScreen = ({ navigation }) => {
         resolver: yupResolver(schema),
     });
 
-    const storeSecretStorage = async (key, value) => {
-        try {
-          await SecureStore.setItemAsync(key, value);
-          console.log(`${key} stored successfully`);
-        } catch (error) {
-          console.error(`Error storing ${key}:`, error);
-        }
-      };
-
     const onSubmit = async (data) => {
         try{
             const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/login`, {
@@ -52,8 +43,8 @@ const LogInScreen = ({ navigation }) => {
             await storeSecretStorage("accessToken", accessToken);
             await storeSecretStorage("refreshToken", refreshToken);
             await storeSecretStorage("id", userId);
-            access = await getUserData("accessToken");
-            refresh = await getUserData("refreshToken");
+            const access = await getUserData("accessToken");
+            const refresh = await getUserData("refreshToken");
 
             console.log(access);
             console.log(refresh);

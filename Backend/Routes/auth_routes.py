@@ -48,7 +48,7 @@ def register():
     user = store_user(user=user_dict)
     access_token, refresh_token = jwt_full_encode(user)
     return jsonify({
-        "id" : user["id"],
+        "id" : str(user["id"]),
         "access_token": access_token,
         "refresh_token": refresh_token,
         "message": "User created correctly"
@@ -61,12 +61,13 @@ def get_users():
 
 @auth_bp.route('/createProfile', methods=['POST'])
 def create_profile():
-    data = json.loads(request.form['data'])
-    pfp = request.files['pfp']
-    print(data)
+    data_raw = request.form["data"]
+    pfp = request.form["pfp"]
+    data = json.loads(data_raw)
     print(pfp)
+    print(data)
     id = sanitize_input(str(data['id']))
-    age = sanitize_input(str(data['age']))
+    #age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
     hobbies = santize_array(data['hobbies'])
@@ -74,26 +75,25 @@ def create_profile():
     movies = santize_array(data['movies'])
     books = santize_array(data['books'])
     music = santize_array(data['music'])
-    print(age,mbti,interests,hobbies,games,movies,books,music)
+    print(mbti,interests,hobbies,games,movies,books,music)
     ############################## SANITIZATION ###############################
     pfp_result = save_profile_picture(pfp,id)
     if pfp_result["status"] == "error":
         return pfp_result["message"], 400  # Return error if PFP upload fails
-    pfp = pfp_result["image_url"]
-    print(pfp)
+    pfp_url = pfp_result["image_url"]
+    print(pfp_url)
     ############################## HANDLE IMAGE UPLOAD ###############################
-    #traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
-    #predefined_matching_categories = embed_MiniLM(int(id),traits)
-    #print(predefined_matching_categories)
+    predefined_matching_categories = embed_MiniLM(int(id),traits)
+    print(predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
-    #chats = []
-    #events = []
-    #trait_vectors = predefined_matching_categories
-    #user = find_user_by_id(id)
-    #user_profile = {"id" : id,"age": age,"pfp" : pfp,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
+    trait_vectors = predefined_matching_categories
+    user = find_user_by_id(id)
+    user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
-    #profile = store_profile(user_profile)
+    profile = store_profile(user_profile)
+    print(profile)
     return "User created correctly", 200
 
 @auth_bp.route('/refresh', methods=['POST'])
