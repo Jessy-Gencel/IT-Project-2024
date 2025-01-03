@@ -21,6 +21,8 @@ import ImageUploadComponent from '../components/ImageUploadComponent'; // Image 
 // Import the MBTI and interests data from your configuration
 import mbti from "../config/mbti";
 import interests from "../config/interests";
+import { getUserData } from "../services/GetToken";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 //weghalen van een hobby badge moet nog gebeuren 
 //pas op het einde alles doorsturen naar backend via axios
@@ -48,12 +50,13 @@ const schema = yup.object({
   mbti: mbtiSchema,
 });
 
+
 const AccountSetupScreen = ({ navigation }) => {
   const [inputValue, setInputValue] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const stepsCount = 5;
   const [formData, setFormData] = useState({
-    id: "12345", // id is hardcoded here for now
+    id: "", // id is hardcoded here for now
     mbti: "",  // Default to the first MBTI type
     interests: [],
     hobbies: [],
@@ -62,12 +65,17 @@ const AccountSetupScreen = ({ navigation }) => {
     books: [],
     music: [],
   });
-  const [mime,setMime] = useState(null);
   const [base64Image,setBase64Image] = useState(null);
+  const getId = async() => {
+    const id = await getUserData('id')
+    addIdToFormData(id)
+  }
+  
 
-  const handleUploadSuccess = (mime,base64) => {
-    console.log("File uploaded successfully:", mime,base64);
-    setMime(mime);
+
+  const handleUploadSuccess = async(base64) => {
+    console.log("File uploaded successfully:", base64);
+    await getId();
     setBase64Image(base64);
   };
 
@@ -113,6 +121,13 @@ const AccountSetupScreen = ({ navigation }) => {
       console.log("Validation failed:", errors);
     }
   };
+  const addIdToFormData = (newId) => {
+    console.log("Adding ID to form data:", newId);
+    setFormData((prevFormData) => ({
+      ...prevFormData, // Spread the previous state
+      id: newId,       // Update only the id
+    }));
+  };
 
   const previousStep = () => {
     if (currentStep > 1) {
@@ -149,7 +164,7 @@ const AccountSetupScreen = ({ navigation }) => {
     console.log("Form data submitted:", formData);
     const formattedData = new FormData();
     formattedData.append("data", JSON.stringify(formData));  
-    formattedData.append('pfp', `data:${mime};base64,${base64Image}`);  
+    formattedData.append('pfp', base64Image);  
     console.log("Form data after appending pfp:", formattedData);
   
     try {
