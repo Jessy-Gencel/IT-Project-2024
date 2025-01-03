@@ -39,16 +39,7 @@ const EditProfileScreen = ({ navigation }) => {
               placeholder="Enter your name"
             />
           </View>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Age</Text>
-            <TextInput
-              style={styles.input}
-              value={age}
-              onChangeText={setAge}
-              placeholder="Enter your age"
-              keyboardType="numeric"
-            />
-          </View>
+          
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Pronouns</Text>
             <TextInput
