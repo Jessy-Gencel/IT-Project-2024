@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify,send_from_directory
 from Utils.password_hashing import hash_password, verify_password
 from Utils.jwt_encode import jwt_full_encode, token_refresh
 from Utils.sanitize_input import sanitize_input, santize_array
@@ -8,6 +8,7 @@ from Utils.extract_name import extract_name
 from Services.embedding import embed_MiniLM
 from Utils.jwt_encode import token_required
 from Utils.image_upload import save_profile_picture
+from Utils.split_path import split_path
 import jwt
 import json
 
@@ -53,6 +54,14 @@ def register():
         "refresh_token": refresh_token,
         "message": "User created correctly"
     })
+@auth_bp.route('/pfp/<filename>', methods=['POST'])
+@token_required
+def pfp_send_to_frontend(payload,filename):
+    try:
+        directory, name = split_path(filename)
+        return send_from_directory(directory, name)
+    except Exception as e:
+        return str(e), 400
 @auth_bp.route('/users', methods=['GET'])
 def get_users():
     users = {"users" : [find_user_by_id(1), find_user_by_id(2), find_user_by_id(3)]}
@@ -60,6 +69,7 @@ def get_users():
 
 
 @auth_bp.route('/createProfile', methods=['POST'])
+@token_required
 def create_profile():
     data_raw = request.form["data"]
     pfp = request.form["pfp"]
