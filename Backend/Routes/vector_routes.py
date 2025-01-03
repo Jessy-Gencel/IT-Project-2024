@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from Services.embedding import embed_MiniLM
-from Services.vector_similarity import get_global_matches,get_by_id
-from Services.couchbase_reads import find_profile_by_id
+from Services.embedding import embed_singular_vector
+from Services.vector_similarity import get_global_matches,get_by_id,get_category_matches,check_with_predefined_vectors
+from Services.couchbase_reads import find_profile_by_id,get_users_with_matching_categories,order_users_by_matches
 from Utils.jwt_encode import token_required
 
 vector_bp = Blueprint('vector', __name__, url_prefix='/vector')
@@ -15,7 +15,7 @@ def make_vector():
 def get_matching_vector(payload):
     id = payload['user_id']
     user_vector = get_by_id(id)[0]
-    res = get_global_matches(id,5, [user_vector["global_vectors"]], [user_vector["mbti_vectors"]], [user_vector["hobby_vectors"]], [user_vector["interest_vectors"]])
+    res = get_global_matches(int(id),5, [user_vector["global_vectors"]], [user_vector["mbti_vectors"]], [user_vector["hobby_vectors"]], [user_vector["interest_vectors"]])
     matching_users = []
     for user in res:
         user_profile = find_profile_by_id(user["id"])
@@ -24,18 +24,35 @@ def get_matching_vector(payload):
         matching_users.append(user_profile)
     return matching_users, 200
 
+@vector_bp.route('/getMatchesByCategory', methods=['POST'])
+@token_required
+def get_matching_vector_by_category(payload):
+    data = request.get_json()
+    id = payload['user_id']
+    category = data["category"]
+    if category == "game" or category == "interest" or category == "hobby" or category == "mbti":
+        user_matches = get_category_matches(id=id,collection_name=f"{category}_vectors")[0]
+    else:
+        user_matches = get_category_matches(id=id,db_name="category_vector_DB",collection_name=f"{category}_vectors")[0]
+    matching_users = []
+    for user in user_matches:
+        user_profile = find_profile_by_id(user["id"])
+        score = round(float(user["distance"]),2) * 100
+        user_profile["match_score"] = score
+        matching_users.append(user_profile)
+    return matching_users, 200
 
-@vector_bp.route('/matches', methods=['GET'])
-def get_matches():
-    # matches = find_all_matches()
-    # return jsonify(matches)
-    return "Yippie matches", 200
+@vector_bp.route('/getMatchesBySingularWord', methods=['POST'])
+@token_required
+def get_matches_by_individual_word(payload):
+    data = request.get_json()
+    word = data["word"]
+    word_vector = embed_singular_vector(word)
+    category = data["category"]
+    res = check_with_predefined_vectors(category,word_vector,make_bucket=False)
+    matching_ids = [specific_interest_vector['id'] for specific_interest_vector in res]
+    all_users_with_matches_to_word = get_users_with_matching_categories(category,matching_ids)
+    ordered_users = order_users_by_matches(category,matching_ids,all_users_with_matches_to_word)
+    ######################################### WORK IN PROGRESS WILL NOT YET WORK, HAVE TO CHECK THE DATA STRUCTURES #####################################################
+    return ordered_users, 200
 
-@vector_bp.route('/matches/<int:matching_id>', methods=['GET'])
-def get_match(matching_id):
-    # match = find_match_by_id(matching_id)
-    # if match:
-    #     return jsonify(match), 200
-    # else:
-    #     return jsonify({"error": "Match not found"}), 404
-    return "Yippie matches/matching_id", 200

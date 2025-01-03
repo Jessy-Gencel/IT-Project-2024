@@ -124,18 +124,18 @@ const ProfileScreen = ({navigation}) => {
     return(
         <View style={styles.container}>
             <GradientBackground>
-            <View style={styles.containerHeader}>
-            <Header showBackArrow={true} notificationCount={5} />
-            {/* Other components go here */}
-          </View>
-          <ProfileCard
-            profilePicture={require('../assets/brent_klein.png')} // Pass the image using require()
-            name="John Doe"
-            age={25}
-            mbti="INTJ"
-            quote="The best way to predict the future is to create it."
-            onEditPress={handleEditPress} // Pass the function for button action
-          />
+              <View style={styles.containerHeader}>
+                <Header showBackArrow={true} notificationCount={5} />
+                {/* Other components go here */}
+              </View>
+              <ProfileCard
+                profilePicture={require('../assets/brent_klein.png')} // Pass the image using require()
+                name="John Doe"
+                age={25}
+                mbti="INTJ"
+                quote="The best way to predict the future is to create it."
+                onEditPress={handleEditPress} // Pass the function for button action
+              />
 
             </GradientBackground>
             

@@ -143,9 +143,118 @@ def find_chat_by_id(chat_id: int):
         print(f"Unexpected error: {e}")
         return None
     
+def get_users_with_matching_categories(category : str, vector_ids : list):
+    valid_categories = ["book", "game", "hobby", 
+                        "interest", "movie", "music"]
+    if category not in valid_categories:
+        raise ValueError(f"Invalid category: {category}")
+    try:
+        query = f"""
+            SELECT *
+            FROM `ehb-link`.`user-data`.profiles AS user
+            WHERE ANY vector_id IN {vector_ids} 
+                SATISFIES vector_id IN user.trait_vectors.{category}_vectors
+            END;
+            """
+        result = cluster.query(query)
+        rows = list(result) 
+        if rows:
+            return rows 
+        else:
+            print(f"Users with matching {category} vectors not found.")
+            return None
+        
+    except CouchbaseException as e:
+        print(f"An error occurred while querying the database: {e}")
+        return None
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return None
+    
+def order_users_by_matches(category: str, vector_ids: list, user_rows: list):
+    """
+    Orders users by the number of matching vector IDs in the given category.
+
+    Args:
+        category (str): The category to check (e.g., "book", "game").
+        vector_ids (list): The list of vector IDs to match against.
+        user_rows (list): The result of `get_users_with_matching_categories`.
+
+    Returns:
+        list: A list of users sorted by the number of matches (descending), 
+              with match details for each user.
+    """
+    if not user_rows:
+        print("No user rows provided for processing.")
+        return []
+    
+    user_matches = []
+    for row in user_rows:
+        user_id = row.get("user", {}).get("id", "unknown_user") 
+        user_vectors = row.get("user", {}).get("trait_vectors", {}).get(f"{category}_vectors", [])
+        matching_vectors = set(vector_ids) & set(user_vectors)
+        match_count = len(matching_vectors)
+        if match_count > 0: 
+            user_matches.append({
+                "user_id": user_id,
+                "match_count": match_count,
+                "matching_vectors": list(matching_vectors)
+            })
+    user_matches.sort(key=lambda x: x["match_count"], reverse=True)
+
+    return user_matches
+
+
 # def find_chat(user1_id: int, user2_id: int):
 #     try:
 #         chat = get_collection("user-data", "chats").get("")
 #                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
 
+def get_user_chats(user_id: int):
     
+    #fetch a users first and last name
+    user_query = f"SELECT first_name, last_name FROM `ehb-link`.`user-data`.users WHERE id = '{user_id}'"
+    user_data = cluster.query(user_query).execute()
+    user_list = [row for row in user_data]
+    
+    #fetch all chats where the user is involved
+    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id LIKE 'room:{user_id}:%' OR chat_id LIKE 'room:%:{user_id}'"
+    chats_data = cluster.query(chats_query).execute()
+    chats_list = [row for row in chats_data]
+
+    # still need to fetch the pfp but the documents dont have them yet (just fetching all the data for now)
+    profile = find_profile_by_id(user_id)
+    if profile is None:
+        print(f"Profile with ID {user_id} not found.")
+        return None
+    result = {
+        "user": user_list,
+        "chats": chats_list,
+        "profile": profile
+    }
+
+    return result
+
+def check_room_exists(room: str):
+    query = f"SELECT room_id FROM `ehb-link`.`user-data`.`chats` WHERE room_id = '{room}'"
+    query_data = cluster.query(query).execute()
+    
+    if not query_data:
+        print('room does not exist')
+        return False
+    else:
+        print('room exists')
+        return True
+    
+def get_room_messages(room: str):
+    try:
+        query = f"SELECT * FROM `ehb-link`.`user-data`.`messages` WHERE room_id = '{room}'"
+        query_data = cluster.query(query).execute()
+        messages_list = [row['messages'] for row in query_data]
+        
+        return messages_list
+
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving messages from room {room}: {e}")
+        return None

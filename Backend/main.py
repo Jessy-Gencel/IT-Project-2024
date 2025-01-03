@@ -11,13 +11,16 @@ from dotenv import load_dotenv
 from Services.couchbase_reads import get_predefined_lists
 from Services.embedding import embed_singular_vectors
 from flask_socketio import SocketIO
-from Services.websocket import init_websockets
+from Services.websockets.listeners import init_websockets
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
 socketio = SocketIO(app, cors_allowed_origins="*")
+MEGABYTE = (2 ** 10) ** 2
+app.config['MAX_CONTENT_LENGTH'] = None
+app.config['MAX_FORM_MEMORY_SIZE'] = 50 * MEGABYTE
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(vector_bp)
@@ -33,4 +36,3 @@ def home():
 
 if __name__ == '__main__':
     socketio.run(app, host=os.getenv('IP_ADDRESS_SERVER'), port=5000, debug=True)
-

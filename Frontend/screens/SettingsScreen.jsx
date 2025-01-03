@@ -36,7 +36,7 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearBackground>
+    
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -117,7 +117,7 @@ const SettingsScreen = ({ navigation }) => {
         </TouchableOpacity>
         </ScrollView>
     </View>
-    </LinearBackground>
+    
   );
 };
 

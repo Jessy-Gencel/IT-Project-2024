@@ -15,7 +15,6 @@ import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import {getToken} from "../services/GetToken";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import axios from "axios";
 import { Alert } from "react-native";

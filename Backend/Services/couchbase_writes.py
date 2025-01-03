@@ -1,6 +1,6 @@
 from couchbase.exceptions import CouchbaseException
 from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_event_by_id,find_chat_by_id,get_collection
-from Utils.id_generator import add_id_to_document
+from Utils.id_generator import add_id_to_document, generate_id
 
 def store_user(user : dict):
     user_with_id = add_id_to_document(user,"user-data","users")
@@ -45,3 +45,33 @@ def store_chats(message : dict):
         print(f"An error occurred while storing the message: {e}")
         return None
     
+def store_room(room: str):
+    try:
+        collection = get_collection("user-data", "chats")
+        collection.insert(room, {"room_id": room})
+        print('room stored')
+        return True
+
+    except CouchbaseException as e:
+        print(f"An error occurred while storing the room: {e}")
+        return None
+    
+def store_message(room_id: str, sender_id: int, message: str, timestamp: str):
+    message_id = generate_id("user-data", "messages")
+    message_id = str(message_id)
+    try:
+        collection = get_collection("user-data", "messages")
+        document = {
+            "message_id": message_id,
+            "room_id": room_id,
+            "sender_id": sender_id,
+            "message": message,
+            "timestamp": timestamp
+        }
+        collection.insert(f"message::{message_id}", document)
+        print("stored")
+        return message_id
+    
+    except CouchbaseException as e:
+        print(f"Failed to store message: ", e)
+        return None
