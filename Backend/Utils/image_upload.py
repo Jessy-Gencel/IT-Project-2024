@@ -12,6 +12,14 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_FOLDER = f"{os.getenv('PFP_UPLOAD_FOLDER')}"
 
 
+def firebase_url_getter(filename: str) -> str:
+    """
+    Get the URL of a file stored in Firebase Storage.
+
+    :param filename: Name of the file in Firebase Storage.
+    :return: The URL of the file.
+    """
+    return {"file": f"https://firebasestorage.googleapis.com/v0/b/{os.getenv('FIREBASE_BUCKET_NAME')}/o/{filename}?alt=media"}
 def allowed_file(filename : str) -> bool: 
     """
     Check if a file has an allowed extension.
@@ -53,7 +61,7 @@ def save_profile_picture(file: str, user_id: str) -> dict:
             f.write(image_data)
 
         # Generate the URL for the image
-        image_url = f"/{UPLOAD_FOLDER}/{filename}"
+        image_url = f"{filename}"
 
         return {"status": "success", "image_url": image_url}
 
