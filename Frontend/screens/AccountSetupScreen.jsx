@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,32 +7,54 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import StepCounter from "../components/StepCounter";
-import colors from "../theme/colors";
-import Badge from "../components/Badge";
-import * as yup from "yup";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller } from "react-hook-form";
-import loginStyles from "../styles/LogIn";
+import * as yup from "yup";
+import axios from "axios";
+import RNPickerSelect from "react-native-picker-select";
+import Constants from "expo-constants";
+import StepCounter from "../components/StepCounter";
+import Badge from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import TertiaryButon from "../components/TertiaryButton";
+import ImageUploadComponent from '../components/ImageUploadComponent'; // Image upload component
+// Import the MBTI and interests data from your configuration
 import mbti from "../config/mbti";
 import interests from "../config/interests";
-import RNPickerSelect from "react-native-picker-select";
-import axios from "axios";
 
 //weghalen van een hobby badge moet nog gebeuren 
 //pas op het einde alles doorsturen naar backend via axios
 //validatie moet nog gebeuren
+// Define validation schemas using Yup
+const hobbiesSchema = yup.array().of(
+  yup.string().required("Please provide at least 3 hobbies")
+).min(3, "Please provide at least 3 hobbies");
+const interestsSchema = yup.array().of(
+  yup.string().required("Please provide at least 3 interests.")
+).min(3, "Please provide at least 3 interests.");
+const favoritesSchema = yup.object({
+  games: yup.array().of(yup.string().required("Each game should be a string")).nullable(),
+  movies: yup.array().of(yup.string().required("Each movie should be a string")).nullable(),
+  books: yup.array().of(yup.string().required("Each book should be a string")).nullable(),
+  music: yup.array().of(yup.string().required("Each song or artist should be a string")).nullable(),
+});
+const mbtiSchema = yup.string({
+  mbti: yup.string().required("Please select your MBTI"), // Expecting a string value here
+});
+const schema = yup.object({
+  hobbies: hobbiesSchema,
+  interests: interestsSchema,
+  favorites: favoritesSchema,
+  mbti: mbtiSchema,
+});
 
 const AccountSetupScreen = ({ navigation }) => {
   const [inputValue, setInputValue] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const stepsCount = 5;
   const [formData, setFormData] = useState({
-    id: "12345", //id wordt opgehaald maar nu hardcoded
-    mbti: "",
+    id: "12345", // id is hardcoded here for now
+    mbti: "",  // Default to the first MBTI type
     interests: [],
     hobbies: [],
     games: [],
@@ -40,55 +62,16 @@ const AccountSetupScreen = ({ navigation }) => {
     books: [],
     music: [],
   });
+  const [mime,setMime] = useState(null);
+  const [base64Image,setBase64Image] = useState(null);
 
-  // Schema's
-  const hobbiesSchema = yup.array().of(
-      yup
-    .string()
-    .required("Please provide at least 3 hobbies"))
-    .min(3, "Please provide at least 3 hobbies")
-    .required("Please provide at least 3 hobbies");
+  const handleUploadSuccess = (mime,base64) => {
+    console.log("File uploaded successfully:", mime,base64);
+    setMime(mime);
+    setBase64Image(base64);
+  };
 
-  const interestsSchema = yup.array().of( 
-      yup
-        .string()
-        .required("Please provide at least 3 interests.")
-        .oneOf(interests, "Please select a valid interest."))
-        //hierbij moet er ook eigenlijk nog gekeken worden of er geen dubbele zijn
-        // en er moet ook gezorgd worden da het tolowercase is wnt anders komt het niet overeen met interests
-      .min(3, "Please provide at least 3 interests.")
-      .required("Please provide at least 3 interests.");
-
-  const favoritesSchema = yup.object({
-    games: yup
-      .array()
-      .of(yup.string().required("Each game should be a string"))
-      .nullable(),
-    movies: yup
-      .array()
-      .of(yup.string().required("Each movie should be a string"))
-      .nullable(),
-    books: yup
-      .array()
-      .of(yup.string().required("Each book should be a string"))
-      .nullable(),
-    music: yup
-      .array()
-      .of(yup.string().required("Each song or artist should be a string"))
-      .nullable(),
-  });
-
-  const mbtiSchema = yup.object({
-    mbti: yup.string().required("Please enter your MBTI"),
-  });
-
-  const schema = yup.object({
-    hobbies: hobbiesSchema,
-    interests: interestsSchema,
-    favorites: favoritesSchema,
-    mbti: mbtiSchema,
-  });
-
+  // Form handling using React Hook Form
   const {
     control,
     handleSubmit,
@@ -112,17 +95,16 @@ const AccountSetupScreen = ({ navigation }) => {
   });
 
   const nextStep = async () => {
-    console.log(formData["interests"]);
     const stepFields = {
       1: ["hobbies"],
       2: ["interests"],
       3: ["favorites.games", "favorites.movies", "favorites.books", "favorites.music"],
       4: ["mbti"],
     };
-  
+
     const fieldsToValidate = stepFields[currentStep];
     const isValid = await trigger(fieldsToValidate);
-  
+
     if (isValid) {
       if (currentStep < stepsCount) {
         setCurrentStep((prevStep) => prevStep + 1);
@@ -131,7 +113,7 @@ const AccountSetupScreen = ({ navigation }) => {
       console.log("Validation failed:", errors);
     }
   };
-  
+
   const previousStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
@@ -139,7 +121,7 @@ const AccountSetupScreen = ({ navigation }) => {
   };
 
   const skipStep = () => {
-    if (!(currentStep + 1 > stepsCount)) {
+    if (currentStep + 1 <= stepsCount) {
       setCurrentStep(currentStep + 1);
     } else {
       navigation.navigate("Home");
@@ -148,22 +130,44 @@ const AccountSetupScreen = ({ navigation }) => {
 
   const addItem = (field) => {
     if (inputValue.trim()) {
-        setFormData((prev) => ({
+      setFormData((prev) => ({
         ...prev,
-        [field]: [...prev[field], inputValue.trim()]
-      }))
-        setValue(field, formData[field]);
-        setInputValue(""); // Clear the input field
+        [field]: [...prev[field], inputValue.trim()],
+      }));
+      setValue(field, formData[field]);
+      setInputValue(""); // Clear input field after submission
     }
-}
+  };
 
   const removeItem = (field, index) => {
     const currentValues = getValues(field);
     const updatedValues = currentValues.filter((_, i) => i !== index);
     setValue(field, updatedValues);
-  }
+  };
+ 
+  const handleFormSubmit = async () => {
+    console.log("Form data submitted:", formData);
+    const formattedData = new FormData();
+    formattedData.append("data", JSON.stringify(formData));  
+    formattedData.append('pfp', `data:${mime};base64,${base64Image}`);  
+    console.log("Form data after appending pfp:", formattedData);
+  
+    try {
+      const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/createProfile`, formattedData, {
+        headers: {
+          "Content-Type": "multipart/form-data",  // Set the content type for multipart
+        },
+      });
+  
+      console.log("Form data submitted successfully:", response.data);
+      navigation.navigate("Home");  // Navigate to another screen upon success
+    } catch (error) {
+      console.error("Error submitting form data:", error);
+    }
+  };
 
-  // Screen
+  
+
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -188,7 +192,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 render={({ field: {onBlur } }) => (
                   <TextInput
                     style={[
-                      loginStyles.input,
+                      styles.input,
                       errors.hobbies
                         ? { borderColor: "red", borderWidth: 1 }
                         : {},
@@ -197,32 +201,31 @@ const AccountSetupScreen = ({ navigation }) => {
                     onChangeText={setInputValue}
                     value={inputValue}
                     placeholder="Hobby"
-                    placeholderTextColor={colors.placeholder}
+                    placeholderTextColor="gray"
                     onSubmitEditing={() => addItem("hobbies")}
                   />
                 )}
               />
-               {errors.hobbies && <Text style={{ color: 'red' }}>{errors.hobbies.message}</Text>}
+              {errors.hobbies && <Text style={{ color: 'red' }}>{errors.hobbies.message}</Text>}
             </View>
-            <View style={[styles.badgeList, styles.alignLeft]}>
+            <View style={styles.badgeList}>
               {formData.hobbies.map((hobby, index) => (
-                    <Badge
-                    key={index}
-                    title={hobby}
-                    isHighlighted
-                    onPress={() => removeItem("hobbies", index)}
-                  />
-                ))}
+                <Badge
+                  key={index}
+                  title={hobby}
+                  isHighlighted
+                  onPress={() => removeItem("hobbies", index)}
+                />
+              ))}
             </View>
           </>
         )}
 
         {/* Step 2 */}
         {currentStep == 2 && (
-          // bij het invoegen van een interesse zal een lijst te zien worden
           <>
             <View style={styles.alignLeft}>
-              <Text style={styles.titleMedium}>What are your interests?</Text>  
+              <Text style={styles.titleMedium}>What are your interests?</Text>
               <Text style={styles.subtitle}>Add at least 3.</Text>
 
               <Controller
@@ -231,7 +234,7 @@ const AccountSetupScreen = ({ navigation }) => {
                 render={({ field: {onBlur} }) => (
                   <TextInput
                     style={[
-                      loginStyles.input,
+                      styles.input,
                       errors.interests
                         ? { borderColor: "red", borderWidth: 1 }
                         : {},
@@ -240,329 +243,193 @@ const AccountSetupScreen = ({ navigation }) => {
                     onChangeText={setInputValue}
                     value={inputValue}
                     placeholder="Interest"
-                    placeholderTextColor={colors.placeholder}
+                    placeholderTextColor="gray"
                     onSubmitEditing={() => addItem("interests")}
                   />
                 )}
               />
               {errors.interests && <Text style={{ color: 'red' }}>{errors.interests.message}</Text>}
             </View>
-            <View style={[styles.badgeList, styles.alignLeft]}>
-            {formData.interests.map((interests, index) => (
-                  <Badge
-                    key={index}
-                    title={interests}
-                    isHighlighted
-                  />
-                ))}
+            <View style={styles.badgeList}>
+              {formData.interests.map((interest, index) => (
+                <Badge
+                  key={index}
+                  title={interest}
+                  isHighlighted
+                />
+              ))}
             </View>
           </>
         )}
 
-        {/* Step 3 */}
+        {/* Step 3: Favorites (Movies, Music, Games, Books) */}
         {currentStep == 3 && (
-          <View styles={styles.step3Container}>
-            {/* Movies */}
+          <>
             <View style={styles.step3Wrapper}>
-              <View style={styles.alignLeft}>
-                <Text style={styles.titleMedium}>
-                  Do you have any favorite movies?
-                </Text>
-
-                <Controller
-                  control={control}
-                  name="movies"
-                  render={({ field: {onBlur } }) => (
-                    <TextInput
-                      style={[
-                        loginStyles.input,
-                        errors.movies
-                          ? { borderColor: "red", borderWidth: 1 }
-                          : {},
-                      ]}
-                      onBlur={onBlur}
-                      onChangeText={setInputValue}
-                      value={inputValue}
-                      placeholder="Enter a movie"
-                      placeholderTextColor={colors.placeholder}
-                      onSubmitEditing={() => addItem("movies")}
-                    />
-                  )}
-                />
-              </View>
-              <View style={[styles.badgeList, styles.alignLeft]}>
-                {formData.movies.map((movies, index) => (
-                    <Badge
-                      key={index}
-                      title={movies}
-                      isHighlighted
-                    />
-                  ))}
+              <Text style={styles.titleMedium}>Favorite Movies</Text>
+              <Controller
+                control={control}
+                name="movies"
+                render={({ field: { onBlur } }) => (
+                  <TextInput
+                    style={[
+                      styles.input,
+                      errors.movies ? { borderColor: "red", borderWidth: 1 } : {},
+                    ]}
+                    onBlur={onBlur}
+                    onChangeText={setInputValue}
+                    value={inputValue}
+                    placeholder="Enter a movie"
+                    placeholderTextColor="gray"
+                    onSubmitEditing={() => addItem("movies")}
+                  />
+                )}
+              />
+              {errors.movies && <Text style={{ color: "red" }}>{errors.movies.message}</Text>}
+              <View style={styles.badgeList}>
+                {formData.movies.map((movie, index) => (
+                  <Badge key={index} title={movie} isHighlighted />
+                ))}
               </View>
             </View>
 
             {/* Music */}
             <View style={styles.step3Wrapper}>
-              <View style={styles.alignLeft}>
-                <Text style={styles.titleMedium}>
-                  Do you have any favorite songs or artists?
-                </Text>
-
-                <Controller
-                  control={control}
-                  name="music"
-                  render={({ field: {onBlur } }) => (
-                    <TextInput
-                      style={[
-                        loginStyles.input,
-                        errors.music
-                          ? { borderColor: "red", borderWidth: 1 }
-                          : {},
-                      ]}
-                      onBlur={onBlur}
-                      onChangeText={setInputValue}
-                      value={inputValue}
-                      placeholder="Enter a song or artist"
-                      placeholderTextColor={colors.placeholder}
-                      onSubmitEditing={() => addItem("music")}
-                    />
-                  )}
-                />
-              </View>
-              <View style={[styles.badgeList, styles.alignLeft]}>
-              {formData.music.map((music, index) => (
-                  <Badge
-                    key={index}
-                    title={music}
-                    isHighlighted
+              <Text style={styles.titleMedium}>Favorite Music</Text>
+              <Controller
+                control={control}
+                name="music"
+                render={({ field: { onBlur } }) => (
+                  <TextInput
+                    style={[
+                      styles.input,
+                      errors.music ? { borderColor: "red", borderWidth: 1 } : {},
+                    ]}
+                    onBlur={onBlur}
+                    onChangeText={setInputValue}
+                    value={inputValue}
+                    placeholder="Enter a song or artist"
+                    placeholderTextColor="gray"
+                    onSubmitEditing={() => addItem("music")}
                   />
+                )}
+              />
+              {errors.music && <Text style={{ color: "red" }}>{errors.music.message}</Text>}
+              <View style={styles.badgeList}>
+                {formData.music.map((music, index) => (
+                  <Badge key={index} title={music} isHighlighted />
                 ))}
               </View>
             </View>
 
             {/* Games */}
             <View style={styles.step3Wrapper}>
-              <View style={styles.alignLeft}>
-                <Text style={styles.titleMedium}>
-                  Do you have any favorite games?
-                </Text>
-
-                <Controller
-                  control={control}
-                  name="games"
-                  render={({ field: {onBlur } }) => (
-                    <TextInput
-                      style={[
-                        loginStyles.input,
-                        errors.games
-                          ? { borderColor: "red", borderWidth: 1 }
-                          : {},
-                      ]}
-                      onBlur={onBlur}
-                      onChangeText={setInputValue}
-                      value={inputValue}
-                      placeholder="Enter a game"
-                      placeholderTextColor={colors.placeholder}
-                      onSubmitEditing={() => addItem("games")}
-                    />
-                  )}
-                />
-              </View>
-              <View style={[styles.badgeList, styles.alignLeft]}>
-              {formData.games.map((games, index) => (
-                  <Badge
-                    key={index}
-                    title={games}
-                    isHighlighted
+              <Text style={styles.titleMedium}>Favorite Games</Text>
+              <Controller
+                control={control}
+                name="games"
+                render={({ field: { onBlur } }) => (
+                  <TextInput
+                    style={[
+                      styles.input,
+                      errors.games ? { borderColor: "red", borderWidth: 1 } : {},
+                    ]}
+                    onBlur={onBlur}
+                    onChangeText={setInputValue}
+                    value={inputValue}
+                    placeholder="Enter a game"
+                    placeholderTextColor="gray"
+                    onSubmitEditing={() => addItem("games")}
                   />
+                )}
+              />
+              {errors.games && <Text style={{ color: "red" }}>{errors.games.message}</Text>}
+              <View style={styles.badgeList}>
+                {formData.games.map((game, index) => (
+                  <Badge key={index} title={game} isHighlighted />
                 ))}
               </View>
             </View>
 
             {/* Books */}
             <View style={styles.step3Wrapper}>
-              <View style={styles.alignLeft}>
-                <Text style={styles.titleMedium}>
-                  Do you have any favorite books?
-                </Text>
-
-                <Controller
-                  control={control}
-                  name="books"
-                  render={({ field: {onBlur } }) => (
-                    <TextInput
-                      style={[
-                        loginStyles.input,
-                        errors.books
-                          ? { borderColor: "red", borderWidth: 1 }
-                          : {},
-                      ]}
-                      onBlur={onBlur}
-                      onChangeText={setInputValue}
-                      value={inputValue}
-                      placeholder="Enter a game"
-                      placeholderTextColor={colors.placeholder}
-                      onSubmitEditing={() => addItem("books")}
-                    />
-                  )}
-                />
-              </View>
-              <View style={[styles.badgeList, styles.alignLeft]}>
-              {formData.books.map((books, index) => (
-                  <Badge
-                    key={index}
-                    title={books}
-                    isHighlighted
+              <Text style={styles.titleMedium}>Favorite Books</Text>
+              <Controller
+                control={control}
+                name="books"
+                render={({ field: { onBlur } }) => (
+                  <TextInput
+                    style={[
+                      styles.input,
+                      errors.books ? { borderColor: "red", borderWidth: 1 } : {},
+                    ]}
+                    onBlur={onBlur}
+                    onChangeText={setInputValue}
+                    value={inputValue}
+                    placeholder="Enter a book"
+                    placeholderTextColor="gray"
+                    onSubmitEditing={() => addItem("books")}
                   />
+                )}
+              />
+              {errors.books && <Text style={{ color: "red" }}>{errors.books.message}</Text>}
+              <View style={styles.badgeList}>
+                {formData.books.map((book, index) => (
+                  <Badge key={index} title={book} isHighlighted />
                 ))}
               </View>
             </View>
-          </View>
+          </>
         )}
 
-        {/* Step 4 */}
         {currentStep == 4 && (
           <>
             <View style={styles.alignLeft}>
-              <Text style={styles.titleMedium}>What is your MBTI?</Text>
-            </View>
-
-            <RNPickerSelect
-              onValueChange={(value) => setSelectedValue(value)}
-              items={mbti}
-            />
-
-            <View style={styles.questionContainer}>
-              <Text style={styles.question}>Don't know your MBTI?</Text>
-              <View>
-                <Text>Do the </Text>
-                <Text style={styles.link}>16personalities test</Text>
-                <Text>to find out!</Text>
-              </View>
-            </View>
-          </>
-        )}
-
-        {/* Step 5 */}
-        {currentStep == 5 && (
-          <>
-            <View style={styles.alignLeft}>
-              <Text style={styles.titleMedium}>Here's what you filled in:</Text>
-            </View>
-
-            {/* Hobbies */}
-            <View style={styles.alignLeft}>
-              <Text style={styles.titleMedium}>Hobbies:</Text>
-              {formData.hobbies.length > 0 ? (
-                formData.hobbies.map((hobby, index) => (
-                  <Badge key={index} title={hobby} isHighlighted />
-                ))
-              ) : (
-                <Text>No hobbies added yet.</Text>
-              )}
-            </View>
-
-            {/* Interests */}
-            <View style={styles.alignLeft}>
-              <Text style={styles.titleMedium}>Interests:</Text>
-              {formData.interests.length > 0 ? (
-                formData.interests.map((interest, index) => (
-                  <Badge key={index} title={interest} isHighlighted />
-                ))
-              ) : (
-                <Text>No interests added yet.</Text>
-              )}
-            </View>
-
-            {/* Favorites */}
-            <View style={styles.step3Container}>
-              <View style={styles.step3Wrapper}>
-                {/* Movies */}
-                <View style={styles.alignLeft}>
-                  <Text style={styles.titleMedium}>Movies:</Text>
-                  {formData.movies.length > 0 ? (
-                    formData.movies.map((movie, index) => (
-                      <Badge key={index} title={movie} isHighlighted />
-                    ))
-                  ) : (
-                    <Text>No movies added yet.</Text>
-                  )}
-                </View>
-
-                {/* Music */}
-                <View style={styles.step3Wrapper}>
-                  <View style={styles.alignLeft}>
-                    <Text style={styles.titleMedium}>Music:</Text>
-                    {formData.music.length > 0 ? (
-                      formData.music.map((music, index) => (
-                        <Badge key={index} title={music} isHighlighted />
-                      ))
-                    ) : (
-                      <Text>No music added yet.</Text>
-                    )}
-                  </View>
-                </View>
-
-                {/* Games */}
-                <View style={styles.step3Wrapper}>
-                  <View style={styles.alignLeft}>
-                    <Text style={styles.titleMedium}>Games:</Text>
-                    {formData.games.length > 0 ? (
-                      formData.games.map((game, index) => (
-                        <Badge key={index} title={game} isHighlighted />
-                      ))
-                    ) : (
-                      <Text>No games added yet.</Text>
-                    )}
-                  </View>
-                </View>
-
-                {/* Books */}
-                <View style={styles.step3Wrapper}>
-                  <View style={styles.alignLeft}>
-                    <Text style={styles.titleMedium}>Books:</Text>
-                    {formData.books.length > 0 ? (
-                      formData.books.map((book, index) => (
-                        <Badge key={index} title={book} isHighlighted />
-                      ))
-                    ) : (
-                      <Text>No books added yet.</Text>
-                    )}
-                  </View>
-                </View>
-              </View>
+              <Text style={styles.titleMedium}>What's your MBTI?</Text>
+              
+              {/* Debugging: Log the mbti data */}
+              {console.log(mbti)} 
+      
+              <RNPickerSelect
+                onValueChange={
+                  (value) => setFormData((prev) => ({ ...prev, mbti: value }))
+                }
+                items={mbti.map((type) => ({
+                    label: type,
+                    value: type,
+                  })
+                )}
+              />
             </View>
           </>
         )}
-        {/* Validate */}
-        {currentStep < stepsCount && (
-          <View style={styles.btnPrimary}>
-            <PrimaryButtonPill title="Continue" onPress={nextStep}/>
-          </View>
-        )}
 
-        {/* Submit */} 
-        {/* routen naar home momenteel -> is later voor sturen naar backend */}
+        {/* Step 5: Overview of all Data */}
         {currentStep == stepsCount && (
-          <View style={styles.btnPrimary}>
-            <PrimaryButtonPill
-              title="Complete Setup"
-              onPress={handleSubmit(nextStep)}
+          <>
+            <Text style={styles.titleMedium}>Overview</Text>
+            <Text style={styles.subtitle}>Please confirm all your information below.</Text>
+
+            <Text style={styles.input}>Hobbies: {formData.hobbies.join(", ")}</Text>
+            <Text style={styles.input}>Interests: {formData.interests.join(", ")}</Text>
+            <Text style={styles.input}>Movies: {formData.movies.join(", ")}</Text>
+            <Text style={styles.input}>Music: {formData.music.join(", ")}</Text>
+            <Text style={styles.input}>Games: {formData.games.join(", ")}</Text>
+            <Text style={styles.input}>Books: {formData.books.join(", ")}</Text>
+            <Text style={styles.input}>MBTI: {formData.mbti}</Text>
+
+            <ImageUploadComponent
+              onUploadSuccess={handleUploadSuccess}
             />
-          </View>
+
+            <PrimaryButtonPill title="Submit" onPress={handleFormSubmit} />
+          </>
         )}
 
-        {/* Back */}
-        {currentStep > 1 && (
-          <View>
-            <TertiaryButon title="< Back" onPress={previousStep} />
-          </View>
-        )}
-
-        {/* Skip Step */} 
-        {/* mag niet getoond worden bij laatste stap */}
-        <View>
-          <TertiaryButon title="Skip >" onPress={skipStep} />
+        {/* Step Navigation */}
+        <View style={styles.stepNavigation}>
+          <PrimaryButtonPill title="Next" onPress={nextStep} />
+          <TertiaryButon title="Skip" onPress={skipStep} />
         </View>
       </View>
     </ScrollView>
@@ -572,72 +439,56 @@ const AccountSetupScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
-    alignItems: "center",
     padding: 20,
     paddingTop: 65,
     gap: 10,
   },
   logo: {
-    height: 100,
     width: 100,
-    resizeMode: "contain",
+    height: 100,
+    alignSelf: "center",
+    marginBottom: 20,
   },
   title: {
-    textAlign: "center",
     fontSize: 24,
     fontWeight: "bold",
-  },
-  alignLeft: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 25,
+    textAlign: "center",
+    marginVertical: 10,
   },
   titleMedium: {
-    marginBottom: 10,
     fontSize: 20,
-    fontWeight: "medium",
+    fontWeight: "600",
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 14,
-    fontWeight: "light",
-    color: colors.placeholder,
-    marginLeft: 5,
+    fontWeight: "400",
+    marginBottom: 20,
+  },
+  alignLeft: {
+    alignItems: "flex-start",
+  },
+  input: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#ccc",
     marginBottom: 10,
   },
   badgeList: {
     flexWrap: "wrap",
     flexDirection: "row",
-    alignSelf: "flex-start",
-    gap: 5,
-  },
-  btnPrimary: {
-    marginTop: 50,
-  },
-  step3Container: {
-    flex: 1,
-    flexDirection: "column",
-    gap: 15,
+    flexWrap: "wrap",
+    marginTop: 10,
   },
   step3Wrapper: {
-    marginTop: 15,
-  },section: {
-    flex:1,
-    alignSelf: "flex-start",
-    marginVertical: 15,
+    marginBottom: 20,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  sectionContent: {
-    fontSize: 16,
-    color: colors.textBlack,
-  },badgeList2: {
-    marginLeft: 25,
+  stepNavigation: {
     flexDirection: "row",
-    alignSelf: "flex-start",
-    gap: 10,
+    justifyContent: "space-between",
+    marginTop: 20,
   },
 });
 
