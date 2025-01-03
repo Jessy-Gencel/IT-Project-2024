@@ -7,8 +7,9 @@ from Services.couchbase_writes import store_user,store_profile
 from Utils.extract_name import extract_name
 from Services.embedding import embed_MiniLM
 from Utils.jwt_encode import token_required
-from Utils.image_upload import save_profile_picture
+from Utils.image_upload import save_profile_picture,firebase_url_getter
 from Utils.split_path import split_path
+from DB.firebase_bucket import bucket
 import jwt
 import json
 
@@ -54,14 +55,17 @@ def register():
         "refresh_token": refresh_token,
         "message": "User created correctly"
     })
-@auth_bp.route('/pfp/<filename>', methods=['POST'])
+
+
+@auth_bp.route('/pfp/<filename>', methods=['GET'])
 @token_required
 def pfp_send_to_frontend(payload,filename):
     try:
-        directory, name = split_path(filename)
-        return send_from_directory(directory, name)
+        return firebase_url_getter(filename), 200
     except Exception as e:
         return str(e), 400
+    
+
 @auth_bp.route('/users', methods=['GET'])
 def get_users():
     users = {"users" : [find_user_by_id(1), find_user_by_id(2), find_user_by_id(3)]}
@@ -69,7 +73,6 @@ def get_users():
 
 
 @auth_bp.route('/createProfile', methods=['POST'])
-@token_required
 def create_profile():
     data_raw = request.form["data"]
     pfp = request.form["pfp"]
@@ -91,6 +94,8 @@ def create_profile():
     if pfp_result["status"] == "error":
         return pfp_result["message"], 400  # Return error if PFP upload fails
     pfp_url = pfp_result["image_url"]
+    blob = bucket.blob(pfp_url)
+    blob.upload_from_filename(f"DB/PFP/{pfp_url}")
     print(pfp_url)
     ############################## HANDLE IMAGE UPLOAD ###############################
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}

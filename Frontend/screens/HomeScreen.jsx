@@ -19,6 +19,7 @@ import { getAuthTokens } from "../services/GetToken";
 import Constants from 'expo-constants';
 import PrimaryButton from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
+
 const getHomeMatches = async () => {
   try {
     const { accessToken, refreshToken } = await getAuthTokens();
@@ -44,6 +45,37 @@ const getHomeMatches = async () => {
   }
 };
 
+const getPfp = async (data) => {
+  const { accessToken, refreshToken } = await getAuthTokens();
+
+  for (const match of data) {
+    if ("pfp" in match) {
+      try {
+        // Make the Axios request to get the image URL from the backend
+        const response = await axiosInstance.get(
+          `${Constants.expoConfig.extra.BASE_URL}/auth/pfp/${match.pfp}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "x-refresh-token": refreshToken,
+            },
+          }
+        );
+
+        // Get the Firebase URL from the response data
+        const firebaseUrl = response.data.file;
+
+        // Store the URL in the match object or wherever you need it
+        match.imageUrl = firebaseUrl;
+
+        console.log("Firebase URL received:", firebaseUrl);
+      } catch (error) {
+        console.error("Error fetching profile picture URL:", error);
+      }
+    }
+  }
+};
+
 const HomePage = ({ navigation }) => {
   const [matchingProfiles, setMatchingProfiles] = useState([]);
 
@@ -52,6 +84,7 @@ const HomePage = ({ navigation }) => {
     const fetchMatchingProfiles = async () => {
       try {
         const data = await getHomeMatches(); // Fetch data from API
+        const pfp = await getPfp(data);
         console.log("Matching profiles:", data);
         setMatchingProfiles(data); // Set the fetched data in state
       } catch (error) {
@@ -126,9 +159,9 @@ const HomePage = ({ navigation }) => {
             <View style={styles.cardContent}>
               <Image
                 source={
-                  typeof item.profilePicture === "string"
-                    ? { uri: item.profilePicture }
-                    : item.profilePicture
+                  typeof item.imageUrl === "string"
+                    ? { uri: item.imageUrl }
+                    : item.imageUrl
                 }
                 style={styles.pfp}
               />
