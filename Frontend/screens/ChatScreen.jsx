@@ -66,7 +66,11 @@ const ChatScreen = ({ navigation, route }) => {
         setMessages(data);
         // console.log("data: ", data);
       } catch (error) {
-        console.error("Error fetching messages:", error);
+        if (error.response.status === 404) {
+          console.log("no messages found");
+        } else {
+          console.error("Error fetching messages:", error);
+        }
       }
     };
 
@@ -89,12 +93,18 @@ const ChatScreen = ({ navigation, route }) => {
 
     return () => {
       socket.off("new_message");
+      leaveChat();
     };
   }, [room]);
 
   useEffect(() => {
     // console.log("Updated messages: ", messages);
   }, [messages]);
+
+  function leaveChat() {
+    socket.emit("leave_room", { room_id: room });
+    setMessages([]);
+  }
 
   return (
     <LinearBackground>
@@ -105,7 +115,14 @@ const ChatScreen = ({ navigation, route }) => {
         onLayout={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
       >
         <View style={styles.header}>
-          <Ionicons name="chevron-back-outline" style={styles.backIcon} />
+          <Ionicons
+            name="chevron-back-outline"
+            style={styles.backIcon}
+            onPress={() => {
+              leaveChat(room)
+              navigation.goBack()
+            }}
+          />
           <Image
             source={require("../assets/brent_klein.png")}
             style={styles.topPfp}

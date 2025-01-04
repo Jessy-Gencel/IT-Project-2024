@@ -24,11 +24,13 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
   }, []);
 
   const createRoom = (userId) => {
+    const roomId = `room:${Math.min(currentUserId, userId)}:${Math.max(currentUserId, userId)}`;
+    console.log("roomId: ", roomId);
     socket.emit("join_room", {
       current_user_id: currentUserId,
       match_user_id: userId,
     });
-    navigation.navigate('Chat', { room: "room:1:2"})
+    navigation.navigate('Chat', { room: roomId});
   };
 
   return (

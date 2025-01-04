@@ -219,7 +219,7 @@ def get_user_chats(user_id: int):
     user_list = [row for row in user_data]
     
     #fetch all chats where the user is involved
-    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id LIKE 'room:{user_id}:%' OR chat_id LIKE 'room:%:{user_id}'"
+    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id = 'room:{user_id}:%' OR chat_id = 'room:%:{user_id}'"
     chats_data = cluster.query(chats_query).execute()
     chats_list = [row for row in chats_data]
 
