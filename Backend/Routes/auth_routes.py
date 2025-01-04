@@ -3,12 +3,13 @@ from Utils.password_hashing import hash_password, verify_password
 from Utils.jwt_encode import jwt_full_encode, token_refresh
 from Utils.sanitize_input import sanitize_input, santize_array
 from Services.couchbase_reads import find_user_by_email,find_user_by_id,find_profile_by_id
-from Services.couchbase_writes import store_user,store_profile
+from Services.couchbase_writes import store_user,store_profile,update_profile
 from Utils.extract_name import extract_name
 from Services.embedding import embed_MiniLM
 from Utils.jwt_encode import token_required
 from Utils.image_upload import save_profile_picture,firebase_url_getter
 from Utils.split_path import split_path
+from Utils.expected_database_keywords import VECTOR_FIELDS,DB_FIELDS
 from DB.firebase_bucket import bucket
 import jwt
 import json
@@ -85,13 +86,14 @@ def create_profile():
     if pfp_result["status"] == "error":
         return pfp_result["message"], 400  # Return error if PFP upload fails
     pfp_url = pfp_result["image_url"]
-    blob = bucket.blob(pfp_url)
-    blob.upload_from_filename(f"DB/PFP/{pfp_url}")
     ############################## HANDLE IMAGE UPLOAD ###############################
     traits_for_embedding = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
     predefined_matching_categories = embed_MiniLM(int(id),traits_for_embedding)
+    for key, value in predefined_matching_categories.items():
+        predefined_matching_categories[key] = [str(number) for number in value]
+    print("These should be duplicates but in string form:" , predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
     trait_vectors = predefined_matching_categories
     user = find_user_by_id(id)
@@ -103,16 +105,28 @@ def create_profile():
 @auth_bp.route('/profile/edit', methods=['POST'])
 @token_required
 def edit_profile(payload):
-    data = request.get_json()
+    vector_data = {}
+    couchbase_data = {}
+    data: dict = request.get_json()
     id = sanitize_input(str(data['id']))
-    mbti = sanitize_input(str(data['mbti']))
-    interests = santize_array(data['interests'])
-    hobbies = santize_array(data['hobbies'])
-    games = santize_array(data['games'])
-    movies = santize_array(data['movies'])
-    books = santize_array(data['books'])
-    music = santize_array(data['music'])
-    initial_profile = find_profile_by_id(id)
+    old_profile = find_profile_by_id(id)
+    for key, value in data.items():
+        if key in DB_FIELDS:
+            if key == "pfp":
+                save_profile_picture(value,id,old_profile["pfp"])
+            else:
+                couchbase_data[key] = sanitize_input(value)
+        elif key in VECTOR_FIELDS:
+            santized_value = santize_array(value)
+            couchbase_data[key] = santized_value
+            vector_data[key] = santized_value
+        else:
+            return jsonify({"error": "Invalid key"}), 400
+    
+    update_profile(int(id),couchbase_data)
+
+    
+    #initial_profile = find_profile_by_id(id)
     ############################## SANITIZATION ###############################
 
 

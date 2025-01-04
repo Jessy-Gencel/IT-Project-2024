@@ -113,14 +113,29 @@ def embed_MiniLM(id : int, category_dict : dict):
     mbti = category_dict["mbti"]
     mbti_vector = get_mbti_vector(mbti)
     formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
+    insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector})
     del category_dict["mbti"]
     global_user_data = {"id": id, "mbti_vectors": formatted_mbti_vector}
+    get_category_vectors(id,category_dict, id_category_dict, global_user_data, final_vector_array)
+    final_vector = concatenate_final_vector(final_vector_array)
+    global_user_data["global_vectors"] = format_vector_for_milvus(final_vector)
+    insert_vectors(global_vector_DB,"global_vectors", global_user_data)
+    return id_category_dict
+
+
+def update_vectors(id : int, category_dict : dict):
     for category, words in category_dict.items():
         user_data = {"id": id}
         array_for_one_category = []
         category_ids = []
         category_similarities = []
-        for word in words:
+        get_word_vectors(category, words, category_ids, category_similarities, array_for_one_category)
+        sorted_category_ids = make_category_bucket_array(category_similarities, category_ids, category)
+    pass
+
+
+def get_word_vectors(category : str, words : list[str], category_ids : list[int], category_similarities : list[float], array_for_one_category : list[np.ndarray]):
+    for word in words:
             vector = model.encode(word)
             similarity_word,category_id_word = check_with_predefined_vectors(category, vector)
             for i in range(len(category_id_word)):
@@ -128,8 +143,16 @@ def embed_MiniLM(id : int, category_dict : dict):
                     category_ids.append(category_id_word[i])
                     category_similarities.append(similarity_word[i])
             array_for_one_category.append(vector)
+            
+
+def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict, global_user_data : dict, final_vector_array : list):
+    for category, words in category_dict.items():
+        user_data = {"id": id}
+        array_for_one_category = []
+        category_ids = []
+        category_similarities = []
+        get_word_vectors(category, words, category_ids, category_similarities, array_for_one_category)
         sorted_category_ids = make_category_bucket_array(category_similarities, category_ids, category)
-        #print(category)
         id_category_dict[f"{category}_vectors"] = sorted_category_ids
         mean_vector = get_mean_vector_for_category(array_for_one_category)
         user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
@@ -145,12 +168,6 @@ def embed_MiniLM(id : int, category_dict : dict):
             print("Category not found")
         if category not in ["interest","hobby"]:
             final_vector_array.append(mean_vector)
-    final_vector = conactenate_final_vector(final_vector_array)
-    global_user_data["global_vectors"] = format_vector_for_milvus(final_vector)
-    print(global_user_data)
-    insert_vectors(global_vector_DB,"global_vectors", global_user_data)
-    return id_category_dict
-
 def get_mean_vector_for_category(array_of_vectors : np.ndarray):
     """
     Computes the mean vector for a given category from a numpy array of vectors.
@@ -171,7 +188,7 @@ def format_vector_for_milvus(vector : np.ndarray):
         list: The formatted vector as a list.
     """
     return vector.tolist()
-def conactenate_final_vector(final_vector : np.ndarray):
+def concatenate_final_vector(final_vector : np.ndarray):
     """
     Concatenates a numpy array of vectors along the first dimension and reshapes the result.
     Args:
