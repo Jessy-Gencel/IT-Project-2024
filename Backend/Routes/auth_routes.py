@@ -18,18 +18,14 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    print(data)
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     user = find_user_by_email(email)
-    print(user)
     
     if not user or not verify_password(user["password"], password):
         return jsonify({"message": "Invalid credentials"}), 401
     
     access_token, refresh_token = jwt_full_encode(user)
-    
-    print(f'ID: {user["id"]}')
 
     return jsonify({
         "id" : str(user["id"]),
@@ -43,8 +39,6 @@ def register():
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     password_hash = hash_password(password)
-    print(password_hash)
-    print(type(password_hash))
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
     user = store_user(user=user_dict)
@@ -77,8 +71,6 @@ def create_profile():
     data_raw = request.form["data"]
     pfp = request.form["pfp"]
     data = json.loads(data_raw)
-    print(pfp)
-    print(data)
     id = sanitize_input(str(data['id']))
     #age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
@@ -88,7 +80,6 @@ def create_profile():
     movies = santize_array(data['movies'])
     books = santize_array(data['books'])
     music = santize_array(data['music'])
-    print(mbti,interests,hobbies,games,movies,books,music)
     ############################## SANITIZATION ###############################
     pfp_result = save_profile_picture(pfp,id)
     if pfp_result["status"] == "error":
@@ -96,20 +87,17 @@ def create_profile():
     pfp_url = pfp_result["image_url"]
     blob = bucket.blob(pfp_url)
     blob.upload_from_filename(f"DB/PFP/{pfp_url}")
-    print(pfp_url)
     ############################## HANDLE IMAGE UPLOAD ###############################
     traits_for_embedding = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
     predefined_matching_categories = embed_MiniLM(int(id),traits_for_embedding)
-    print(predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
     trait_vectors = predefined_matching_categories
     user = find_user_by_id(id)
     user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
     profile = store_profile(user_profile)
-    print(profile)
     return "User created correctly", 200
 
 @auth_bp.route('/profile/edit', methods=['POST'])

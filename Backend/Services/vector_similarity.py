@@ -5,6 +5,7 @@ import numpy as np
 
 def get_global_matches(userid : int,amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list,black_list : list = []):
     black_list.append(userid)
+    print(black_list)
     requests = [make_ANN_request(global_vector, amount_of_results, "global_vectors",black_list), 
                 make_ANN_request(mbti_vector, amount_of_results, "mbti_vectors",black_list), 
                 make_ANN_request(hobby_vector, amount_of_results, "hobby_vectors",black_list), 
@@ -12,6 +13,7 @@ def get_global_matches(userid : int,amount_of_results : int, global_vector : lis
     reranker = WeightedRanker(0.165,0.230,0.225,0.38)
     res = global_vector_DB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, 
                                          limit = amount_of_results)
+    black_list.remove(userid)
     return res[0]
 
 def make_ANN_request(vector : list, amount_of_results : int, target_field : str,black_list : list = []):

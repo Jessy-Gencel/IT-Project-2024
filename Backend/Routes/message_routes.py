@@ -37,10 +37,8 @@ def get_chat(chat_id):
 # fetch all chats of a user using their id
 @message_bp.route('/user_chats', methods=['POST'])
 def user_chats():
-    print('user_chats')
     data = request.get_json()
     result = get_user_chats(data['match_ids'])
-    print('result: ', result)
     if result is None:
         return jsonify({"error": "Users not found"}), 404
     return jsonify(result), 200
