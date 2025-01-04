@@ -6,18 +6,21 @@ import socket from "../services/websockets";
 import { getUserData } from "../services/GetToken";
 import { FlatList } from "react-native";
 import axios from "axios";
+import axiosInstance from "../services/AxiosConfig";
 import Constants from "expo-constants";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { getAuthTokens } from "../services/GetToken";
 
 const ChatList = ({ navigation, isUnread, isMuted }) => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [chatUsers, setChatUsers] = useState([]);
 
+
   useEffect(() => {
     const fetchUserId = async () => {
       try {
         const userId = await getUserData("id");
-        console.log("Fetched User ID:", userId); // Debug log
+        console.log("Fetched User ID:", userId); // id van andere user ophalen om zo navigeren naar juiste chatscreen
         setCurrentUserId(userId);
       } catch (error) {
         console.error("Error fetching user ID:", error);
@@ -30,13 +33,22 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        console.log("Fetching chat users..."); // Debug log
 
-        const response = await axios.get(`${Constants.expoConfig.extra.BASE_URL}/auth/users`);
-        console.log("Fetched Chat Users Response:", response.data); // Debug log
-
-        // Set the chatUsers to the users array in the response
-        setChatUsers(response.data.users); // Updated to use `users` key
+        const matchIds = {"match_ids" : JSON.parse(await getUserData("match_ids"))};
+        const response = await axiosInstance.post(
+          `${Constants.expoConfig.extra.BASE_URL}/messages/user_chats`, matchIds,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+        console.log("Fetched chats:", response.data);
+        console.log("kwni: ", response)
+        await getPfp(response.data);
+        setChatUsers(response.data);
+        
       } catch (error) {
         console.error("Error fetching chats:", error);
       }
@@ -45,10 +57,6 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
     fetchChats();
   }, []);
 
-  const handleCardPress = (id) => {
-    console.log("Card ID:", id);
-  };
-
   const createRoom = (userId) => {
     const roomId = `room:${Math.min(currentUserId, userId)}:${Math.max(currentUserId, userId)}`;
     console.log("roomId: ", roomId);
@@ -56,15 +64,46 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
       current_user_id: currentUserId,
       match_user_id: userId,
     });
-    navigation.navigate('Chat', { room: roomId});
+    navigation.navigate('ChatScreen', { room: roomId});
+  };
+
+  const getPfp = async (data) => {
+    const { accessToken, refreshToken } = await getAuthTokens();
+  
+    for (const match of data) {
+      if ("pfp" in match) {
+        try {
+          // Make the Axios request to get the image URL from the backend
+          const response = await axiosInstance.get(
+            `${Constants.expoConfig.extra.BASE_URL}/auth/pfp/${match.pfp}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "x-refresh-token": refreshToken,
+              },
+            }
+          );
+  
+          // Get the Firebase URL from the response data
+          const firebaseUrl = response.data.file;
+  
+          // Store the URL in the match object or wherever you need it
+          match.imageUrl = firebaseUrl;
+  
+          console.log("Firebase URL received:", firebaseUrl);
+        } catch (error) {
+          console.error("Error fetching profile picture URL:", error);
+        }
+      }
+    }
   };
 
   const renderChatCard = ({ item }) => (
-    <TouchableOpacity onPress={() => handleCardPress(item.id)}>
+    <TouchableOpacity onPress={() => createRoom(item.id)}>
       <View style={styles.chatListContainer}>
-        <Image source={require("../assets/brent_klein.png")} style={styles.avatar} />
+        <Image source={{uri: item.imageUrl}} style={styles.avatar} />
         <View style={styles.senderAndMessage}>
-          <Text style={styles.sender}>{`${item.first_name} ${item.last_name}`}</Text>
+          <Text style={styles.sender}>{`${item.name}`}</Text>
           <View style={styles.timeAndMessage}>
             <Text numberOfLines={1} style={[styles.message, isUnread && styles.messageUnread]}>
               Hardcoded Message
@@ -92,21 +131,12 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
     <View style={styles.container}>
       <MessageListHeader style={styles.MessageListHeader} />
       <Text style={styles.title}>Messages</Text>
+      {/* flatlist = lijst van items */}
       <FlatList
         data={chatUsers}
         renderItem={renderChatCard}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listOfChats}
-      />
-      <Button
-        onPress={() => createRoom(1)}
-        title="Create Room with User 1"
-        disabled={!currentUserId}
-      />
-      <Button
-        onPress={() => createRoom(2)}
-        title="Create Room with User 2"
-        disabled={!currentUserId}
       />
     </View>
   );

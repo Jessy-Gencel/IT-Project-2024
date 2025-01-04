@@ -211,30 +211,32 @@ def order_users_by_matches(category: str, vector_ids: list, user_rows: list):
 #         chat = get_collection("user-data", "chats").get("")
 #                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
 
-def get_user_chats(user_id: int):
+def get_user_chats(match_ids: list):
     
     #fetch a users first and last name
-    user_query = f"SELECT first_name, last_name FROM `ehb-link`.`user-data`.users WHERE id = '{user_id}'"
+    print(match_ids)
+    user_query = f"SELECT name, id, pfp FROM `ehb-link`.`user-data`.`profiles` WHERE id IN {match_ids}"
     user_data = cluster.query(user_query).execute()
+    print(user_data)
     user_list = [row for row in user_data]
     
     #fetch all chats where the user is involved
-    chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id = 'room:{user_id}:%' OR chat_id = 'room:%:{user_id}'"
-    chats_data = cluster.query(chats_query).execute()
-    chats_list = [row for row in chats_data]
+    # chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id = 'room:{user_id}:%' OR chat_id = 'room:%:{user_id}'"
+    # chats_data = cluster.query(chats_query).execute()
+    # chats_list = [row for row in chats_data]
 
     # still need to fetch the pfp but the documents dont have them yet (just fetching all the data for now)
-    profile = find_profile_by_id(user_id)
-    if profile is None:
-        print(f"Profile with ID {user_id} not found.")
-        return None
-    result = {
-        "user": user_list,
-        "chats": chats_list,
-        "profile": profile
-    }
+    # profile = find_profile_by_id(user_id)
+    # if profile is None:
+    #     print(f"Profile with ID {user_id} not found.")
+    #     return None
+    # result = {
+    #     "user": user_list,
+    #     "chats": chats_list,
+    #     "profile": profile
+    # }
 
-    return result
+    return user_list
 
 def check_room_exists(room: str):
     query = f"SELECT room_id FROM `ehb-link`.`user-data`.`chats` WHERE room_id = '{room}'"
