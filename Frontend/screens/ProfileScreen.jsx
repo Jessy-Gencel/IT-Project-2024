@@ -51,6 +51,8 @@ const interestsData = [
 
 
 
+
+
 const Profile = () => {
   return(
     <View>
@@ -115,11 +117,26 @@ const ProfileScreen = ({navigation}) => {
     interests: Interests,
     gateways: Gateways,
   };
-
   const handleEditPress = () => {
-    Alert.alert("Edit Profile", "This button would normally navigate to the Edit Profile screen.");
-    // Replace the Alert with your navigation or function to go to another screen when ready
+    navigation.navigate('EditProfile', {
+      profile: {
+        name: "John Doe",
+        age: 25,
+        pronouns: "He/Him",
+        bioText: "Hello! I love hiking, photography, and coding. Always up for an adventure!",
+      },
+      interests: interestsData,
+      onSave: (updatedProfile, updatedInterests) => {
+        // Handle the updated data
+        console.log("Updated Profile:", updatedProfile);
+        console.log("Updated Interests:", updatedInterests);
+  
+        // Update the ProfileCard and Interests data
+      },
+    });
   };
+
+  
 
     return(
         <View style={styles.container}>

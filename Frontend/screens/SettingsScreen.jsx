@@ -10,16 +10,18 @@ import {
 } from "react-native";
 import colors from "../theme/colors";
 import LinearBackground from "../components/LinearBackgroundProfile";
-import SecondaryButtonPill from "../components/SecondaryButtonPill";
+import SettingsButtonPill from "../components/SettingsButtonPill";
 
 const SettingsScreen = ({ navigation }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to log out?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Logout", onPress: () => console.log("Logged out!") },
-    ]);
+    try {
+      // Log out user logic should come here
+      navigation.navigate("LogIn");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -34,7 +36,7 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearBackground>
+    
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -51,27 +53,9 @@ const SettingsScreen = ({ navigation }) => {
         {/* App Preferences */}
         <View style={styles.section}>
             <Text style={styles.sectionSubtitle}>App preferences</Text>
-            <SecondaryButtonPill
-            title = {
-                <View style={styles.switchContainer}>
-                    <Text style={styles.switchLabel}>Theme</Text>
-                    <View style={styles.switch}>
-                        <Text style={styles.switchText}>dark</Text>
-                        <Switch
-                        value={isDarkMode}
-                        onValueChange={(value) => setIsDarkMode(value)}
-                        />
-                        <Text style={styles.switchText}>light</Text>
-                    </View>
-                </View>
-            }
-            />
-            <SecondaryButtonPill
+            <SettingsButtonPill
             title= {
-                <View style = {styles.systemLanguage}>
-                    <Text style={styles.optionText}>System language</Text>
-                    <Text style={styles.optionValue}>English</Text>
-                </View>
+              <Text style={styles.optionValue}>English</Text>
             }
             />
             
@@ -79,42 +63,48 @@ const SettingsScreen = ({ navigation }) => {
 
 
         {/* Notification Settings */}
-        <Text style={styles.sectionSubtitle}>Notification settings</Text>
-        <SecondaryButtonPill
-            title={
-              <Text style={styles.optionText}>
-                Change message notification preferences
-              </Text>
-            }
-          />
-          <SecondaryButtonPill
-            title={
-              <Text style={styles.optionText}>
-                Change gateway notification preferences
-              </Text>
-            }
-          />
-
+        {/* i have some issues w the button here when it comes to how it looks
+        but i don't think it matters that much how my buttons look at the moment */}
+        <View style={styles.section}>
+          <Text style={styles.sectionSubtitle}>Notification settings</Text>
+          <SettingsButtonPill
+              title={
+                <Text style={styles.optionText}>
+                  Change message notification preferences
+                </Text>
+              }
+            />
+            <SettingsButtonPill
+              title={
+                <Text style={styles.optionText}>
+                  Change gateway notification preferences
+                </Text>
+              }
+            />
+        </View>
         {/* Privacy Settings */}
-        <Text style={styles.sectionSubtitle}>Privacy settings</Text>
-        <SecondaryButtonPill
-            title={<Text style={styles.optionText}>Block list</Text>}
-          />
-          <SecondaryButtonPill
-            title={
-              <Text style={styles.optionText}>Data sharing preferences</Text>
-            }
-          />
-
+        <View style={styles.section}>
+          <Text style={styles.sectionSubtitle}>Privacy settings</Text>
+          <SettingsButtonPill
+              title={<Text style={styles.optionText}>Block list</Text>}
+            />
+            <SettingsButtonPill
+              title={
+                <Text style={styles.optionText}>Data sharing preferences</Text>
+              }
+            />
+        </View>
         {/* Account Settings */}
-        <Text style={styles.sectionSubtitle}>Account settings</Text>
-        <SecondaryButtonPill
-            title={<Text style={styles.optionText}>Profile settings</Text>}
-          />
-          <SecondaryButtonPill
-            title={<Text style={styles.optionText}>Change password</Text>}
-          />
-
+        <View style={styles.section}>
+          <Text style={styles.sectionSubtitle}>Account settings</Text>
+          <SettingsButtonPill
+              title={<Text style={styles.optionText}>Profile settings</Text>}
+            />
+            <SettingsButtonPill
+              title={<Text style={styles.optionText}>Change password</Text>}
+              onPress={() => navigation.navigate("ChangePassword")}
+            />
+        </View>
         {/* Actions */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Log out</Text>
@@ -127,14 +117,13 @@ const SettingsScreen = ({ navigation }) => {
         </TouchableOpacity>
         </ScrollView>
     </View>
-    </LinearBackground>
+    
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.backgroundLight,
     padding: 16,
   },
   header: {
@@ -166,7 +155,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 15,
   },
   sectionSubtitle: {
     fontSize: 16,
@@ -199,6 +188,8 @@ const styles = StyleSheet.create({
   systemLanguage: {
     flexDirection: "row",
     justifyContent: "space-between",
+    backgroundColor: 'blue',
+    width: '100%',
   },
   option: {
     paddingVertical: 12,
@@ -207,6 +198,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
+    textAlign: "center",
   },
   optionValue: {
     fontSize: 14,
