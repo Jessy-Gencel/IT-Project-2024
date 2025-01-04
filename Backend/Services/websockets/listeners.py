@@ -66,4 +66,11 @@ def init_websockets(socketio):
     def handle_disconnect():
         print("Client disconnected")
 
-
+    @socketio.on('leave_room')
+    def on_leave(data):
+        room = data.get('room_id')
+        if not room:
+            print(f'Error: Invalid room_id received: {room}')
+            return
+        leave_room(room)
+        print(f'User {request.sid} left room {room}')

@@ -15,7 +15,7 @@ import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar com
 import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
-import { getAuthTokens } from "../services/GetToken";
+import { getAuthTokens, storeSecretStorage } from "../services/GetToken";
 import Constants from 'expo-constants';
 import PrimaryButton from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
@@ -35,6 +35,7 @@ const getHomeMatches = async () => {
       }
     );
     console.log("Home Matches:", response.data);
+    storeMatchIds(response.data);
     return response.data; // Return the data if needed elsewh
   } catch (error) {
     console.error(
@@ -44,6 +45,15 @@ const getHomeMatches = async () => {
     throw error; // Optionally re-throw to handle errors in the calling code
   }
 };
+const storeMatchIds = async (data) => {
+  const ids = data.map((match) => match.id);
+  try{
+    await storeSecretStorage("match_ids", JSON.stringify(ids));
+    console.log("Match ids stored successfully:", ids);
+  }catch(error){
+    console.error("Error storing match ids:", error);
+  }
+}
 
 const getPfp = async (data) => {
   const { accessToken, refreshToken } = await getAuthTokens();

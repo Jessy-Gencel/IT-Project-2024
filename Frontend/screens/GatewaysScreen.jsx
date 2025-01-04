@@ -63,17 +63,22 @@ const GatewaysScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <GradientBackground style={styles.background}>
-      <Header showBackArrow={false} notificationCount={5} />
-      <View></View>        
-          
+        <Header showBackArrow={false} notificationCount={5} />
         <ScrollView
           style={styles.eventSection}
           showsVerticalScrollIndicator={false}
         >
-<View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-      <Text style={styles.sectionTitle}>Events</Text>
-      <PrimaryButtonPill style={styles.eventButton} title="Create Event" onPress={() => navigation.navigate("CreateEvent")} />
-      </View>          {events.map((event) => (
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={styles.sectionTitle}>Events</Text>
+            <PrimaryButtonPill
+              style={styles.eventButton}
+              title="Create Event"
+              onPress={() => navigation.navigate("CreateEvent")}
+            />
+          </View>
+          {events.map((event) => (
             <EventCardWithSection key={event.id} {...event} />
           ))}
         </ScrollView>
@@ -90,9 +95,10 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 10,
-    marginLeft:20,
+    marginLeft: 20,
     color: "#333",
-  },background:{
+  },
+  background: {
     height: "10%",
   },
   matchingCard: {
@@ -132,11 +138,10 @@ const styles = StyleSheet.create({
   },
   eventSection: {
     marginTop: 20,
-    flex:1,
-    
+    flex: 1,
+
     width: "95%",
     marginHorizontal: "2.5%",
-    
   },
   progressBarCard: {
     flex: 1,
@@ -149,10 +154,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
     color: "#5F63E2",
-  },containerHeader:{
-      marginBottom:20,
-      flex:1,
-    }
+  },
+  containerHeader: {
+    marginBottom: 20,
+    flex: 1,
+  },
 });
 
 export default GatewaysScreen;
