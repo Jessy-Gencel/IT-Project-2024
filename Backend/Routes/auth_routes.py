@@ -1,13 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify,send_from_directory
 from Utils.password_hashing import hash_password, verify_password
 from Utils.jwt_encode import jwt_full_encode, token_refresh
 from Utils.sanitize_input import sanitize_input, santize_array
-from Services.couchbase_reads import find_user_by_email,find_user_by_id
+from Services.couchbase_reads import find_user_by_email,find_user_by_id,find_profile_by_id
 from Services.couchbase_writes import store_user,store_profile
 from Utils.extract_name import extract_name
 from Services.embedding import embed_MiniLM
 from Utils.jwt_encode import token_required
-from Utils.image_upload import save_profile_picture
+from Utils.image_upload import save_profile_picture,firebase_url_getter
+from Utils.split_path import split_path
+from DB.firebase_bucket import bucket
 import jwt
 import json
 
@@ -45,14 +47,25 @@ def register():
     print(type(password_hash))
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
-    #user = store_user(user=user_dict)
-    #access_token, refresh_token = jwt_full_encode(user)
+    user = store_user(user=user_dict)
+    access_token, refresh_token = jwt_full_encode(user)
     return jsonify({
-        "id" : "1",
-        "access_token": "fsfjhlgkjksldfjlk",
-        "refresh_token": "jfjhsadklfjdsaifjlk",
+        "id" : str(user["id"]),
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "message": "User created correctly"
     })
+
+
+@auth_bp.route('/pfp/<filename>', methods=['GET'])
+@token_required
+def pfp_send_to_frontend(payload,filename):
+    try:
+        return firebase_url_getter(filename), 200
+    except Exception as e:
+        return str(e), 400
+    
+
 @auth_bp.route('/users', methods=['GET'])
 def get_users():
     users = {"users" : [find_user_by_id(1), find_user_by_id(2), find_user_by_id(3)]}
@@ -65,7 +78,6 @@ def create_profile():
     pfp = request.form["pfp"]
     data = json.loads(data_raw)
     print(pfp)
-
     print(data)
     id = sanitize_input(str(data['id']))
     #age = sanitize_input(str(data['age']))
@@ -82,21 +94,39 @@ def create_profile():
     if pfp_result["status"] == "error":
         return pfp_result["message"], 400  # Return error if PFP upload fails
     pfp_url = pfp_result["image_url"]
+    blob = bucket.blob(pfp_url)
+    blob.upload_from_filename(f"DB/PFP/{pfp_url}")
     print(pfp_url)
     ############################## HANDLE IMAGE UPLOAD ###############################
-    #traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits_for_embedding = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
-    #predefined_matching_categories = embed_MiniLM(int(id),traits)
-    #print(predefined_matching_categories)
+    predefined_matching_categories = embed_MiniLM(int(id),traits_for_embedding)
+    print(predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
-    #chats = []
-    #events = []
-    #trait_vectors = predefined_matching_categories
-    #user = find_user_by_id(id)
-    #user_profile = {"id" : id,"age": age,"pfp" : pfp,"name": user["first_name"], "traits" : traits, "chats" : chats, "events" : events, "trait_vectors" : trait_vectors}
+    trait_vectors = predefined_matching_categories
+    user = find_user_by_id(id)
+    user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
-    #profile = store_profile(user_profile)
+    profile = store_profile(user_profile)
+    print(profile)
     return "User created correctly", 200
+
+@auth_bp.route('/profile/edit', methods=['POST'])
+@token_required
+def edit_profile(payload):
+    data = request.get_json()
+    id = sanitize_input(str(data['id']))
+    mbti = sanitize_input(str(data['mbti']))
+    interests = santize_array(data['interests'])
+    hobbies = santize_array(data['hobbies'])
+    games = santize_array(data['games'])
+    movies = santize_array(data['movies'])
+    books = santize_array(data['books'])
+    music = santize_array(data['music'])
+    initial_profile = find_profile_by_id(id)
+    ############################## SANITIZATION ###############################
+
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh():
@@ -120,12 +150,12 @@ def get_profiles():
     return "Yippie profiles", 200
 
 @auth_bp.route('/profiles/<profile_id>', methods=['GET'])
-def get_profile(profile_id):
-    # profile = find_profile_by_id(profile_id)
-    # if profile:
-    #     return jsonify(profile), 200
-    # else:
-    #     return jsonify({"error": "Profile not found"}), 404
-    return "Yippie profiles/profile_id", 200
+@token_required
+def get_profile(payload,profile_id):
+    profile = find_profile_by_id(profile_id)
+    if profile:
+       return jsonify(profile), 200
+    else:
+        return jsonify({"error": "Profile not found"}), 404
 
 

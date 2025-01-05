@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-
-  TouchableOpacity,Image
-} from 'react-native';
-import { Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
+  TouchableOpacity,
+  Image,
+  Modal,
+  FlatList,
+} from "react-native";
+import { Entypo, Feather, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const EventCardWithSection = ({
   profilePicture,
@@ -16,12 +19,39 @@ const EventCardWithSection = ({
   eventDate,
   location,
   description,
-  
 }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("Select Status");
+
+  const options = [
+    {
+      label: "Going",
+      value: "going",
+      icon: <Ionicons name="checkmark-circle" size={18} color="green" />,
+      color: "#4CAF50", // Green for Going
+    },
+    {
+      label: "Not Interested",
+      value: "notInterested",
+      icon: <MaterialCommunityIcons name="close-circle" size={18} color="red" />,
+      color: "#F44336", // Red for Not Interested
+    },
+    {
+      label: "Interested",
+      value: "interested",
+      icon: <MaterialCommunityIcons name="heart-circle" size={18} color="orange" />,
+      color: "#FF9800", // Orange for Interested
+    },
+  ];
+
+  const handleSelect = (option) => {
+    setSelectedOption(option.label);
+    setDropdownVisible(false);
+  };
 
   // Check if the description is longer than 20 words
-  const descriptionWords = description.split(' ');
+  const descriptionWords = description.split(" ");
   const isDescriptionLong = descriptionWords.length > 20;
 
   return (
@@ -30,12 +60,24 @@ const EventCardWithSection = ({
       <View style={styles.leftSection}>
         <View style={styles.header}>
           <View style={styles.profileInfo}>
-            <Image source={typeof profilePicture === 'string' ? { uri: profilePicture } : profilePicture} style={styles.profilePicture} />
+            <Image
+              source={
+                typeof profilePicture === "string"
+                  ? { uri: profilePicture }
+                  : profilePicture
+              }
+              style={styles.profilePicture}
+            />
             <View style={styles.nameWrapper}>
               {isGroup ? (
                 <MaterialIcons name="shield" size={18} color="#000" />
               ) : null}
-              <Text style={[styles.creatorName, { marginLeft: isGroup ? 5 : 0 }]}>
+              <Text
+                style={[
+                  styles.creatorName,
+                  { marginLeft: isGroup ? 5 : 0 },
+                ]}
+              >
                 {creatorName}
               </Text>
             </View>
@@ -61,7 +103,7 @@ const EventCardWithSection = ({
         <Text style={styles.description}>
           {showFullDescription || !isDescriptionLong
             ? description
-            : descriptionWords.slice(0, 20).join(' ') + '...'}
+            : descriptionWords.slice(0, 20).join(" ") + "..."}
         </Text>
 
         {isDescriptionLong && (
@@ -70,7 +112,7 @@ const EventCardWithSection = ({
             style={styles.showMoreButton}
           >
             <Text style={styles.showMoreText}>
-              {showFullDescription ? 'Show Less' : 'Show More'}
+              {showFullDescription ? "Show Less" : "Show More"}
             </Text>
           </TouchableOpacity>
         )}
@@ -79,25 +121,47 @@ const EventCardWithSection = ({
       {/* Vertical Divider */}
       <View style={styles.divider}></View>
 
-      {/* Right Section: Event Image and Buttons */}
+      {/* Right Section: Dropdown Picker */}
       <View style={styles.rightSection}>
-        <Image source={typeof profilePicture === 'string' ? { uri: profilePicture } : profilePicture} style={styles.eventImage} />
-        
-        <View style={styles.buttonsContainer}>
-            <View style={styles.buttonContainer2}>
-            <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Going</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Not Interested</Text>
-          </TouchableOpacity>
+        <Image
+          source={
+            typeof profilePicture === "string"
+              ? { uri: profilePicture }
+              : profilePicture
+          }
+          style={styles.eventImage}
+        />
+        <TouchableOpacity
+          style={[
+            styles.dropdownButton,
+            { backgroundColor: options.find((opt) => opt.label === selectedOption)?.color || "#F7931E" },
+          ]}
+          onPress={() => setDropdownVisible(!dropdownVisible)}
+        >
+          <Text style={styles.dropdownButtonText}>
+            {selectedOption}
+          </Text>
+        </TouchableOpacity>
+
+        <Modal visible={dropdownVisible} transparent={true} animationType="fade">
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <FlatList
+                data={options}
+                keyExtractor={(item) => item.value}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.optionContainer}
+                    onPress={() => handleSelect(item)}
+                  >
+                    {item.icon}
+                    <Text style={styles.optionText}>{item.label}</Text>
+                  </TouchableOpacity>
+                )}
+              />
             </View>
-          
-          
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Interested</Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+        </Modal>
       </View>
     </View>
   );
@@ -105,39 +169,37 @@ const EventCardWithSection = ({
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 10,
     padding: 15,
     marginVertical: 10,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
+    backgroundColor: "#fff",
+    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 2,
-    
-    
   },
   leftSection: {
     flex: 1,
     paddingRight: 15,
   },
   rightSection: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     flex: 0.6,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
   },
   profileInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   profilePicture: {
     width: 40,
@@ -146,57 +208,56 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   nameWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   creatorName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   eventName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   eventDetails: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
     marginTop: 5,
     marginBottom: 10,
   },
   eventDetailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex:1,
-    
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
   eventDetailText: {
     fontSize: 14,
-    color: '#666',
-    marginLeft: 5,  
-
+    color: "#666",
+    marginLeft: 5,
+    flexWrap: "wrap", // This allows the location to wrap
   },
   locationItem: {
     marginLeft: 20,
   },
   description: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
   },
   showMoreButton: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginTop: 5,
   },
   showMoreText: {
     fontSize: 14,
-    color: '#007BFF',
+    color: "#007BFF",
   },
   divider: {
     width: 1,
-    backgroundColor: '#ddd',
-    height: '90%',
-    marginLeft:2,
+    marginHorizontal: 10,
+    backgroundColor: "#ddd",
+    height: "90%",
   },
   eventImage: {
     width: 80,
@@ -204,23 +265,39 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 5,
   },
-buttonContainer2:{
-  flexDirection: 'row',
-  gap:10,
-
-  },
-  button: {
-    backgroundColor: '#F7931E',
-    paddingVertical: 5,
-    paddingHorizontal: 3,
+  dropdownButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     borderRadius: 10,
-    marginBottom: 10,
-    alignItems: 'center',
+    marginTop: 10,
+    width: "100%",
+    alignItems: "center",
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: 'bold',
+  dropdownButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 15,
+    width: "80%",
+  },
+  optionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  optionText: {
+    marginLeft: 10,
+    fontSize: 16,
   },
 });
 

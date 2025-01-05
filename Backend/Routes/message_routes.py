@@ -35,19 +35,22 @@ def get_chat(chat_id):
     return "Yippie chats/conversation_id", 200
 
 # fetch all chats of a user using their id
-@message_bp.route('/user_chats/<int:user_id>', methods=['GET'])
-def user_chats(user_id):
-    result = get_user_chats(user_id)
+@message_bp.route('/user_chats', methods=['POST'])
+def user_chats():
+    print('user_chats')
+    data = request.get_json()
+    result = get_user_chats(data['match_ids'])
+    print('result: ', result)
     if result is None:
-        return jsonify({"error": "User not found"}), 404
+        return jsonify({"error": "Users not found"}), 404
     return jsonify(result), 200
+
 
 @message_bp.route('/<string:room_id>', methods=['GET'])
 def get_messages_by_room_id(room_id):
     result = get_room_messages(room_id)
-    print('messages: ', result)
+    # print('messages: ', result)
     
     if not result:
-        return jsonify({"error": "Messages not found"}), 404
-    return result, 200
-
+        return jsonify([]), 200
+    return jsonify(result), 200

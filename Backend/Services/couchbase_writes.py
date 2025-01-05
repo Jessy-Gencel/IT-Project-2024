@@ -14,12 +14,10 @@ def store_user(user : dict):
         return None
     
 def store_profile(profile : dict):
-    profile_with_id = add_id_to_document(profile,"user-data","profiles")
-    print(profile_with_id)
     try:
         profile_collection = get_collection("user-data", "profiles")
-        profile_collection.insert(f"profile::{profile_with_id['id']}", profile_with_id)
-        return find_profile_by_id(profile_with_id["id"])
+        profile_collection.insert(f"profile::{profile['id']}", profile)
+        return find_profile_by_id(profile["id"])
     except CouchbaseException as e:
         print(f"An error occurred while storing the profile: {e}")
         return None

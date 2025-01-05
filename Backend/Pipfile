@@ -15,6 +15,7 @@ pyjwt = "*"
 sentence-transformers = "*"
 flask-cors = "*"
 flask-socketio = "*"
+firebase-admin = "*"
 
 [dev-packages]
 
