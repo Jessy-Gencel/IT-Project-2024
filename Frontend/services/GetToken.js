@@ -18,7 +18,6 @@ const getAuthTokens = async () => {
     const accessToken = await getUserData("accessToken");
     const refreshToken = await getUserData("refreshToken");
     const userId = await getUserData("id");
-
     return { accessToken, refreshToken, userId };
   } catch (error) {
     console.error("Error retrieving tokens:", error);

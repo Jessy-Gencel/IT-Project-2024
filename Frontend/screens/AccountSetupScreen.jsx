@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -17,39 +17,62 @@ import StepCounter from "../components/StepCounter";
 import Badge from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import TertiaryButon from "../components/TertiaryButton";
-import ImageUploadComponent from '../components/ImageUploadComponent'; // Image upload component
+import ImageUploadComponent from "../components/ImageUploadComponent"; // Image upload component
 // Import the MBTI and interests data from your configuration
 import mbti from "../config/mbti";
 import interests from "../config/interests";
 import { getUserData } from "../services/GetToken";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import ionIcon from "react-native-vector-icons/Ionicons";
 
-//weghalen van een hobby badge moet nog gebeuren 
+//weghalen van een hobby badge moet nog gebeuren
 //pas op het einde alles doorsturen naar backend via axios
 //validatie moet nog gebeuren
 // Define validation schemas using Yup
-const hobbiesSchema = yup.array().of(
-  yup.string().required("Please provide at least 3 hobbies")
-).min(3, "Please provide at least 3 hobbies");
-const interestsSchema = yup.array().of(
-  yup.string().required("Please provide at least 3 interests.")
-).min(3, "Please provide at least 3 interests.");
+const hobbiesSchema = yup
+  .array()
+  .of(yup.string().required("Please provide at least 3 hobbies"))
+  .min(3, "Please provide at least 3 hobbies");
+
+const interestsSchema = yup
+  .array()
+  .of(yup.string().required("Please provide at least 3 interests."))
+  .min(3, "Please provide at least 3 interests.");
+
 const favoritesSchema = yup.object({
-  games: yup.array().of(yup.string().required("Each game should be a string")).nullable(),
-  movies: yup.array().of(yup.string().required("Each movie should be a string")).nullable(),
-  books: yup.array().of(yup.string().required("Each book should be a string")).nullable(),
-  music: yup.array().of(yup.string().required("Each song or artist should be a string")).nullable(),
+  games: yup
+    .array()
+    .of(yup.string().required("Each game should be a string"))
+    .nullable(),
+  movies: yup
+    .array()
+    .of(yup.string().required("Each movie should be a string"))
+    .nullable(),
+  books: yup
+    .array()
+    .of(yup.string().required("Each book should be a string"))
+    .nullable(),
+  music: yup
+    .array()
+    .of(yup.string().required("Each song or artist should be a string"))
+    .nullable(),
 });
+
 const mbtiSchema = yup.string({
   mbti: yup.string().required("Please select your MBTI"), // Expecting a string value here
 });
+
+const biographySchema = yup
+  .string()
+  .max(500, "Biography should not exceed 500 characters");
+
 const schema = yup.object({
   hobbies: hobbiesSchema,
   interests: interestsSchema,
   favorites: favoritesSchema,
   mbti: mbtiSchema,
+  biography: biographySchema,
 });
-
 
 const AccountSetupScreen = ({ navigation }) => {
   const [inputValue, setInputValue] = useState("");
@@ -57,23 +80,25 @@ const AccountSetupScreen = ({ navigation }) => {
   const stepsCount = 5;
   const [formData, setFormData] = useState({
     id: "", // id is hardcoded here for now
-    mbti: "",  // Default to the first MBTI type
+    mbti: "", // Default to the first MBTI type
     interests: [],
     hobbies: [],
     games: [],
     movies: [],
     books: [],
     music: [],
+    biography: "",
   });
-  const [base64Image,setBase64Image] = useState(null);
-  const getId = async() => {
-    const id = await getUserData('id')
-    addIdToFormData(id)
-  }
-  
+  const [base64Image, setBase64Image] = useState(null);
+  const getId = async () => {
+    const id = await getUserData("id");
+    addIdToFormData(id);
+  };
+  useEffect(() => {
+    console.log("getvalues", getValues());
+  }, [formData]);
 
-
-  const handleUploadSuccess = async(base64) => {
+  const handleUploadSuccess = async (base64) => {
     console.log("File uploaded successfully:", base64);
     await getId();
     setBase64Image(base64);
@@ -99,6 +124,7 @@ const AccountSetupScreen = ({ navigation }) => {
         music: [],
       },
       mbti: "",
+      biography: "",
     },
   });
 
@@ -106,12 +132,20 @@ const AccountSetupScreen = ({ navigation }) => {
     const stepFields = {
       1: ["hobbies"],
       2: ["interests"],
-      3: ["favorites.games", "favorites.movies", "favorites.books", "favorites.music"],
+      3: [
+        "favorites.games",
+        "favorites.movies",
+        "favorites.books",
+        "favorites.music",
+      ],
       4: ["mbti"],
     };
-
+    console.log("Current step:", currentStep);
+    console.log("formData:", formData["hobbies"]);
     const fieldsToValidate = stepFields[currentStep];
+    console.log("Fields to validate:", fieldsToValidate);
     const isValid = await trigger(fieldsToValidate);
+    console.log("Validation result:", isValid);
 
     if (isValid) {
       if (currentStep < stepsCount) {
@@ -121,11 +155,12 @@ const AccountSetupScreen = ({ navigation }) => {
       console.log("Validation failed:", errors);
     }
   };
+
   const addIdToFormData = (newId) => {
     console.log("Adding ID to form data:", newId);
     setFormData((prevFormData) => ({
       ...prevFormData, // Spread the previous state
-      id: newId,       // Update only the id
+      id: newId, // Update only the id
     }));
   };
 
@@ -145,43 +180,64 @@ const AccountSetupScreen = ({ navigation }) => {
 
   const addItem = (field) => {
     if (inputValue.trim()) {
+      if (field === "interests" && !interests.includes(inputValue.trim())) {
+        alert("Please select a valid interest from the predefined list.");
+        return;
+      }
+
+
       setFormData((prev) => ({
         ...prev,
         [field]: [...prev[field], inputValue.trim()],
       }));
-      setValue(field, formData[field]);
+
+      setValue(field, [...getValues(field), inputValue.trim()]);
       setInputValue(""); // Clear input field after submission
     }
   };
 
   const removeItem = (field, index) => {
+    console.log("Removing item at index:", index);
+    console.log("Field:", field);
+
+    //for formData
+    const newValues = formData[field].filter((_, i) => i !== index);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [field]: newValues,
+    }));
+
+    //for the default values
     const currentValues = getValues(field);
     const updatedValues = currentValues.filter((_, i) => i !== index);
+    console.log("Updated values:", updatedValues);
     setValue(field, updatedValues);
   };
- 
+
   const handleFormSubmit = async () => {
     console.log("Form data submitted:", formData);
     const formattedData = new FormData();
-    formattedData.append("data", JSON.stringify(formData));  
-    formattedData.append('pfp', base64Image);  
+    formattedData.append("data", JSON.stringify(formData));
+    formattedData.append("pfp", base64Image);
     console.log("Form data after appending pfp:", formattedData);
-  
+
     try {
-      const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/createProfile`, formattedData, {
-        headers: {
-          "Content-Type": "multipart/form-data",  // Set the content type for multipart
-        },
-      });
-  
+      const response = await axios.post(
+        `${Constants.expoConfig.extra.BASE_URL}/auth/createProfile`,
+        formattedData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Set the content type for multipart
+          },
+        }
+      );
+
       console.log("Form data submitted successfully:", response.data);
-      navigation.navigate("Home");  // Navigate to another screen upon success
+      navigation.navigate("Home"); // Navigate to another screen upon success
     } catch (error) {
       console.error("Error submitting form data:", error);
     }
   };
-
-  
 
   return (
     <ScrollView>
@@ -190,11 +246,11 @@ const AccountSetupScreen = ({ navigation }) => {
           source={require("../assets/logo-main.png")}
           style={styles.logo}
         />
-  <Text style={styles.title}>
-    Hi, Nils!{"\n"}Let's set up your account.
-  </Text>
-  <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
-     {/* Step 1 */}
+        <Text style={styles.title}>
+          Hi, Nils!{"\n"}Let's set up your account.
+        </Text>
+        <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
+        {/* Step 1 */}
         {currentStep == 1 && (
           <>
             <View style={styles.alignLeft}>
@@ -204,7 +260,7 @@ const AccountSetupScreen = ({ navigation }) => {
               <Controller
                 control={control}
                 name="hobbies"
-                render={({ field: {onBlur } }) => (
+                render={({ field: { onBlur } }) => (
                   <TextInput
                     style={[
                       styles.input,
@@ -221,7 +277,9 @@ const AccountSetupScreen = ({ navigation }) => {
                   />
                 )}
               />
-              {errors.hobbies && <Text style={{ color: 'red' }}>{errors.hobbies.message}</Text>}
+              {errors.hobbies && (
+                <Text style={{ color: "red" }}>{errors.hobbies.message}</Text>
+              )}
             </View>
             <View style={styles.badgeList}>
               {formData.hobbies.map((hobby, index) => (
@@ -230,6 +288,7 @@ const AccountSetupScreen = ({ navigation }) => {
                   title={hobby}
                   isHighlighted
                   onPress={() => removeItem("hobbies", index)}
+                  close={true}
                 />
               ))}
             </View>
@@ -246,7 +305,7 @@ const AccountSetupScreen = ({ navigation }) => {
               <Controller
                 control={control}
                 name="interests"
-                render={({ field: {onBlur} }) => (
+                render={({ field: { onBlur } }) => (
                   <TextInput
                     style={[
                       styles.input,
@@ -263,7 +322,9 @@ const AccountSetupScreen = ({ navigation }) => {
                   />
                 )}
               />
-              {errors.interests && <Text style={{ color: 'red' }}>{errors.interests.message}</Text>}
+              {errors.interests && (
+                <Text style={{ color: "red" }}>{errors.interests.message}</Text>
+              )}
             </View>
             <View style={styles.badgeList}>
               {formData.interests.map((interest, index) => (
@@ -271,6 +332,8 @@ const AccountSetupScreen = ({ navigation }) => {
                   key={index}
                   title={interest}
                   isHighlighted
+                  onPress={() => removeItem("interests", index)}
+                  close={true}
                 />
               ))}
             </View>
@@ -289,7 +352,9 @@ const AccountSetupScreen = ({ navigation }) => {
                   <TextInput
                     style={[
                       styles.input,
-                      errors.movies ? { borderColor: "red", borderWidth: 1 } : {},
+                      errors.movies
+                        ? { borderColor: "red", borderWidth: 1 }
+                        : {},
                     ]}
                     onBlur={onBlur}
                     onChangeText={setInputValue}
@@ -300,10 +365,18 @@ const AccountSetupScreen = ({ navigation }) => {
                   />
                 )}
               />
-              {errors.movies && <Text style={{ color: "red" }}>{errors.movies.message}</Text>}
+              {errors.movies && (
+                <Text style={{ color: "red" }}>{errors.movies.message}</Text>
+              )}
               <View style={styles.badgeList}>
                 {formData.movies.map((movie, index) => (
-                  <Badge key={index} title={movie} isHighlighted />
+                  <Badge
+                    key={index}
+                    title={movie}
+                    isHighlighted
+                    onPress={() => removeItem("movies", index)}
+                    close={true}
+                  />
                 ))}
               </View>
             </View>
@@ -318,7 +391,9 @@ const AccountSetupScreen = ({ navigation }) => {
                   <TextInput
                     style={[
                       styles.input,
-                      errors.music ? { borderColor: "red", borderWidth: 1 } : {},
+                      errors.music
+                        ? { borderColor: "red", borderWidth: 1 }
+                        : {},
                     ]}
                     onBlur={onBlur}
                     onChangeText={setInputValue}
@@ -326,13 +401,22 @@ const AccountSetupScreen = ({ navigation }) => {
                     placeholder="Enter a song or artist"
                     placeholderTextColor="gray"
                     onSubmitEditing={() => addItem("music")}
+                    close={true}
                   />
                 )}
               />
-              {errors.music && <Text style={{ color: "red" }}>{errors.music.message}</Text>}
+              {errors.music && (
+                <Text style={{ color: "red" }}>{errors.music.message}</Text>
+              )}
               <View style={styles.badgeList}>
                 {formData.music.map((music, index) => (
-                  <Badge key={index} title={music} isHighlighted />
+                  <Badge
+                    key={index}
+                    title={music}
+                    isHighlighted
+                    onPress={() => removeItem("music", index)}
+                    close={true}
+                  />
                 ))}
               </View>
             </View>
@@ -347,7 +431,9 @@ const AccountSetupScreen = ({ navigation }) => {
                   <TextInput
                     style={[
                       styles.input,
-                      errors.games ? { borderColor: "red", borderWidth: 1 } : {},
+                      errors.games
+                        ? { borderColor: "red", borderWidth: 1 }
+                        : {},
                     ]}
                     onBlur={onBlur}
                     onChangeText={setInputValue}
@@ -358,7 +444,9 @@ const AccountSetupScreen = ({ navigation }) => {
                   />
                 )}
               />
-              {errors.games && <Text style={{ color: "red" }}>{errors.games.message}</Text>}
+              {errors.games && (
+                <Text style={{ color: "red" }}>{errors.games.message}</Text>
+              )}
               <View style={styles.badgeList}>
                 {formData.games.map((game, index) => (
                   <Badge key={index} title={game} isHighlighted />
@@ -376,7 +464,9 @@ const AccountSetupScreen = ({ navigation }) => {
                   <TextInput
                     style={[
                       styles.input,
-                      errors.books ? { borderColor: "red", borderWidth: 1 } : {},
+                      errors.books
+                        ? { borderColor: "red", borderWidth: 1 }
+                        : {},
                     ]}
                     onBlur={onBlur}
                     onChangeText={setInputValue}
@@ -384,13 +474,22 @@ const AccountSetupScreen = ({ navigation }) => {
                     placeholder="Enter a book"
                     placeholderTextColor="gray"
                     onSubmitEditing={() => addItem("books")}
+                    close={true}
                   />
                 )}
               />
-              {errors.books && <Text style={{ color: "red" }}>{errors.books.message}</Text>}
+              {errors.books && (
+                <Text style={{ color: "red" }}>{errors.books.message}</Text>
+              )}
               <View style={styles.badgeList}>
                 {formData.books.map((book, index) => (
-                  <Badge key={index} title={book} isHighlighted />
+                  <Badge
+                    key={index}
+                    title={book}
+                    isHighlighted
+                    onPress={() => removeItem("books", index)}
+                    close={true}
+                  />
                 ))}
               </View>
             </View>
@@ -401,19 +500,18 @@ const AccountSetupScreen = ({ navigation }) => {
           <>
             <View style={styles.alignLeft}>
               <Text style={styles.titleMedium}>What's your MBTI?</Text>
-              
+
               {/* Debugging: Log the mbti data */}
-              {console.log(mbti)} 
-      
+              {console.log(mbti)}
+
               <RNPickerSelect
-                onValueChange={
-                  (value) => setFormData((prev) => ({ ...prev, mbti: value }))
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, mbti: value }))
                 }
                 items={mbti.map((type) => ({
-                    label: type,
-                    value: type,
-                  })
-                )}
+                  label: type,
+                  value: type,
+                }))}
               />
             </View>
           </>
@@ -423,19 +521,50 @@ const AccountSetupScreen = ({ navigation }) => {
         {currentStep == stepsCount && (
           <>
             <Text style={styles.titleMedium}>Overview</Text>
-            <Text style={styles.subtitle}>Please confirm all your information below.</Text>
+            <Text style={styles.subtitle}>
+              Please confirm all your information below.
+            </Text>
 
-            <Text style={styles.input}>Hobbies: {formData.hobbies.join(", ")}</Text>
-            <Text style={styles.input}>Interests: {formData.interests.join(", ")}</Text>
-            <Text style={styles.input}>Movies: {formData.movies.join(", ")}</Text>
+            <Text style={styles.input}>
+              Hobbies: {formData.hobbies.join(", ")}
+            </Text>
+            <Text style={styles.input}>
+              Interests: {formData.interests.join(", ")}
+            </Text>
+            <Text style={styles.input}>
+              Movies: {formData.movies.join(", ")}
+            </Text>
             <Text style={styles.input}>Music: {formData.music.join(", ")}</Text>
             <Text style={styles.input}>Games: {formData.games.join(", ")}</Text>
             <Text style={styles.input}>Books: {formData.books.join(", ")}</Text>
             <Text style={styles.input}>MBTI: {formData.mbti}</Text>
 
-            <ImageUploadComponent
-              onUploadSuccess={handleUploadSuccess}
+            <Text style={styles.titleMedium}>Biography</Text>
+            <Controller
+              control={control}
+              name="biography"
+              render={({ field: { onBlur } }) => (
+                <TextInput
+                  style={[
+                    styles.input,
+                    errors.biography
+                      ? { borderColor: "red", borderWidth: 1 }
+                      : {},
+                  ]}
+                  onBlur={onBlur}
+                  onChangeText={setInputValue}
+                  value={inputValue}
+                  placeholder="Write a short biography"
+                  placeholderTextColor="gray"
+                  multiline
+                />
+              )}
             />
+            {errors.biography && (
+              <Text style={{ color: "red" }}>{errors.biography.message}</Text>
+            )}
+
+            <ImageUploadComponent onUploadSuccess={handleUploadSuccess} />
 
             <PrimaryButtonPill title="Submit" onPress={handleFormSubmit} />
           </>

@@ -82,7 +82,8 @@ const EventCardWithSection = ({
               </Text>
             </View>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("EventDetail")}
+  style={styles.threeDotIcon}>
             <Entypo name="dots-three-horizontal" size={24} color="black" />
           </TouchableOpacity>
         </View>
