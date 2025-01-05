@@ -23,6 +23,7 @@ import mbti from "../config/mbti";
 import interests from "../config/interests";
 import { getUserData } from "../services/GetToken";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import ionIcon from "react-native-vector-icons/Ionicons";
 
 //weghalen van een hobby badge moet nog gebeuren
 //pas op het einde alles doorsturen naar backend via axios
@@ -64,7 +65,6 @@ const mbtiSchema = yup.string({
 const biographySchema = yup
   .string()
   .max(500, "Biography should not exceed 500 characters");
-  
 
 const schema = yup.object({
   hobbies: hobbiesSchema,
@@ -74,14 +74,13 @@ const schema = yup.object({
   biography: biographySchema,
 });
 
-
 const AccountSetupScreen = ({ navigation }) => {
   const [inputValue, setInputValue] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const stepsCount = 5;
   const [formData, setFormData] = useState({
     id: "", // id is hardcoded here for now
-    mbti: "",  // Default to the first MBTI type
+    mbti: "", // Default to the first MBTI type
     interests: [],
     hobbies: [],
     games: [],
@@ -90,19 +89,16 @@ const AccountSetupScreen = ({ navigation }) => {
     music: [],
     biography: "",
   });
-  const [base64Image,setBase64Image] = useState(null);
-  const getId = async() => {
-    const id = await getUserData('id')
-    addIdToFormData(id)
-  }
+  const [base64Image, setBase64Image] = useState(null);
+  const getId = async () => {
+    const id = await getUserData("id");
+    addIdToFormData(id);
+  };
   useEffect(() => {
-    console.log("getvalues",getValues());
-
+    console.log("getvalues", getValues());
   }, [formData]);
-  
 
-
-  const handleUploadSuccess = async(base64) => {
+  const handleUploadSuccess = async (base64) => {
     console.log("File uploaded successfully:", base64);
     await getId();
     setBase64Image(base64);
@@ -164,7 +160,7 @@ const AccountSetupScreen = ({ navigation }) => {
     console.log("Adding ID to form data:", newId);
     setFormData((prevFormData) => ({
       ...prevFormData, // Spread the previous state
-      id: newId,       // Update only the id
+      id: newId, // Update only the id
     }));
   };
 
@@ -191,21 +187,32 @@ const AccountSetupScreen = ({ navigation }) => {
 
       setValue(field, [...getValues(field), inputValue.trim()]);
       setInputValue(""); // Clear input field after submission
-    }    
-
+    }
   };
 
   const removeItem = (field, index) => {
+    console.log("Removing item at index:", index);
+    console.log("Field:", field);
+
+    //for formData
+    const newValues = formData[field].filter((_, i) => i !== index);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [field]: newValues,
+    }));
+
+    //for the default values
     const currentValues = getValues(field);
     const updatedValues = currentValues.filter((_, i) => i !== index);
+    console.log("Updated values:", updatedValues);
     setValue(field, updatedValues);
   };
 
   const handleFormSubmit = async () => {
     console.log("Form data submitted:", formData);
     const formattedData = new FormData();
-    formattedData.append("data", JSON.stringify(formData));  
-    formattedData.append('pfp', base64Image);  
+    formattedData.append("data", JSON.stringify(formData));
+    formattedData.append("pfp", base64Image);
     console.log("Form data after appending pfp:", formattedData);
 
     try {
@@ -275,6 +282,7 @@ const AccountSetupScreen = ({ navigation }) => {
                   title={hobby}
                   isHighlighted
                   onPress={() => removeItem("hobbies", index)}
+                  close={true}
                 />
               ))}
             </View>
@@ -314,7 +322,13 @@ const AccountSetupScreen = ({ navigation }) => {
             </View>
             <View style={styles.badgeList}>
               {formData.interests.map((interest, index) => (
-                <Badge key={index} title={interest} isHighlighted />
+                <Badge
+                  key={index}
+                  title={interest}
+                  isHighlighted
+                  onPress={() => removeItem("interests", index)}
+                  close={true}
+                />
               ))}
             </View>
           </>
@@ -350,7 +364,13 @@ const AccountSetupScreen = ({ navigation }) => {
               )}
               <View style={styles.badgeList}>
                 {formData.movies.map((movie, index) => (
-                  <Badge key={index} title={movie} isHighlighted />
+                  <Badge
+                    key={index}
+                    title={movie}
+                    isHighlighted
+                    onPress={() => removeItem("movies", index)}
+                    close={true}
+                  />
                 ))}
               </View>
             </View>
@@ -375,6 +395,7 @@ const AccountSetupScreen = ({ navigation }) => {
                     placeholder="Enter a song or artist"
                     placeholderTextColor="gray"
                     onSubmitEditing={() => addItem("music")}
+                    close={true}
                   />
                 )}
               />
@@ -383,7 +404,13 @@ const AccountSetupScreen = ({ navigation }) => {
               )}
               <View style={styles.badgeList}>
                 {formData.music.map((music, index) => (
-                  <Badge key={index} title={music} isHighlighted />
+                  <Badge
+                    key={index}
+                    title={music}
+                    isHighlighted
+                    onPress={() => removeItem("music", index)}
+                    close={true}
+                  />
                 ))}
               </View>
             </View>
@@ -441,6 +468,7 @@ const AccountSetupScreen = ({ navigation }) => {
                     placeholder="Enter a book"
                     placeholderTextColor="gray"
                     onSubmitEditing={() => addItem("books")}
+                    close={true}
                   />
                 )}
               />
@@ -449,7 +477,13 @@ const AccountSetupScreen = ({ navigation }) => {
               )}
               <View style={styles.badgeList}>
                 {formData.books.map((book, index) => (
-                  <Badge key={index} title={book} isHighlighted />
+                  <Badge
+                    key={index}
+                    title={book}
+                    isHighlighted
+                    onPress={() => removeItem("books", index)}
+                    close={true}
+                  />
                 ))}
               </View>
             </View>
@@ -499,16 +533,17 @@ const AccountSetupScreen = ({ navigation }) => {
             <Text style={styles.input}>Books: {formData.books.join(", ")}</Text>
             <Text style={styles.input}>MBTI: {formData.mbti}</Text>
 
-
             <Text style={styles.titleMedium}>Biography</Text>
             <Controller
               control={control}
               name="biography"
-              render={({ field: {onBlur} }) => (
+              render={({ field: { onBlur } }) => (
                 <TextInput
                   style={[
                     styles.input,
-                    errors.biography ? { borderColor: "red", borderWidth: 1 } : {},
+                    errors.biography
+                      ? { borderColor: "red", borderWidth: 1 }
+                      : {},
                   ]}
                   onBlur={onBlur}
                   onChangeText={setInputValue}
@@ -519,8 +554,9 @@ const AccountSetupScreen = ({ navigation }) => {
                 />
               )}
             />
-            {errors.biography && <Text style={{ color: "red" }}>{errors.biography.message}</Text>}
-
+            {errors.biography && (
+              <Text style={{ color: "red" }}>{errors.biography.message}</Text>
+            )}
 
             <ImageUploadComponent onUploadSuccess={handleUploadSuccess} />
 
