@@ -180,6 +180,12 @@ const AccountSetupScreen = ({ navigation }) => {
 
   const addItem = (field) => {
     if (inputValue.trim()) {
+      if (field === "interests" && !interests.includes(inputValue.trim())) {
+        alert("Please select a valid interest from the predefined list.");
+        return;
+      }
+
+
       setFormData((prev) => ({
         ...prev,
         [field]: [...prev[field], inputValue.trim()],
