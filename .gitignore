@@ -3,6 +3,7 @@
 __pycache__/
 venv/
 .env
+gateway-7438d-firebase-adminsdk-djsvs-d572ce5736.json
 
 # Node.js
 node_modules/
