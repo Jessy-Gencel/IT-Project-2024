@@ -7,7 +7,7 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, set } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import axios from "axios";
@@ -23,7 +23,6 @@ import mbti from "../config/mbti";
 import interests from "../config/interests";
 import { getUserData } from "../services/GetToken";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
-import ionIcon from "react-native-vector-icons/Ionicons";
 
 //weghalen van een hobby badge moet nog gebeuren
 //pas op het einde alles doorsturen naar backend via axios
@@ -43,19 +42,19 @@ const favoritesSchema = yup.object({
   games: yup
     .array()
     .of(yup.string().required("Each game should be a string"))
-    .nullable(),
+    .default([]),
   movies: yup
     .array()
     .of(yup.string().required("Each movie should be a string"))
-    .nullable(),
+    .default([]),
   books: yup
     .array()
     .of(yup.string().required("Each book should be a string"))
-    .nullable(),
+    .default([]),
   music: yup
     .array()
     .of(yup.string().required("Each song or artist should be a string"))
-    .nullable(),
+    .default([]),
 });
 
 const mbtiSchema = yup.string({
@@ -76,6 +75,13 @@ const schema = yup.object({
 
 const AccountSetupScreen = ({ navigation }) => {
   const [inputValue, setInputValue] = useState("");
+  //following is needed bc otherwise you're simultaneously typing in
+  // the same input field for all the different fields
+  const [moviesInput, setMoviesInput] = useState("");
+  const [musicInput, setMusicInput] = useState("");
+  const [gamesInput, setGamesInput] = useState("");
+  const [booksInput, setBooksInput] = useState("");
+
   const [currentStep, setCurrentStep] = useState(1);
   const stepsCount = 5;
   const [formData, setFormData] = useState({
@@ -178,40 +184,43 @@ const AccountSetupScreen = ({ navigation }) => {
     }
   };
 
-  const addItem = (field) => {
-    if (inputValue.trim()) {
-      if (field === "interests" && !interests.includes(inputValue.trim())) {
+  const addItem = (field, value) => {
+    console.log("Adding item:", value);
+    if (value.trim()) {
+      if (field === "interests" && !interests.includes(value.trim())) {
         alert("Please select a valid interest from the predefined list.");
         return;
       }
-
-
       setFormData((prev) => ({
         ...prev,
-        [field]: [...prev[field], inputValue.trim()],
+        [field]: [...prev[field], value.trim()],
       }));
+      
+      if(currentStep == 3){
+        setValue(`favorites.${field}`, [...getValues(`favorites.${field}`), value.trim()]);
+        console.log("value", value);
+      }else{
+        setValue(field, [...getValues(field), value]);
 
-      setValue(field, [...getValues(field), inputValue.trim()]);
-      setInputValue(""); // Clear input field after submission
+      }
+
+      console.log("value", value);
     }
   };
 
   const removeItem = (field, index) => {
-    console.log("Removing item at index:", index);
-    console.log("Field:", field);
-
-    //for formData
-    const newValues = formData[field].filter((_, i) => i !== index);
+    const updatedField = field.includes("favorites.")
+      ? `favorites.${field.split('.')[1]}`
+      : field;
+  
+    const newValues = formData[updatedField].filter((_, i) => i !== index);
+    
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [field]: newValues,
+      [updatedField]: newValues,
     }));
-
-    //for the default values
-    const currentValues = getValues(field);
-    const updatedValues = currentValues.filter((_, i) => i !== index);
-    console.log("Updated values:", updatedValues);
-    setValue(field, updatedValues);
+  
+    setValue(updatedField, newValues);
   };
 
   const handleFormSubmit = async () => {
@@ -273,7 +282,9 @@ const AccountSetupScreen = ({ navigation }) => {
                     value={inputValue}
                     placeholder="Hobby"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("hobbies")}
+                    onSubmitEditing={() => {
+                      addItem("hobbies", inputValue)
+                      setInputValue("")}}
                   />
                 )}
               />
@@ -318,7 +329,9 @@ const AccountSetupScreen = ({ navigation }) => {
                     value={inputValue}
                     placeholder="Interest"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("interests")}
+                    onSubmitEditing={() => {
+                      addItem("interests", inputValue)
+                      setInputValue("")}}
                   />
                 )}
               />
@@ -348,20 +361,24 @@ const AccountSetupScreen = ({ navigation }) => {
               <Controller
                 control={control}
                 name="movies"
-                render={({ field: { onBlur } }) => (
+                render={({ field: { onBlur, } }) => (
                   <TextInput
                     style={[
                       styles.input,
-                      errors.movies
+                      errors.books
                         ? { borderColor: "red", borderWidth: 1 }
                         : {},
                     ]}
                     onBlur={onBlur}
-                    onChangeText={setInputValue}
-                    value={inputValue}
+                    onChangeText={setMoviesInput}
+                    value={moviesInput}
                     placeholder="Enter a movie"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("movies")}
+                    onSubmitEditing={() => {
+                      addItem("movies", moviesInput);
+                      setMoviesInput("");
+                    }}
+                    close={true}
                   />
                 )}
               />
@@ -396,12 +413,15 @@ const AccountSetupScreen = ({ navigation }) => {
                         : {},
                     ]}
                     onBlur={onBlur}
-                    onChangeText={setInputValue}
-                    value={inputValue}
+                    onChangeText={setMusicInput}
+                    value={musicInput}
                     placeholder="Enter a song or artist"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("music")}
-                    close={true}
+                    onSubmitEditing={() => {
+                      addItem("music", musicInput);
+                      setMusicInput(""); // Clear the input field
+                    }}
+                    
                   />
                 )}
               />
@@ -436,11 +456,14 @@ const AccountSetupScreen = ({ navigation }) => {
                         : {},
                     ]}
                     onBlur={onBlur}
-                    onChangeText={setInputValue}
-                    value={inputValue}
+                    onChangeText={setGamesInput}
+                    value={gamesInput}
                     placeholder="Enter a game"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("games")}
+                    onSubmitEditing={() => {
+                      addItem("games", gamesInput)
+                      setGamesInput("")}}
+                    
                   />
                 )}
               />
@@ -449,7 +472,13 @@ const AccountSetupScreen = ({ navigation }) => {
               )}
               <View style={styles.badgeList}>
                 {formData.games.map((game, index) => (
-                  <Badge key={index} title={game} isHighlighted />
+                  <Badge
+                  key={index}
+                  title={game}
+                  isHighlighted
+                  onPress={() => removeItem("games", index)}
+                  close={true}
+                />
                 ))}
               </View>
             </View>
@@ -469,12 +498,14 @@ const AccountSetupScreen = ({ navigation }) => {
                         : {},
                     ]}
                     onBlur={onBlur}
-                    onChangeText={setInputValue}
-                    value={inputValue}
+                    onChangeText={setBooksInput}
+                    value={booksInput}
                     placeholder="Enter a book"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("books")}
-                    close={true}
+                    onSubmitEditing={() =>{
+                      addItem("books", booksInput)
+                      setBooksInput("")}
+                    }                    
                   />
                 )}
               />
@@ -482,10 +513,10 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Text style={{ color: "red" }}>{errors.books.message}</Text>
               )}
               <View style={styles.badgeList}>
-                {formData.books.map((book, index) => (
+                {formData.books.map((books, index) => (
                   <Badge
                     key={index}
-                    title={book}
+                    title={books}
                     isHighlighted
                     onPress={() => removeItem("books", index)}
                     close={true}
