@@ -5,10 +5,12 @@ from Utils.sanitize_input import sanitize_input, santize_array
 from Services.couchbase_reads import find_user_by_email,find_user_by_id,find_profile_by_id
 from Services.couchbase_writes import store_user,store_profile,update_profile
 from Utils.extract_name import extract_name
-from Services.embedding import embed_MiniLM
+from Services.embedding import embed_MiniLM, update_vectors
 from Utils.jwt_encode import token_required
 from Utils.image_upload import save_profile_picture,firebase_url_getter
 from Utils.split_path import split_path
+from Utils.translate_to_string import translate_predefined_vector_to_string
+import inflect
 from Utils.expected_database_keywords import VECTOR_FIELDS,DB_FIELDS
 from DB.firebase_bucket import bucket
 import jwt
@@ -91,8 +93,7 @@ def create_profile():
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     ############################## MAKE TRAITS DICT ###############################
     predefined_matching_categories = embed_MiniLM(int(id),traits_for_embedding)
-    for key, value in predefined_matching_categories.items():
-        predefined_matching_categories[key] = [str(number) for number in value]
+    translate_predefined_vector_to_string(predefined_matching_categories)
     print("These should be duplicates but in string form:" , predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
     trait_vectors = predefined_matching_categories
@@ -103,31 +104,39 @@ def create_profile():
     return "User created correctly", 200
 
 @auth_bp.route('/profile/edit', methods=['POST'])
-@token_required
-def edit_profile(payload):
-    vector_data = {}
-    couchbase_data = {}
+def edit_profile():
     data: dict = request.get_json()
     id = sanitize_input(str(data['id']))
     old_profile = find_profile_by_id(id)
+    vector_data = {}
+    couchbase_data = {"id" : id, "traits" : {}}
     for key, value in data.items():
-        if key in DB_FIELDS:
-            if key == "pfp":
+        make_lowercase = inflect.engine()
+        singular_key = make_lowercase.singular_noun(key) if make_lowercase.singular_noun(key) else key  # Convert to singular
+        if singular_key in DB_FIELDS:
+            if singular_key == "pfp":
                 save_profile_picture(value,id,old_profile["pfp"])
             else:
-                couchbase_data[key] = sanitize_input(value)
-        elif key in VECTOR_FIELDS:
-            santized_value = santize_array(value)
-            couchbase_data[key] = santized_value
-            vector_data[key] = santized_value
+                couchbase_data[singular_key] = sanitize_input(value)
+        elif singular_key in VECTOR_FIELDS:
+            if singular_key == "mbti":
+                sanitized_value = sanitize_input(value)
+                couchbase_data["traits"][singular_key] = sanitized_value
+                vector_data[singular_key] = sanitized_value
+            else:
+                santized_value = santize_array(value)
+                couchbase_data["traits"][singular_key] = santized_value
+                vector_data[singular_key] = santized_value
+        elif key == "id":
+            pass
         else:
             return jsonify({"error": "Invalid key"}), 400
-    
-    update_profile(int(id),couchbase_data)
-
-    
-    #initial_profile = find_profile_by_id(id)
-    ############################## SANITIZATION ###############################
+    ########################################## VECTOR DATA ##########################################
+    if vector_data:
+        id_categories = update_vectors(id,vector_data)
+        couchbase_data["trait_vectors"] = id_categories
+        print(couchbase_data)
+        
 
 
 @auth_bp.route('/refresh', methods=['POST'])

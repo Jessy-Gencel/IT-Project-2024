@@ -55,13 +55,22 @@ def store_room(room: str):
         print(f"An error occurred while storing the room: {e}")
         return None
     
+
+def deep_merge(existing: dict, updates: dict):
+    """Recursively merges "updates" into "existing"."""
+    for key, value in updates.items():
+        if isinstance(value, dict) and key in existing:
+            deep_merge(existing[key], value)
+        else:
+            existing[key] = value
+    
 def update_profile(user_id:int, things_to_update:dict):
     collection = get_collection("user-data", "profiles")
     raw_data = collection.get(f"profile::{user_id}")
     current_profile = raw_data.content_as[dict]
     current_cas = raw_data.cas
-    for key, value in things_to_update.items():
-        current_profile[key] = value
+
+    deep_merge(current_profile, things_to_update)
     try:
         new_profile = collection.replace(f"profile::{user_id}", current_profile, ReplaceOptions(cas=current_cas))
         return new_profile.value

@@ -3,6 +3,9 @@ from Services.vector_similarity import check_with_predefined_vectors,make_catego
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from Utils.translate_to_string import translate_predefined_vector_to_string
+from Utils.expected_database_keywords import VECTOR_FIELDS,GLOBAL_VECTOR_FIELDS
+from itertools import chain
 
 def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict):
     """
@@ -20,6 +23,40 @@ def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict)
     res = client.insert(
         collection_name=collection_name,
         data=userdata
+    )
+    return res
+def get_vector(client: MilvusClient, collection_name: str, ids : list[int]):
+    """
+    Retrieves a vector from a specified collection in Milvus.
+
+    Args:
+        client (MilvusClient): The Milvus client instance used to interact with the Milvus server.
+        collection_name (str): The name of the collection from which the vector will be retrieved.
+        id (int): The ID of the vector to be retrieved.
+
+    Returns:
+        res: The result of the get operation from the Milvus client.
+    """
+    res = client.get(
+        collection_name=collection_name,
+        ids=ids
+    )
+    return res
+def delete_vectors(client : MilvusClient,collection_name : str,ids : list[int]):
+    """
+    Deletes vectors from a specified collection in Milvus.
+
+    Args:
+        client (MilvusClient): The Milvus client instance used to interact with the Milvus server.
+        collection_name (str): The name of the collection from which the vectors will be deleted.
+        ids (list[int]): A list of IDs corresponding to the vectors to be deleted.
+
+    Returns:
+        res: The result of the delete operation from the Milvus client.
+    """
+    res = client.delete(
+        collection_name=collection_name,
+        ids=ids
     )
     return res
 def mbti_accuracy_test():
@@ -110,12 +147,7 @@ def embed_singular_vector(word : str):
 def embed_MiniLM(id : int, category_dict : dict):
     final_vector_array = []
     id_category_dict = {}
-    mbti = category_dict["mbti"]
-    mbti_vector = get_mbti_vector(mbti)
-    formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
-    insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector})
-    del category_dict["mbti"]
-    global_user_data = {"id": id, "mbti_vectors": formatted_mbti_vector}
+    global_user_data = {"id" : id}
     get_category_vectors(id,category_dict, id_category_dict, global_user_data, final_vector_array)
     final_vector = concatenate_final_vector(final_vector_array)
     global_user_data["global_vectors"] = format_vector_for_milvus(final_vector)
@@ -124,15 +156,29 @@ def embed_MiniLM(id : int, category_dict : dict):
 
 
 def update_vectors(id : int, category_dict : dict):
-    for category, words in category_dict.items():
-        user_data = {"id": id}
-        array_for_one_category = []
-        category_ids = []
-        category_similarities = []
-        get_word_vectors(category, words, category_ids, category_similarities, array_for_one_category)
-        sorted_category_ids = make_category_bucket_array(category_similarities, category_ids, category)
-    pass
+    print(category_dict)
+    id_category_dict = {} #used for defining the buckets attached to a user
+    global_user_data = {"id" : id} # used for storing all the data necessary to perform the global matching of users (global vector, mbti vector, hobby vector, interest vector)
+    final_vector_array = [] # used for making the global vector based off of all other categories
+    old_global_vector = get_vector(global_vector_DB, "global_vectors", id)[0]
+    ################################## NEED TO DO SOME DATA MANIPULATION ON THIS ##################################
+    #delete_existing_vectors(id, category_dict)
+    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict, global_user_data, final_vector_array) # the values get passed in as reference types meaning they get altered within the function
+    translate_predefined_vector_to_string(id_category_dict)
+    raw_global_vector_info = update_global_vectors(id, provided_update_vectors, old_global_vector)
+    global_vector_writable_dict = assemble_global_vector(id,raw_global_vector_info)
+    #insert_vectors(global_vector_DB,"global_vectors", global_vector_writable_dict)
+    return id_category_dict
 
+
+    
+def handle_mbti_vector(id : int, category_dict : dict):
+    mbti = category_dict["mbti"]
+    mbti_vector = get_mbti_vector(mbti)
+    formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
+    #insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector}) ##################################################################################
+    del category_dict["mbti"]
+    return formatted_mbti_vector
 
 def get_word_vectors(category : str, words : list[str], category_ids : list[int], category_similarities : list[float], array_for_one_category : list[np.ndarray]):
     for word in words:
@@ -146,6 +192,11 @@ def get_word_vectors(category : str, words : list[str], category_ids : list[int]
             
 
 def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict, global_user_data : dict, final_vector_array : list):
+    all_vectors_generated = {}
+    if "mbti" in category_dict:
+        formatted_mbti_vector = handle_mbti_vector(id, category_dict)
+        global_user_data["mbti_vectors"] = formatted_mbti_vector
+        all_vectors_generated["mbti"] = formatted_mbti_vector
     for category, words in category_dict.items():
         user_data = {"id": id}
         array_for_one_category = []
@@ -156,18 +207,75 @@ def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict,
         id_category_dict[f"{category}_vectors"] = sorted_category_ids
         mean_vector = get_mean_vector_for_category(array_for_one_category)
         user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
+        all_vectors_generated[category] = format_vector_for_milvus(mean_vector)
         if category in ["interest","hobby","game"]:
             if category in ["interest","hobby"]:
                 global_user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
                 pass
-            insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
+            #insert_vectors(global_vector_DB,f"{category}_vectors", user_data)####################################################################################
         elif category in ["music","movie","book"]: 
-            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
+            #insert_vectors(category_vector_DB,f"{category}_vectors", user_data)#######################################################################################
             pass
         else:
             print("Category not found")
         if category not in ["interest","hobby"]:
             final_vector_array.append(mean_vector)
+    return all_vectors_generated
+
+
+def delete_existing_vectors(id : int, category_dict : dict):
+    for category,_ in category_dict.items():
+        if category in ["interest","hobby","game","mbti"]:
+            delete_vectors(global_vector_DB,f"{category}_vectors", [id])
+        elif category in ["music","movie","book"]:
+            delete_vectors(category_vector_DB,f"{category}_vectors", [id])
+        else:
+            print("Invalid category")
+    delete_vectors(global_vector_DB,"global_vectors", [id])
+
+
+def assemble_global_vector(id : int, raw_global_vector_info : dict):
+    uploadable_global_vector = {}
+    raw_global_array = [raw_global_vector_info["game"],raw_global_vector_info["movie"],raw_global_vector_info["book"],raw_global_vector_info["music"]]
+    global_array = [value for sublist in raw_global_array for value in sublist]
+    uploadable_global_vector["id"] = id
+    uploadable_global_vector["global_vectors"] = global_array
+    for key,value in raw_global_vector_info.items():
+        if key in ["interest","hobby","mbti"]:
+            uploadable_global_vector[f"{key}_vectors"] = value
+    return uploadable_global_vector
+    
+
+def slice_global_vector_for_category(global_vector : list[np.float32], category : str,global_vector_dict : dict):
+    match category:
+        case "game":
+            global_vector_dict["game"] = global_vector[0:384]
+        case "movie":
+            global_vector_dict["movie"] = global_vector[384:768]
+        case "book":
+            global_vector_dict["book"] = global_vector[768:1152]
+        case "music":
+            global_vector_dict["music"] = global_vector[1152:1536]
+        case _:
+            print("Invalid category")
+
+
+def fill_global_vector_dict(global_vector_dict : dict, current_global_vector : dict):
+    for key in VECTOR_FIELDS:
+        if key not in global_vector_dict:
+            if key in ["interest","hobby","mbti"]:
+                global_vector_dict[key] = current_global_vector[f"{key}_vectors"]
+            else:
+                slice_global_vector_for_category(current_global_vector["global_vectors"], key, global_vector_dict)
+
+
+def update_global_vectors(id : int, category_dict : dict, current_global_vector : dict):
+    global_vector_dict = {}
+    for key,value in category_dict.items():
+        global_vector_dict[key] = value
+    fill_global_vector_dict(global_vector_dict, current_global_vector)
+    return global_vector_dict
+
 def get_mean_vector_for_category(array_of_vectors : np.ndarray):
     """
     Computes the mean vector for a given category from a numpy array of vectors.
