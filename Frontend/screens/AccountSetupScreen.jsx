@@ -209,21 +209,18 @@ const AccountSetupScreen = ({ navigation }) => {
   };
 
   const removeItem = (field, index) => {
-    console.log("Removing item at index:", index);
-    console.log("Field:", field);
-
-    //for formData
-    const newValues = formData[field].filter((_, i) => i !== index);
+    const updatedField = field.includes("favorites.")
+      ? `favorites.${field.split('.')[1]}`
+      : field;
+  
+    const newValues = formData[updatedField].filter((_, i) => i !== index);
+    
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [field]: newValues,
+      [updatedField]: newValues,
     }));
-
-    //for the default values
-    const currentValues = getValues(field);
-    const updatedValues = currentValues.filter((_, i) => i !== index);
-    console.log("Updated values:", updatedValues);
-    setValue(field, updatedValues);
+  
+    setValue(updatedField, newValues);
   };
 
   const handleFormSubmit = async () => {
@@ -285,7 +282,9 @@ const AccountSetupScreen = ({ navigation }) => {
                     value={inputValue}
                     placeholder="Hobby"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("hobbies", inputValue)}
+                    onSubmitEditing={() => {
+                      addItem("hobbies", inputValue)
+                      setInputValue("")}}
                   />
                 )}
               />
@@ -330,7 +329,9 @@ const AccountSetupScreen = ({ navigation }) => {
                     value={inputValue}
                     placeholder="Interest"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("interests", inputValue)}
+                    onSubmitEditing={() => {
+                      addItem("interests", inputValue)
+                      setInputValue("")}}
                   />
                 )}
               />
@@ -420,7 +421,7 @@ const AccountSetupScreen = ({ navigation }) => {
                       addItem("music", musicInput);
                       setMusicInput(""); // Clear the input field
                     }}
-                    close={true}
+                    
                   />
                 )}
               />
@@ -459,7 +460,10 @@ const AccountSetupScreen = ({ navigation }) => {
                     value={gamesInput}
                     placeholder="Enter a game"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("games", gamesInput)}
+                    onSubmitEditing={() => {
+                      addItem("games", gamesInput)
+                      setGamesInput("")}}
+                    
                   />
                 )}
               />
@@ -468,7 +472,13 @@ const AccountSetupScreen = ({ navigation }) => {
               )}
               <View style={styles.badgeList}>
                 {formData.games.map((game, index) => (
-                  <Badge key={index} title={game} isHighlighted />
+                  <Badge
+                  key={index}
+                  title={game}
+                  isHighlighted
+                  onPress={() => removeItem("games", index)}
+                  close={true}
+                />
                 ))}
               </View>
             </View>
@@ -492,8 +502,10 @@ const AccountSetupScreen = ({ navigation }) => {
                     value={booksInput}
                     placeholder="Enter a book"
                     placeholderTextColor="gray"
-                    onSubmitEditing={() => addItem("books", booksInput)}
-                    close={true}
+                    onSubmitEditing={() =>{
+                      addItem("books", booksInput)
+                      setBooksInput("")}
+                    }                    
                   />
                 )}
               />
@@ -501,10 +513,10 @@ const AccountSetupScreen = ({ navigation }) => {
                 <Text style={{ color: "red" }}>{errors.books.message}</Text>
               )}
               <View style={styles.badgeList}>
-                {formData.books.map((book, index) => (
+                {formData.books.map((books, index) => (
                   <Badge
                     key={index}
-                    title={book}
+                    title={books}
                     isHighlighted
                     onPress={() => removeItem("books", index)}
                     close={true}
