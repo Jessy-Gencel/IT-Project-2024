@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -95,6 +95,10 @@ const AccountSetupScreen = ({ navigation }) => {
     const id = await getUserData('id')
     addIdToFormData(id)
   }
+  useEffect(() => {
+    console.log("getvalues",getValues());
+
+  }, [formData]);
   
 
 
@@ -140,9 +144,12 @@ const AccountSetupScreen = ({ navigation }) => {
       ],
       4: ["mbti"],
     };
-
+    console.log("Current step:", currentStep);
+    console.log("formData:", formData["hobbies"]);
     const fieldsToValidate = stepFields[currentStep];
+    console.log("Fields to validate:", fieldsToValidate);
     const isValid = await trigger(fieldsToValidate);
+    console.log("Validation result:", isValid);
 
     if (isValid) {
       if (currentStep < stepsCount) {
@@ -152,6 +159,7 @@ const AccountSetupScreen = ({ navigation }) => {
       console.log("Validation failed:", errors);
     }
   };
+
   const addIdToFormData = (newId) => {
     console.log("Adding ID to form data:", newId);
     setFormData((prevFormData) => ({
@@ -180,9 +188,11 @@ const AccountSetupScreen = ({ navigation }) => {
         ...prev,
         [field]: [...prev[field], inputValue.trim()],
       }));
-      setValue(field, formData[field]);
+
+      setValue(field, [...getValues(field), inputValue.trim()]);
       setInputValue(""); // Clear input field after submission
-    }
+    }    
+
   };
 
   const removeItem = (field, index) => {
