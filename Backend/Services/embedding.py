@@ -161,6 +161,7 @@ def embed_MiniLM(id : int, category_dict : dict):
 def update_vectors(id : int, category_dict : dict):
     print(category_dict)
     id_category_dict = {} #used for defining the buckets attached to a user
+    
     old_global_vector = get_vector(global_vector_DB, "global_vectors", id)[0]
     delete_existing_vectors(id, category_dict)
     provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict) 
