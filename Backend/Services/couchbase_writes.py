@@ -1,7 +1,7 @@
 from couchbase.exceptions import CouchbaseException
 from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_event_by_id,find_chat_by_id,get_collection
 from Utils.id_generator import add_id_to_document, generate_id
-from couchbase.collection import ReplaceOptions,MutationResult
+from couchbase.options import ReplaceOptions
 
 def store_user(user : dict):
     user_with_id = add_id_to_document(user,"user-data","users")
@@ -64,7 +64,7 @@ def deep_merge(existing: dict, updates: dict):
         else:
             existing[key] = value
     
-def update_profile(user_id:int, things_to_update:dict):
+def update_profile(user_id:str, things_to_update:dict):
     collection = get_collection("user-data", "profiles")
     raw_data = collection.get(f"profile::{user_id}")
     current_profile = raw_data.content_as[dict]
