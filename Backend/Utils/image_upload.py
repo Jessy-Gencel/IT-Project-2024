@@ -49,7 +49,7 @@ def save_profile_picture(file: str, user_id: str,existing_pfp = None) -> dict:
         # Decode the base64 string into binary data
         image_data = base64.b64decode(encoded_image)
         # Extract MIME type from the header (e.g., image/png)
-        if existing_pfp:
+        if existing_pfp: 
             filepath = os.path.join(UPLOAD_FOLDER, existing_pfp)
             filename = existing_pfp
         else:

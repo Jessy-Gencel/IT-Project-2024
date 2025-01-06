@@ -59,6 +59,7 @@ const interestsData = [
 
 
 const Profile = (userData) => {
+  console.log(userData);
   return(
     <View>
       <Bio
@@ -72,23 +73,35 @@ const Profile = (userData) => {
 };
 
 const Interests = (userData) => {
-  return(
-    <ScrollView style={styles.container}>
-        {Object.entries(userData.userData.traits).map(([key, values]) => {
-          if (key == "mbti"){
-            return(null);
-          } 
+  const expectedValue = { userData: {} };
+  console.log("this is the correct print");
+  console.log(userData)
+  if (userData?.userData && Object.keys(userData.userData).length === 0){
+    console.log("This ran");
+    return(
+      <View>
+        <Text>loading</Text>
+      </View>
+    )
+  }else{
+    return(
+      <ScrollView style={styles.container}>
+          {Object.entries(userData.userData.traits).map(([key, values]) => {
+            if (key == "mbti"){
+              return(null);
+            } 
 
-        return (
-          <InterestCard
-            key={key}
-            title={key.charAt(0).toUpperCase() + key.slice(1)} // Capitalize the trait name
-            badges_array={values} // Pass the array of values for the trait
-          />
-        );
-      })}
-    </ScrollView>
-  )
+          return (
+            <InterestCard
+              key={key}
+              title={key.charAt(0).toUpperCase() + key.slice(1)} // Capitalize the trait name
+              badges_array={values} // Pass the array of values for the trait
+            />
+          );
+        })}
+      </ScrollView>
+    )
+  }
 };
 
 const Gateways = () => {
