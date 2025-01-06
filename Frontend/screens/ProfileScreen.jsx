@@ -10,6 +10,7 @@ import InterestCard from '../components/InterestCard';
 import Constants from 'expo-constants';
 import {getUserData,storeSecretStorage} from "../services/GetToken";
 import axiosInstance from "../services/AxiosConfig";
+import { useNavigation } from '@react-navigation/native';
 
 
 const eventData = [
@@ -59,13 +60,11 @@ const interestsData = [
 
 
 const Profile = (userData) => {
-  console.log(userData);
   return(
     <View>
       <Bio
         name={userData.userData.name}
         age={25}
-        pronouns="He/Him"
         bioText="Hello! I love hiking, photography, and coding. Always up for an adventure!"
       />
     </View>
@@ -126,9 +125,11 @@ const Gateways = () => {
 
 
 const ProfileScreen = ({route}) => {
+  const navigation = useNavigation(); // Access the navigation prop using the hook
   const {ownProfile} = route.params;
   const [searchQuery, setSearchQuery] = useState('');
   const [profileData, setProfileData] = useState({});
+  
   const dismissKeyboard = () => {
     Keyboard.dismiss(); // Dismiss the keyboard
   };
@@ -179,24 +180,22 @@ const ProfileScreen = ({route}) => {
     interests: Interests,
     gateways: Gateways,
   };
+
   const handleEditPress = () => {
     navigation.navigate('EditProfile', {
       profile: {
-        name: "John Doe",
-        age: 25,
-        pronouns: "He/Him",
-        bioText: "Hello! I love hiking, photography, and coding. Always up for an adventure!",
+        id: profileData.id,
+        name: profileData.name || "Default Name",
+        pronouns: profileData.pronouns || "They/Them",
+        bioText: profileData.bioText || "Tell us about yourself!",
+        profilePicture: profileData.profilePicture || 'https://via.placeholder.com/150', // Default image if none
       },
-      interests: interestsData,
-      onSave: (updatedProfile, updatedInterests) => {
-        // Handle the updated data
-        console.log("Updated Profile:", updatedProfile);
-        console.log("Updated Interests:", updatedInterests);
-  
-        // Update the ProfileCard and Interests data
-      },
+      
+      interests: profileData.traits, // Or fetch from `profileData.traits` if interests are there
     });
   };
+  
+  
 
   
 
