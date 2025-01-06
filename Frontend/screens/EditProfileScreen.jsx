@@ -91,7 +91,7 @@ const EditProfileScreen = ({ route, navigation }) => {
       const accessToken = await getUserData("accessToken");
       const refreshToken = await getUserData("refreshToken");
 
-      const response = await axiosInstance.put(`${Constants.expoConfig.extra.BASE_URL}/auth/profile/edit`, {
+      const response = await axiosInstance.post(`${Constants.expoConfig.extra.BASE_URL}/auth/profile/edit`, {
         id: data.id,
         bioText: data.bioText,
         traits: data.interests, // Include updated interests

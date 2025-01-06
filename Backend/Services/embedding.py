@@ -158,11 +158,10 @@ def embed_MiniLM(id : int, category_dict : dict):
 def update_vectors(id : int, category_dict : dict):
     print(category_dict)
     id_category_dict = {} #used for defining the buckets attached to a user
-    global_user_data = {"id" : id} # used for storing all the data necessary to perform the global matching of users (global vector, mbti vector, hobby vector, interest vector)
-    final_vector_array = [] # used for making the global vector based off of all other categories
+    
     old_global_vector = get_vector(global_vector_DB, "global_vectors", id)[0]
     delete_existing_vectors(id, category_dict)
-    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict, global_user_data, final_vector_array) 
+    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict) 
     translate_predefined_vector_to_string(id_category_dict)
     raw_global_vector_info = update_global_vectors(id, provided_update_vectors, old_global_vector)
     global_vector_writable_dict = assemble_global_vector(id,raw_global_vector_info)

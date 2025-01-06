@@ -105,39 +105,42 @@ def create_profile():
 
 @auth_bp.route('/profile/edit', methods=['POST'])
 def edit_profile():
-    print(data)
+    
     data: dict = request.get_json()
+    print(data)
     id = sanitize_input(str(data['id']))
     old_profile = find_profile_by_id(id)
     vector_data = {}
-    #couchbase_data = {"id" : id, "traits" : {}}
-    #for key, value in data["traits"].items():
-        #make_lowercase = inflect.engine()
-        #singular_key = make_lowercase.singular_noun(key) if make_lowercase.singular_noun(key) else key  # Convert to singular
-        #if singular_key in DB_FIELDS:
-            #if singular_key == "pfp":
-                #save_profile_picture(value,id,old_profile["pfp"])
-            #else:
-                #couchbase_data[singular_key] = sanitize_input(value)
-        #elif singular_key in VECTOR_FIELDS:
-            #if singular_key == "mbti":
-                #sanitized_value = sanitize_input(value)
-                #couchbase_data["traits"][singular_key] = sanitized_value
-                #vector_data[singular_key] = sanitized_value
-            #else:
-                #santized_value = santize_array(value)
-                #couchbase_data["traits"][singular_key] = santized_value
-                #vector_data[singular_key] = santized_value
-        #elif key == "id":
-            #pass
-        #else:
-            #return jsonify({"error": "Invalid key"}), 400
+    couchbase_data = {"id" : id, "traits" : {}}
+    for key, value in data["traits"].items():
+        make_lowercase = inflect.engine()
+        singular_key = make_lowercase.singular_noun(key) if make_lowercase.singular_noun(key) else key  # Convert to singular
+        if singular_key in DB_FIELDS:
+            if singular_key == "pfp":
+                save_profile_picture(value,id,old_profile["pfp"])
+            else:
+                couchbase_data[singular_key] = sanitize_input(value)
+        elif singular_key in VECTOR_FIELDS:
+            if singular_key == "mbti":
+                sanitized_value = sanitize_input(value)
+                couchbase_data["traits"][singular_key] = sanitized_value
+                vector_data[singular_key] = sanitized_value
+            else:
+                santized_value = santize_array(value)
+                couchbase_data["traits"][singular_key] = santized_value
+                vector_data[singular_key] = santized_value
+        elif key == "id":
+            pass
+        else:
+            
+            return jsonify({"error": "Invalid key"}), 400
     ########################################## VECTOR DATA ##########################################
-    #if vector_data:
-        #id_categories = update_vectors(id,vector_data)
-        #couchbase_data["trait_vectors"] = id_categories
-        #print(couchbase_data)
-    #return jsonify(find_profile_by_id(id)), 200
+    
+    if vector_data:
+        id_categories = update_vectors(id,vector_data)
+        couchbase_data["trait_vectors"] = id_categories
+        print(couchbase_data)
+    return jsonify(find_profile_by_id(id)), 200
 
 
 
