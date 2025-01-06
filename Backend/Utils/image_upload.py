@@ -4,6 +4,8 @@ import uuid
 from dotenv import load_dotenv
 from werkzeug.datastructures import FileStorage
 import base64
+from DB.firebase_bucket import bucket
+
 
 load_dotenv()
 
@@ -30,7 +32,7 @@ def allowed_file(filename : str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def save_profile_picture(file: str, user_id: str) -> dict:
+def save_profile_picture(file: str, user_id: str,existing_pfp = None) -> dict:
     """
     Saves a base64-encoded profile picture to the server and returns the image URL.
 
@@ -44,17 +46,18 @@ def save_profile_picture(file: str, user_id: str) -> dict:
     try:
         # Split the base64 string into the header and encoded data
         header, encoded_image = file.split(",", 1)
-
         # Decode the base64 string into binary data
         image_data = base64.b64decode(encoded_image)
-
         # Extract MIME type from the header (e.g., image/png)
-        mime_type = header.split(":")[1].split(";")[0]
-        extension = mime_type.split("/")[1]  # e.g., png, jpg
-
-        # Generate a unique filename using user ID and UUID
-        filename = f"{user_id}_{uuid.uuid4().hex}.{extension}"
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        if existing_pfp:
+            filepath = os.path.join(UPLOAD_FOLDER, existing_pfp)
+            filename = existing_pfp
+        else:
+            mime_type = header.split(":")[1].split(";")[0]
+            extension = mime_type.split("/")[1]  # e.g., png, jpg
+            # Generate a unique filename using user ID and UUID
+            filename = f"{user_id}_{uuid.uuid4().hex}.{extension}"
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
 
         # Save the image data to the server
         with open(filepath, 'wb') as f:
@@ -62,6 +65,11 @@ def save_profile_picture(file: str, user_id: str) -> dict:
 
         # Generate the URL for the image
         image_url = f"{filename}"
+
+        blob = bucket.blob(image_url)
+        blob.upload_from_filename(f"DB/PFP/{image_url}")
+
+        os.remove(f"DB/PFP/{image_url}")
 
         return {"status": "success", "image_url": image_url}
 
