@@ -161,13 +161,12 @@ def update_vectors(id : int, category_dict : dict):
     global_user_data = {"id" : id} # used for storing all the data necessary to perform the global matching of users (global vector, mbti vector, hobby vector, interest vector)
     final_vector_array = [] # used for making the global vector based off of all other categories
     old_global_vector = get_vector(global_vector_DB, "global_vectors", id)[0]
-    ################################## NEED TO DO SOME DATA MANIPULATION ON THIS ##################################
-    #delete_existing_vectors(id, category_dict)
-    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict, global_user_data, final_vector_array) # the values get passed in as reference types meaning they get altered within the function
+    delete_existing_vectors(id, category_dict)
+    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict, global_user_data, final_vector_array) 
     translate_predefined_vector_to_string(id_category_dict)
     raw_global_vector_info = update_global_vectors(id, provided_update_vectors, old_global_vector)
     global_vector_writable_dict = assemble_global_vector(id,raw_global_vector_info)
-    #insert_vectors(global_vector_DB,"global_vectors", global_vector_writable_dict)
+    insert_vectors(global_vector_DB,"global_vectors", global_vector_writable_dict)
     return id_category_dict
 
 
@@ -176,7 +175,7 @@ def handle_mbti_vector(id : int, category_dict : dict):
     mbti = category_dict["mbti"]
     mbti_vector = get_mbti_vector(mbti)
     formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
-    insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector}) ##################################################################################
+    insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector}) 
     del category_dict["mbti"]
     return formatted_mbti_vector
 
@@ -208,9 +207,9 @@ def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict)
         user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
         all_vectors_generated[category] = format_vector_for_milvus(mean_vector)
         if category in ["interest","hobby","game"]:
-            insert_vectors(global_vector_DB,f"{category}_vectors", user_data)####################################################################################
+            insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
         elif category in ["music","movie","book"]: 
-            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)#######################################################################################
+            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
         else:
             print("Category not found")
     return all_vectors_generated
