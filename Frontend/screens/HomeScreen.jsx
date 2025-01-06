@@ -16,9 +16,13 @@ import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "../services/AxiosConfig";
 import { getAuthTokens, storeSecretStorage } from "../services/GetToken";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 import PrimaryButton from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
+import socket from "../services/websockets";
+import { getUserData } from "../services/GetToken";
+
+
 
 const getHomeMatches = async () => {
   try {
@@ -47,13 +51,13 @@ const getHomeMatches = async () => {
 };
 const storeMatchIds = async (data) => {
   const ids = data.map((match) => match.id);
-  try{
+  try {
     await storeSecretStorage("match_ids", JSON.stringify(ids));
     console.log("Match ids stored successfully:", ids);
-  }catch(error){
+  } catch (error) {
     console.error("Error storing match ids:", error);
   }
-}
+};
 
 const getPfp = async (data) => {
   const { accessToken, refreshToken } = await getAuthTokens();
@@ -88,6 +92,7 @@ const getPfp = async (data) => {
 
 const HomePage = ({ navigation }) => {
   const [matchingProfiles, setMatchingProfiles] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   // Fetch matching profiles when component mounts
   useEffect(() => {
@@ -102,8 +107,32 @@ const HomePage = ({ navigation }) => {
       }
     };
 
+    const fetchUserId = async () => {
+      try {
+        const userId = await getUserData("id");
+        console.log("Fetched User ID:", userId); // id van andere user ophalen om zo navigeren naar juiste chatscreen
+        setCurrentUserId(userId);
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserId();
     fetchMatchingProfiles(); // Fetch data
   }, []);
+
+  const createRoom = (userId) => {
+    const roomId = `room:${Math.min(currentUserId, userId)}:${Math.max(
+      currentUserId,
+      userId
+    )}`;
+    console.log("roomId: ", roomId);
+    socket.emit("join_room", {
+      current_user_id: currentUserId,
+      match_user_id: userId,
+    });
+    navigation.navigate("ChatScreen", { room: roomId });
+  };
 
   const events = [
     {
@@ -153,96 +182,100 @@ const HomePage = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container} nestedScrollEnabled={true}>
-  <GradientBackground style={styles.background}>
-    {/* Header */}
-    <Header showBackArrow={false} notificationCount={5} />
-    
-    <View style={styles.matchingSection}>
-      <Text style={styles.sectionTitle}>Matching</Text>
-      {/* Match Profiles */}
-      <ScrollView
-        style={styles.matchingScroll}
-        nestedScrollEnabled={true}
-        showsVerticalScrollIndicator={false}>
-        {matchingProfiles.map((item, index) => (
-          <View key={`${item.id}-${index}`} style={styles.matchingCard}>
-            <View style={styles.cardContent}>
-              <Image
-                source={
-                  typeof item.imageUrl === "string"
-                    ? { uri: item.imageUrl }
-                    : item.imageUrl
-                }
-                style={styles.pfp}
-              />
-              <View style={styles.cardText}>
-                <Text style={styles.cardName}>{item.name}</Text>
-                <View style={styles.progressBarCard}>
-                  <Text style={styles.progressBarText}>
-                    {item.match_score}%
-                  </Text>
-                  <ProgressBar
-                    fillWidth={item.match_score}
-                    height={15}
-                    borderRadius={10}
-                    barColor="#5F63E2"
+      <GradientBackground style={styles.background}>
+        {/* Header */}
+        <Header showBackArrow={false} notificationCount={5} />
+
+        <View style={styles.matchingSection}>
+          <Text style={styles.sectionTitle}>Matching</Text>
+          {/* Match Profiles */}
+          <ScrollView
+            style={styles.matchingScroll}
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={false}>
+            {matchingProfiles.map((item, index) => (
+              <View key={`${item.id}-${index}`} style={styles.matchingCard}>
+                <View style={styles.cardContent}>
+                  <Image
+                    source={
+                      typeof item.imageUrl === "string"
+                        ? { uri: item.imageUrl }
+                        : item.imageUrl
+                    }
+                    style={styles.pfp}
                   />
-                  <View style={styles.badgeContainer}>
-                    {item.traits &&
-                      Object.keys(item.traits)
-                        .slice(0, 3)
-                        .map((traitKey, index) => {
-                          const traitValue = item.traits[traitKey]?.[0]; // Get the first value of the array
-                          return (
-                            traitValue && ( // Render the badge only if there's a value
-                              <PrimaryButton
-                                key={index}
-                                title={traitValue} // Use the first value as the badge text
-                                isHighlighted={true}
-                                close={false}
-                              />
-                            )
-                          );
-                        })}
+                  <View style={styles.cardText}>
+                    <Text style={styles.cardName}>{item.name}</Text>
+                    <View style={styles.progressBarCard}>
+                      <Text style={styles.progressBarText}>
+                        {item.match_score}%
+                      </Text>
+                      <ProgressBar
+                        fillWidth={item.match_score}
+                        height={15}
+                        borderRadius={10}
+                        barColor="#5F63E2"
+                      />
+                      <View style={styles.badgeContainer}>
+                        {item.traits &&
+                          Object.keys(item.traits)
+                            .slice(0, 3)
+                            .map((traitKey, index) => {
+                              const traitValue = item.traits[traitKey]?.[0]; // Get the first value of the array
+                              return (
+                                traitValue && ( // Render the badge only if there's a value
+                                  <PrimaryButton
+                                    key={index}
+                                    title={traitValue} // Use the first value as the badge text
+                                    isHighlighted={true}
+                                    close={false}
+                                  />
+                                )
+                              );
+                            })}
+                      </View>
+                    </View>
+                  </View>
+                  <View style={styles.cardActions}>
+                    <TouchableOpacity onPress={() => createRoom(item.id)}>
+                      <Ionicons
+                        name="chatbubble-ellipses"
+                        size={25}
+                        color="black"
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                      <Ionicons
+                        name="information-circle-outline"
+                        size={25}
+                        color="black"
+                      />
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
-              <View style={styles.cardActions}>
-                <TouchableOpacity>
-                  <Ionicons
-                    name="chatbubble-ellipses"
-                    size={25}
-                    color="black"
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Ionicons
-                    name="information-circle-outline"
-                    size={25}
-                    color="black"
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Event Section */}
+        <View style={styles.eventSection}>
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Text style={styles.sectionTitle}>Events</Text>
+            <PrimaryButtonPill
+              style={styles.eventButton}
+              title="Create Event"
+              onPress={() => navigation.navigate("CreateEvent")}
+            />
           </View>
-        ))}
-      </ScrollView>
-    </View>
 
-    {/* Event Section */}
-    <View style={styles.eventSection}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-      <Text style={styles.sectionTitle}>Events</Text>
-      <PrimaryButtonPill style={styles.eventButton} title="Create Event" onPress={() => navigation.navigate("CreateEvent")} />
-      </View>
-      
-      {events.map((event) => (
-        <EventCardWithSection key={event.id} {...event} />
-      ))}
-    </View>
-  </GradientBackground>
-</ScrollView>
-
+          {events.map((event) => (
+            <EventCardWithSection key={event.id} {...event} />
+          ))}
+        </View>
+      </GradientBackground>
+    </ScrollView>
   );
 };
 
@@ -265,8 +298,7 @@ const styles = StyleSheet.create({
     marginTop: 13,
 
     color: "#333",
-    
-  }, 
+  },
   matchingCard: {
     width: "95%",
     backgroundColor: "#fff",
@@ -326,7 +358,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap", // Allow badges to wrap if they exceed available space
     marginTop: 30,
-    right:"70%",
+    right: "70%",
     gap: 10, // Spacing between badges
   },
 });

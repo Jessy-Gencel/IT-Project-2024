@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from Services.couchbase_reads import get_user_chats, get_room_messages
+from Services.couchbase_reads import get_user_chats, get_room_messages, find_profile_by_id
 
 # Define the blueprint for messages
 message_bp = Blueprint('messages', __name__, url_prefix='/messages')
@@ -35,12 +35,12 @@ def get_chat(chat_id):
     return "Yippie chats/conversation_id", 200
 
 # fetch all chats of a user using their id
-@message_bp.route('/user_chats', methods=['POST'])
-def user_chats():
-    print('user_chats')
-    data = request.get_json()
-    result = get_user_chats(data['match_ids'])
+@message_bp.route('/user_chats/<int:user_id>', methods=['GET'])
+def user_chats(user_id):
+    print('user_chats route')
+    result = get_user_chats(user_id)
     print('result: ', result)
+
     if result is None:
         return jsonify({"error": "Users not found"}), 404
     return jsonify(result), 200
