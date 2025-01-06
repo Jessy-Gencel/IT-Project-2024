@@ -71,9 +71,10 @@ def get_users():
 
 @auth_bp.route('/createProfile', methods=['POST'])
 def create_profile():
-    data_raw = request.form["data"]
-    pfp = request.form["pfp"]
-    data = json.loads(data_raw)
+    #data_raw = request.form["data"]
+    #pfp = request.form["pfp"]
+    #data = json.loads(data_raw)
+    data = request.get_json()
     id = sanitize_input(str(data['id']))
     #age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
@@ -84,23 +85,23 @@ def create_profile():
     books = santize_array(data['books'])
     music = santize_array(data['music'])
     ############################## SANITIZATION ###############################
-    pfp_result = save_profile_picture(pfp,id)
-    if pfp_result["status"] == "error":
-        return pfp_result["message"], 400  # Return error if PFP upload fails
-    pfp_url = pfp_result["image_url"]
+    #pfp_result = save_profile_picture(pfp,id)
+    #if pfp_result["status"] == "error":
+        #return pfp_result["message"], 400  # Return error if PFP upload fails
+    #pfp_url = pfp_result["image_url"]
     ############################## HANDLE IMAGE UPLOAD ###############################
-    traits_for_embedding = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits_for_embedding = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits_for_embedding = {key: value for key, value in traits_for_embedding.items() if value}
     ############################## MAKE TRAITS DICT ###############################
     predefined_matching_categories = embed_MiniLM(int(id),traits_for_embedding)
     translate_predefined_vector_to_string(predefined_matching_categories)
-    print("These should be duplicates but in string form:" , predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
     trait_vectors = predefined_matching_categories
     user = find_user_by_id(id)
-    user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
+    #user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
-    profile = store_profile(user_profile)
+    #profile = store_profile(user_profile)
     return "User created correctly", 200
 
 @auth_bp.route('/profile/edit', methods=['POST'])

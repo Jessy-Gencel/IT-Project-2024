@@ -145,13 +145,13 @@ def embed_singular_vector(word : str):
     return vector
 
 def embed_MiniLM(id : int, category_dict : dict):
-    final_vector_array = []
     id_category_dict = {}
-    global_user_data = {"id" : id}
-    get_category_vectors(id,category_dict, id_category_dict, global_user_data, final_vector_array)
-    final_vector = concatenate_final_vector(final_vector_array)
-    global_user_data["global_vectors"] = format_vector_for_milvus(final_vector)
-    insert_vectors(global_vector_DB,"global_vectors", global_user_data)
+    category_vector_dict = get_category_vectors(id,category_dict, id_category_dict)
+    global_vector_dict = update_global_vectors(id, category_vector_dict)
+    write_standard_vectors(id, global_vector_dict)
+    formatted_global_vector_dict = format_global_vector_dict(id,global_vector_dict)
+    print(formatted_global_vector_dict)
+    insert_vectors(global_vector_DB,"global_vectors", formatted_global_vector_dict)
     return id_category_dict
 
 
@@ -176,7 +176,7 @@ def handle_mbti_vector(id : int, category_dict : dict):
     mbti = category_dict["mbti"]
     mbti_vector = get_mbti_vector(mbti)
     formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
-    #insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector}) ##################################################################################
+    insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector}) ##################################################################################
     del category_dict["mbti"]
     return formatted_mbti_vector
 
@@ -191,11 +191,10 @@ def get_word_vectors(category : str, words : list[str], category_ids : list[int]
             array_for_one_category.append(vector)
             
 
-def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict, global_user_data : dict, final_vector_array : list):
+def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict):
     all_vectors_generated = {}
     if "mbti" in category_dict:
         formatted_mbti_vector = handle_mbti_vector(id, category_dict)
-        global_user_data["mbti_vectors"] = formatted_mbti_vector
         all_vectors_generated["mbti"] = formatted_mbti_vector
     for category, words in category_dict.items():
         user_data = {"id": id}
@@ -209,19 +208,22 @@ def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict,
         user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
         all_vectors_generated[category] = format_vector_for_milvus(mean_vector)
         if category in ["interest","hobby","game"]:
-            if category in ["interest","hobby"]:
-                global_user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
-                pass
-            #insert_vectors(global_vector_DB,f"{category}_vectors", user_data)####################################################################################
+            insert_vectors(global_vector_DB,f"{category}_vectors", user_data)####################################################################################
         elif category in ["music","movie","book"]: 
-            #insert_vectors(category_vector_DB,f"{category}_vectors", user_data)#######################################################################################
-            pass
+            insert_vectors(category_vector_DB,f"{category}_vectors", user_data)#######################################################################################
         else:
             print("Category not found")
-        if category not in ["interest","hobby"]:
-            final_vector_array.append(mean_vector)
     return all_vectors_generated
 
+
+def format_global_vector_dict(id:int,global_vector_dict : dict):
+    formatted_global_vector_dict = {}
+    for key in global_vector_dict.keys():
+        if key not in GLOBAL_VECTOR_FIELDS:
+            formatted_global_vector_dict[f"{key}_vectors"] = global_vector_dict[key]
+
+    formatted_global_vector_dict["id"] = id
+    return formatted_global_vector_dict
 
 def delete_existing_vectors(id : int, category_dict : dict):
     for category,_ in category_dict.items():
@@ -260,7 +262,7 @@ def slice_global_vector_for_category(global_vector : list[np.float32], category 
             print("Invalid category")
 
 
-def fill_global_vector_dict(global_vector_dict : dict, current_global_vector : dict):
+def fill_global_vector_dict(global_vector_dict : dict, current_global_vector : dict = {}):
     for key in VECTOR_FIELDS:
         if key not in global_vector_dict:
             if key in ["interest","hobby","mbti"]:
@@ -269,12 +271,31 @@ def fill_global_vector_dict(global_vector_dict : dict, current_global_vector : d
                 slice_global_vector_for_category(current_global_vector["global_vectors"], key, global_vector_dict)
 
 
-def update_global_vectors(id : int, category_dict : dict, current_global_vector : dict):
+def update_global_vectors(id : int, category_vector_dict : dict, current_global_vector : dict = {}):
     global_vector_dict = {}
-    for key,value in category_dict.items():
+    for key,value in category_vector_dict.items():
         global_vector_dict[key] = value
-    fill_global_vector_dict(global_vector_dict, current_global_vector)
+    if current_global_vector != {}:
+        fill_global_vector_dict(global_vector_dict, current_global_vector)
+    else:
+        fill_with_standard_values(global_vector_dict)
     return global_vector_dict
+    
+
+def fill_with_standard_values(global_vector_dict : dict):
+    global_vector = []
+    global_vector_components = {}
+    for key in VECTOR_FIELDS:
+        if key not in global_vector_dict:
+            if key == "mbti":
+                global_vector_dict[key] = [0.0 for _ in range(4)]
+            else:
+                global_vector_dict[key] = [0.0 for _ in range(384)]
+        if key in GLOBAL_VECTOR_FIELDS:
+            global_vector_components[key] = global_vector_dict[key]
+    raw_global_array = [global_vector_components["game"],global_vector_components["movie"],global_vector_components["book"],global_vector_components["music"]]
+    global_vector = [value for sublist in raw_global_array for value in sublist]
+    global_vector_dict["global"] = global_vector
 
 def get_mean_vector_for_category(array_of_vectors : np.ndarray):
     """
@@ -286,6 +307,22 @@ def get_mean_vector_for_category(array_of_vectors : np.ndarray):
     """
     mean_vector = np.mean(array_of_vectors, axis=0)
     return mean_vector
+
+def write_standard_vectors(id:int ,global_vector_dict : dict):
+    """
+    Writes standard vectors to a dictionary.
+    Args:
+        global_vector_dict (dict): The dictionary to write the standard vectors to.
+    """
+    for key,value in global_vector_dict.items():
+        if value[0:2] == [0.0,0.0]:
+            if key in ["interest","hobby","mbti","game"]:
+                insert_vectors(global_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
+            else:
+                insert_vectors(category_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
+            
+           
+
 
 def format_vector_for_milvus(vector : np.ndarray):
     """
