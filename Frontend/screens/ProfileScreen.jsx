@@ -74,19 +74,7 @@ const Profile = (userData) => {
 const Interests = (userData) => {
   return(
     <ScrollView style={styles.container}>
-        {Object.entries(userData.userData.traits).map(([key, values]) => {
-          if (key == "mbti"){
-            return(null);
-          } 
 
-        return (
-          <InterestCard
-            key={key}
-            title={key.charAt(0).toUpperCase() + key.slice(1)} // Capitalize the trait name
-            badges_array={values} // Pass the array of values for the trait
-          />
-        );
-      })}
     </ScrollView>
   )
 };

@@ -137,7 +137,7 @@ def edit_profile():
     ########################################## VECTOR DATA ##########################################
     
     if vector_data:
-        id_categories = update_vectors(id,vector_data)
+        id_categories = update_vectors(int(id),vector_data)
         couchbase_data["trait_vectors"] = id_categories
         print(couchbase_data)
     return jsonify(find_profile_by_id(id)), 200
