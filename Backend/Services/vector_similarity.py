@@ -49,11 +49,12 @@ def check_with_predefined_vectors(category : str, vector : list,make_bucket : bo
     vector = [vector]
     res = None
     if category == "game":
-        res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
+        res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5,output_fields=["id","distance","word"])
     else:
-        res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
+        res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5,output_fields=["id","distance","word"])
     if make_bucket:
-        ids = [interest['id'] for interest in res[0]]
+        print(res[0])
+        ids = [interest['entity']["word"] for interest in res[0]]
         distances = [interest['distance'] for interest in res[0]]
         return distances,ids
     else:
@@ -86,8 +87,8 @@ def make_category_bucket_array(similarities : list, ids : list, category : str):
     _, sorted_ids = zip(*combined_sorted)
     sorted_ids = list(sorted_ids)[:10]
     #control_function_matching(category, sorted_ids)
-    #print("These are the sorted IDS")
-    #print(sorted_ids)
+    print("These are the sorted IDS")
+    print(sorted_ids)
     return sorted_ids
 
 def control_function_matching(category : str, sorted_ids : list):

@@ -144,6 +144,9 @@ def embed_singular_vector(word : str):
     vector = model.encode(word)
     return vector
 
+
+############################################################### LARGE SCALE WRITES ########################################################################################
+
 def embed_MiniLM(id : int, category_dict : dict):
     id_category_dict = {}
     category_vector_dict = get_category_vectors(id,category_dict, id_category_dict)
@@ -158,11 +161,9 @@ def embed_MiniLM(id : int, category_dict : dict):
 def update_vectors(id : int, category_dict : dict):
     print(category_dict)
     id_category_dict = {} #used for defining the buckets attached to a user
-    global_user_data = {"id" : id} # used for storing all the data necessary to perform the global matching of users (global vector, mbti vector, hobby vector, interest vector)
-    final_vector_array = [] # used for making the global vector based off of all other categories
     old_global_vector = get_vector(global_vector_DB, "global_vectors", id)[0]
     delete_existing_vectors(id, category_dict)
-    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict, global_user_data, final_vector_array) 
+    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict) 
     translate_predefined_vector_to_string(id_category_dict)
     raw_global_vector_info = update_global_vectors(id, provided_update_vectors, old_global_vector)
     global_vector_writable_dict = assemble_global_vector(id,raw_global_vector_info)
@@ -214,7 +215,58 @@ def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict)
             print("Category not found")
     return all_vectors_generated
 
+    
 
+
+
+
+
+
+
+
+
+#################################################################### VECTOR HELPER FUNCTIONS #################################################################################
+
+def fill_with_standard_values(global_vector_dict : dict):
+    global_vector = []
+    global_vector_components = {}
+    for key in VECTOR_FIELDS:
+        if key not in global_vector_dict:
+            if key == "mbti":
+                global_vector_dict[key] = [0.0 for _ in range(4)]
+            else:
+                global_vector_dict[key] = [0.0 for _ in range(384)]
+        if key in GLOBAL_VECTOR_FIELDS:
+            global_vector_components[key] = global_vector_dict[key]
+    raw_global_array = [global_vector_components["game"],global_vector_components["movie"],global_vector_components["book"],global_vector_components["music"]]
+    global_vector = [value for sublist in raw_global_array for value in sublist]
+    global_vector_dict["global"] = global_vector
+
+def get_mean_vector_for_category(array_of_vectors : np.ndarray):
+    """
+    Computes the mean vector for a given category from a numpy array of vectors.
+    Args:
+        array_of_vectors (np.ndarray): A numpy array of vectors.
+    Returns:
+        np.ndarray: A numpy array representing the mean vector of the input vectors.
+    """
+    mean_vector = np.mean(array_of_vectors, axis=0)
+    return mean_vector
+
+def write_standard_vectors(id:int ,global_vector_dict : dict):
+    """
+    Writes standard vectors to a dictionary.
+    Args:
+        global_vector_dict (dict): The dictionary to write the standard vectors to.
+    """
+    for key,value in global_vector_dict.items():
+        if value[0:2] == [0.0,0.0]:
+            if key in ["interest","hobby","mbti","game"]:
+                insert_vectors(global_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
+            else:
+                insert_vectors(category_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
+            
+           
 def format_global_vector_dict(id:int,global_vector_dict : dict):
     formatted_global_vector_dict = {}
     for key in global_vector_dict.keys():
@@ -269,60 +321,6 @@ def fill_global_vector_dict(global_vector_dict : dict, current_global_vector : d
             else:
                 slice_global_vector_for_category(current_global_vector["global_vectors"], key, global_vector_dict)
 
-
-def update_global_vectors(id : int, category_vector_dict : dict, current_global_vector : dict = {}):
-    global_vector_dict = {}
-    for key,value in category_vector_dict.items():
-        global_vector_dict[key] = value
-    if current_global_vector != {}:
-        fill_global_vector_dict(global_vector_dict, current_global_vector)
-    else:
-        fill_with_standard_values(global_vector_dict)
-    return global_vector_dict
-    
-
-def fill_with_standard_values(global_vector_dict : dict):
-    global_vector = []
-    global_vector_components = {}
-    for key in VECTOR_FIELDS:
-        if key not in global_vector_dict:
-            if key == "mbti":
-                global_vector_dict[key] = [0.0 for _ in range(4)]
-            else:
-                global_vector_dict[key] = [0.0 for _ in range(384)]
-        if key in GLOBAL_VECTOR_FIELDS:
-            global_vector_components[key] = global_vector_dict[key]
-    raw_global_array = [global_vector_components["game"],global_vector_components["movie"],global_vector_components["book"],global_vector_components["music"]]
-    global_vector = [value for sublist in raw_global_array for value in sublist]
-    global_vector_dict["global"] = global_vector
-
-def get_mean_vector_for_category(array_of_vectors : np.ndarray):
-    """
-    Computes the mean vector for a given category from a numpy array of vectors.
-    Args:
-        array_of_vectors (np.ndarray): A numpy array of vectors.
-    Returns:
-        np.ndarray: A numpy array representing the mean vector of the input vectors.
-    """
-    mean_vector = np.mean(array_of_vectors, axis=0)
-    return mean_vector
-
-def write_standard_vectors(id:int ,global_vector_dict : dict):
-    """
-    Writes standard vectors to a dictionary.
-    Args:
-        global_vector_dict (dict): The dictionary to write the standard vectors to.
-    """
-    for key,value in global_vector_dict.items():
-        if value[0:2] == [0.0,0.0]:
-            if key in ["interest","hobby","mbti","game"]:
-                insert_vectors(global_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
-            else:
-                insert_vectors(category_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
-            
-           
-
-
 def format_vector_for_milvus(vector : np.ndarray):
     """
     Formats a numpy array for insertion into a Milvus collection.
@@ -342,6 +340,19 @@ def concatenate_final_vector(final_vector : np.ndarray):
     """
     concatenated_vector = np.concatenate(final_vector, axis=0)
     return concatenated_vector.reshape(1, -1)[0]
+
+
+def update_global_vectors(id : int, category_vector_dict : dict, current_global_vector : dict = {}):
+    global_vector_dict = {}
+    for key,value in category_vector_dict.items():
+        global_vector_dict[key] = value
+    if current_global_vector != {}:
+        fill_global_vector_dict(global_vector_dict, current_global_vector)
+    else:
+        fill_with_standard_values(global_vector_dict)
+    return global_vector_dict
+
+
 
 model = SentenceTransformer('all-MiniLM-L12-v2')
 
