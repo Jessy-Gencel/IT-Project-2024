@@ -211,14 +211,37 @@ def order_users_by_matches(category: str, vector_ids: list, user_rows: list):
 #         chat = get_collection("user-data", "chats").get("")
 #                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
 
-def get_user_chats(match_ids: list):
+def get_user_chats(user_id: int):
+    print('get_user_chats')
+    try:
+        query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id LIKE 'room:{user_id}:%' OR room_id LIKE 'room:%:{user_id}'"
+        query_data = cluster.query(query).execute()
+        print(query_data)
+        rooms_list = [row["chats"] for row in query_data]
+        print("rooms: ", rooms_list)
+        
+        # Make array with other chat user id's and get their profile data
+        user_ids_list = [
+        str(num)
+        for item in rooms_list
+        for num in item['room_id'].split(':')[1:]
+        if int(num) != user_id
+        ]
+        print(user_ids_list)
+        
+        user_query = f"SELECT name, id, pfp FROM `ehb-link`.`user-data`.`profiles` WHERE id IN [{', '.join([f"'{id}'" for id in user_ids_list])}]"
+        print(user_query)
+        user_data = cluster.query(user_query).execute()
+        print(user_data)
+        user_list = [row for row in user_data]
+        
+        return user_list
     
-    #fetch a users first and last name
-    print(match_ids)
-    user_query = f"SELECT name, id, pfp FROM `ehb-link`.`user-data`.`profiles` WHERE id IN {match_ids}"
-    user_data = cluster.query(user_query).execute()
-    print(user_data)
-    user_list = [row for row in user_data]
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving the rooms for user_id {user_id}: {e}")
+        return None
+    
+
     
     #fetch all chats where the user is involved
     # chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id = 'room:{user_id}:%' OR chat_id = 'room:%:{user_id}'"

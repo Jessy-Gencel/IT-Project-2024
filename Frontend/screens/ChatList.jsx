@@ -15,7 +15,6 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [chatUsers, setChatUsers] = useState([]);
 
-
   useEffect(() => {
     const fetchUserId = async () => {
       try {
@@ -28,15 +27,12 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
     };
 
     fetchUserId();
-  }, []);
 
-  useEffect(() => {
     const fetchChats = async () => {
       try {
-
-        const matchIds = {"match_ids" : JSON.parse(await getUserData("match_ids"))};
-        const response = await axiosInstance.post(
-          `${Constants.expoConfig.extra.BASE_URL}/messages/user_chats`, matchIds,
+        const userId = await getUserData("id");
+        const response = await axiosInstance.get(
+          `${Constants.expoConfig.extra.BASE_URL}/messages/user_chats/${userId}`,
           {
             headers: {
               "Content-Type": "application/json",
@@ -45,10 +41,9 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
           }
         );
         console.log("Fetched chats:", response.data);
-        console.log("kwni: ", response)
+        console.log("kwni: ", response);
         await getPfp(response.data);
         setChatUsers(response.data);
-        
       } catch (error) {
         console.error("Error fetching chats:", error);
       }
@@ -58,18 +53,21 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
   }, []);
 
   const createRoom = (userId) => {
-    const roomId = `room:${Math.min(currentUserId, userId)}:${Math.max(currentUserId, userId)}`;
+    const roomId = `room:${Math.min(currentUserId, userId)}:${Math.max(
+      currentUserId,
+      userId
+    )}`;
     console.log("roomId: ", roomId);
     socket.emit("join_room", {
       current_user_id: currentUserId,
       match_user_id: userId,
     });
-    navigation.navigate('ChatScreen', { room: roomId});
+    navigation.navigate("ChatScreen", { room: roomId });
   };
 
   const getPfp = async (data) => {
     const { accessToken, refreshToken } = await getAuthTokens();
-  
+
     for (const match of data) {
       if ("pfp" in match) {
         try {
@@ -83,13 +81,13 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
               },
             }
           );
-  
+
           // Get the Firebase URL from the response data
           const firebaseUrl = response.data.file;
-  
+
           // Store the URL in the match object or wherever you need it
           match.imageUrl = firebaseUrl;
-  
+
           console.log("Firebase URL received:", firebaseUrl);
         } catch (error) {
           console.error("Error fetching profile picture URL:", error);
@@ -101,14 +99,18 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
   const renderChatCard = ({ item }) => (
     <TouchableOpacity onPress={() => createRoom(item.id)}>
       <View style={styles.chatListContainer}>
-        <Image source={{uri: item.imageUrl}} style={styles.avatar} />
+        <Image source={{ uri: item.imageUrl }} style={styles.avatar} />
         <View style={styles.senderAndMessage}>
           <Text style={styles.sender}>{`${item.name}`}</Text>
           <View style={styles.timeAndMessage}>
-            <Text numberOfLines={1} style={[styles.message, isUnread && styles.messageUnread]}>
+            <Text
+              numberOfLines={1}
+              style={[styles.message, isUnread && styles.messageUnread]}>
               Hardcoded Message
             </Text>
-            <Text style={[styles.time, isUnread && styles.timeUnread]}>12:33</Text>
+            <Text style={[styles.time, isUnread && styles.timeUnread]}>
+              12:33
+            </Text>
           </View>
         </View>
         <View>
@@ -187,4 +189,3 @@ const styles = StyleSheet.create({
   },
 });
 export default ChatList;
-
