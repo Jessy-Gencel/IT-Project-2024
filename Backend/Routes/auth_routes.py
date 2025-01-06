@@ -10,6 +10,7 @@ from Utils.jwt_encode import token_required
 from Utils.image_upload import save_profile_picture,firebase_url_getter
 from Utils.split_path import split_path
 from Utils.translate_to_string import translate_predefined_vector_to_string
+from Services.check_for_changes_in_profile import get_changed_traits_unordered
 import inflect
 from Utils.expected_database_keywords import VECTOR_FIELDS,DB_FIELDS
 from DB.firebase_bucket import bucket
@@ -105,13 +106,16 @@ def create_profile():
 
 @auth_bp.route('/profile/edit', methods=['POST'])
 def edit_profile():
-    
     data: dict = request.get_json()
     print(data)
     id = sanitize_input(str(data['id']))
     old_profile = find_profile_by_id(id)
     vector_data = {}
     couchbase_data = {"id" : id, "traits" : {}}
+    changed_traits = get_changed_traits_unordered(data["traits"],old_profile["traits"])
+    data["traits"] = changed_traits
+    print(changed_traits)
+
     for key, value in data["traits"].items():
         make_lowercase = inflect.engine()
         singular_key = make_lowercase.singular_noun(key) if make_lowercase.singular_noun(key) else key  # Convert to singular
@@ -141,7 +145,7 @@ def edit_profile():
         couchbase_data["trait_vectors"] = id_categories
         print(couchbase_data)
     update_profile(id,couchbase_data)
-    
+
     return jsonify(find_profile_by_id(id)), 200
 
 
