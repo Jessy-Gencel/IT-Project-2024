@@ -1,5 +1,5 @@
 from couchbase.exceptions import CouchbaseException
-from Services.couchbase_reads import find_user_by_id,find_profile_by_id,find_event_by_id,find_chat_by_id,get_collection
+from Services.couchbase_reads import find_user_by_id, find_profile_by_id, find_event_by_id, find_chat_by_id,get_collection
 from Utils.id_generator import add_id_to_document, generate_id
 
 def store_user(user : dict):
@@ -21,16 +21,23 @@ def store_profile(profile : dict):
     except CouchbaseException as e:
         print(f"An error occurred while storing the profile: {e}")
         return None
+    
 def store_event(event : dict):
-    eventid = event["event_id"]
-    del event["event_id"]
+    # eventid = event["event_id"]
+    # del event["event_id"]
     try:
+        event_id = generate_id("event-data", "events")
+        event["id"] = event_id
+        event["participants"] = []
+
         user_collection = get_collection("event-data", "events")
-        user_collection.insert(f"event::{eventid}", event)
-        return find_event_by_id(eventid)
+        user_collection.insert(f"event::{event_id}", event)
+
+        return find_event_by_id(event_id)
     except CouchbaseException as e:
         print(f"An error occurred while storing the event: {e}")
         return None
+    
 def store_chats(message : dict):
     message_with_id = add_id_to_document(message,"user-data","chats")
     try:
@@ -73,3 +80,22 @@ def store_message(room_id: str, sender_id: int, message: str, timestamp: str):
     except CouchbaseException as e:
         print(f"Failed to store message: ", e)
         return None
+    
+def update_participant(event_id: int, user_id: int, is_going: bool):
+    event = find_event_by_id(event_id)
+    print(user_id)
+    print(event)
+    
+    if is_going and user_id not in event['participants']:
+        event['participants'].append(user_id)
+    elif user_id in event['participants'] and not is_going:
+        event['participants'].remove(user_id)
+
+
+    try:
+        collection = get_collection("event-data", "events")
+        collection.replace(f"event::{event_id}", event)
+        return True
+    except CouchbaseException as e:
+        print(f"An error occurred while updating the participant: {e}")
+        return False

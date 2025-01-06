@@ -39,10 +39,12 @@ const LogInScreen = ({ navigation }) => {
                 email: data.email,
                 password: data.password,
             });
-            const { access_token: accessToken, refresh_token: refreshToken, id: userId } = response.data;
+            const { access_token: accessToken, refresh_token: refreshToken, id: userId, first_name: firstName, last_name: lastName } = response.data;
             await storeSecretStorage("accessToken", accessToken);
             await storeSecretStorage("refreshToken", refreshToken);
             await storeSecretStorage("id", userId);
+            await storeSecretStorage("first_name", firstName);
+            await storeSecretStorage("last_name", lastName);
             const access = await getUserData("accessToken");
             const refresh = await getUserData("refreshToken");
 

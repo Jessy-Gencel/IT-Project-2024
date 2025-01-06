@@ -260,3 +260,13 @@ def get_room_messages(room: str):
     except CouchbaseException as e:
         print(f"An error occurred while retrieving messages from room {room}: {e}")
         return None
+
+def get_event_participants(event_id: int):
+    try:
+        print(event_id)
+        query = f"SELECT participants FROM `ehb-link`.`event-data`.`events` WHERE id = {event_id}"
+        query_data = cluster.query(query).execute()
+        return query_data
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving participants from event: {event_id}: {e}")
+        return None

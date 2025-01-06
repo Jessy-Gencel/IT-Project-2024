@@ -10,10 +10,13 @@ import {
   Modal,
   Image,
 } from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker"; // You may need to install this library for date picker
-import GradientBackground from "../components/GradientBackground"; 
-import Header from "../components/DefaultHeader"; // Assuming Header component is in the same directory
-import { Ionicons } from "@expo/vector-icons"; 
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import GradientBackground from "../components/GradientBackground";
+import Header from "../components/DefaultHeader"; 
+import { Ionicons } from "@expo/vector-icons";
+import { getUserData } from "../services/GetToken";
+import axiosInstance from "../services/AxiosConfig";
+import Constants from "expo-constants";
 
 const GatewaysScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
@@ -30,9 +33,43 @@ const GatewaysScreen = ({ navigation }) => {
     setDatePickerVisible(false);
   };
 
-  const handleSubmit = () => {
-    // Submit the form (you can handle form submission logic here)
-    console.log(formData);
+  const handleSubmit = async () => {
+    try {
+      const userId = await getUserData("id");
+      let organizerFirstName = await getUserData("first_name");
+      let organizerLastName = await getUserData("last_name");
+      organizerFirstName =
+        organizerFirstName.substring(0, 1).toUpperCase() +
+        organizerFirstName.substring(1);
+      organizerLastName =
+        organizerLastName.substring(0, 1).toUpperCase() +
+        organizerLastName.substring(1);
+      const organizerFullName = organizerFirstName + " " + organizerLastName;
+      const eventData = {
+        ...formData,
+        organizer: userId,
+        organizerFullName: organizerFullName,
+      };
+
+      const response = await axiosInstance.post(
+        `${Constants.expoConfig.extra.BASE_URL}/events`,
+        eventData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (response.status === 201) {
+        console.log("Event created successfully!");
+        alert("Event created successfully!");
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Error creating event:", error);
+      alert("Error creating event!");
+    }
+    console.log(eventData);
   };
 
   const handleInputChange = (field, value) => {
@@ -43,11 +80,13 @@ const GatewaysScreen = ({ navigation }) => {
     <View style={styles.container}>
       <GradientBackground style={styles.background}>
         <Header showBackArrow={true} notificationCount={5} />
-        
-        
-        <ScrollView style={styles.eventSection} showsVerticalScrollIndicator={false}>
+
+        <ScrollView
+          style={styles.eventSection}
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.sectionTitle}>Create Event</Text>
-          
+
           {/* Form to Create Event */}
           <View style={styles.formContainer}>
             <TextInput
@@ -75,7 +114,10 @@ const GatewaysScreen = ({ navigation }) => {
               multiline={true}
               numberOfLines={4}
             />
-            <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              style={styles.submitButton}
+            >
               <Text style={styles.submitButtonText}>Create Event</Text>
             </TouchableOpacity>
           </View>

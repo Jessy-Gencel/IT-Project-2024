@@ -79,7 +79,7 @@ const GatewaysScreen = ({ navigation }) => {
             />
           </View>
           {events.map((event) => (
-            <EventCardWithSection key={event.id} {...event} />
+            <EventCardWithSection key={event.id} id={event.id} {...event}  />
           ))}
         </ScrollView>
       </GradientBackground>
