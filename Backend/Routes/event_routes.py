@@ -1,14 +1,18 @@
 from flask import Blueprint, request, jsonify
 from Services.couchbase_writes import store_event, update_participant
+from Services.couchbase_reads import get_events
 
 # Define the blueprint for events
 event_bp = Blueprint('events', __name__, url_prefix='/events')
 
 @event_bp.route('/events', methods=['GET'])
-def get_events():
-    # events = find_all_events()
-    # return jsonify(events)
-    return "Yippie events", 200
+def get_user_events():
+    try:
+        events = get_events()
+        return jsonify(events), 200
+    except Exception as e:
+        print(f"An error occurred while fetching events: {e}")
+        return jsonify({"error": "An error occurred while fetching events"}), 500
 
 @event_bp.route('/events/<int:event_id>', methods=['GET'])
 def get_event(event_id):

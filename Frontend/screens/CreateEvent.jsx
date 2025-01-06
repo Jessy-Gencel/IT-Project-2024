@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import GradientBackground from "../components/GradientBackground";
-import Header from "../components/DefaultHeader"; 
+import Header from "../components/DefaultHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { getUserData } from "../services/GetToken";
 import axiosInstance from "../services/AxiosConfig";
@@ -60,7 +60,7 @@ const GatewaysScreen = ({ navigation }) => {
           },
         }
       );
-      if (response.status === 201) {
+      if (response.status === 200) {
         console.log("Event created successfully!");
         alert("Event created successfully!");
         navigation.goBack();

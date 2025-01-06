@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import {
   View,
   Text,
@@ -14,12 +14,13 @@ import { useNavigation } from "@react-navigation/native";
 import { getUserData } from "../services/GetToken";
 import axiosInstance from "../services/AxiosConfig";
 import Constants from "expo-constants";
+import { useEffect } from "react";
 
 const EventCardWithSection = ({
   id,
   profilePicture,
   isGroup,
-  creatorName,
+  organizerFullName,
   eventName,
   eventDate,
   location,
@@ -40,9 +41,11 @@ const EventCardWithSection = ({
     {
       label: "Not going",
       value: "notGoing",
-      icon: <MaterialCommunityIcons name="close-circle" size={18} color="red" />,
+      icon: (
+        <MaterialCommunityIcons name="close-circle" size={18} color="red" />
+      ),
       color: "#F44336", // Red for Not Interested
-    }
+    },
   ];
 
   const handleSelect = async (option, id) => {
@@ -54,25 +57,28 @@ const EventCardWithSection = ({
       isGoing = true;
     }
     try {
-    const response = await axiosInstance.post(
-      `${Constants.expoConfig.extra.BASE_URL}/events/participants`,
-      {
-        event_id: id,
-        user_id: userId,
-        is_going: isGoing,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
+      const response = await axiosInstance.post(
+        `${Constants.expoConfig.extra.BASE_URL}/events/participants`,
+        {
+          event_id: id,
+          user_id: userId,
+          is_going: isGoing,
         },
-      }
-    )
-    }catch(error){
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (error) {
       console.error("Error updating participants:", error);
       alert("Error updating participants!");
     }
   };
 
+  useEffect(() => {
+    console.log("Description: ", description);
+  }, []);
 
   // Check if the description is longer than 20 words
   const descriptionWords = description.split(" ");
@@ -85,11 +91,7 @@ const EventCardWithSection = ({
         <View style={styles.header}>
           <View style={styles.profileInfo}>
             <Image
-              source={
-                typeof profilePicture === "string"
-                  ? { uri: profilePicture }
-                  : profilePicture
-              }
+              source={require("../assets/GatewayNoText_Logo.png")}
               style={styles.profilePicture}
             />
             <View style={styles.nameWrapper}>
@@ -98,16 +100,18 @@ const EventCardWithSection = ({
               ) : null}
               <Text
                 style={[
-                  styles.creatorName,
+                  styles.organizerFullName,
                   { marginLeft: isGroup ? 5 : 0 },
                 ]}
               >
-                {creatorName}
+                {organizerFullName}
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate("EventDetails")}
-  style={styles.threeDotIcon}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("EventDetails")}
+            style={styles.threeDotIcon}
+          >
             <Entypo name="dots-three-horizontal" size={24} color="black" />
           </TouchableOpacity>
         </View>
@@ -148,27 +152,25 @@ const EventCardWithSection = ({
 
       {/* Right Section: Dropdown Picker */}
       <View style={styles.rightSection}>
-        <Image
-          source={
-            typeof profilePicture === "string"
-              ? { uri: profilePicture }
-              : profilePicture
-          }
-          style={styles.eventImage}
-        />
         <TouchableOpacity
           style={[
             styles.dropdownButton,
-            { backgroundColor: options.find((opt) => opt.label === selectedOption)?.color || "#F7931E" },
+            {
+              backgroundColor:
+                options.find((opt) => opt.label === selectedOption)?.color ||
+                "#F7931E",
+            },
           ]}
           onPress={() => setDropdownVisible(!dropdownVisible)}
         >
-          <Text style={styles.dropdownButtonText}>
-            {selectedOption}
-          </Text>
+          <Text style={styles.dropdownButtonText}>{selectedOption}</Text>
         </TouchableOpacity>
 
-        <Modal visible={dropdownVisible} transparent={true} animationType="fade">
+        <Modal
+          visible={dropdownVisible}
+          transparent={true}
+          animationType="fade"
+        >
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <FlatList
@@ -236,7 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  creatorName: {
+  organizerFullName: {
     fontSize: 16,
     fontWeight: "bold",
   },
