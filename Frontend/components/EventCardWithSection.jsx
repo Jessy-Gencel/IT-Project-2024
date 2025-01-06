@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Entypo, Feather, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const EventCardWithSection = ({
   profilePicture,
@@ -23,6 +24,7 @@ const EventCardWithSection = ({
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Select Status");
+  const navigation = useNavigation();
 
   const options = [
     {
@@ -82,7 +84,7 @@ const EventCardWithSection = ({
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate("EventDetail")}
+          <TouchableOpacity onPress={() => navigation.navigate("EventDetails")}
   style={styles.threeDotIcon}>
             <Entypo name="dots-three-horizontal" size={24} color="black" />
           </TouchableOpacity>

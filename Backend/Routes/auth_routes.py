@@ -149,11 +149,12 @@ def refresh():
 
 
 @auth_bp.route('/users/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    # user = find_user_by_id(user_id)
-    # if user:
-    #     return jsonify(user), 200
-    # else:
+@token_required
+def get_user(payload,user_id):
+    user = find_user_by_id(user_id)
+    if user:
+       return jsonify(user), 200
+    else:
         return "Yippie user/user_id", 200
 
 @auth_bp.route('/profiles', methods=['GET'])
@@ -161,7 +162,7 @@ def get_profiles():
     # return jsonify(profiles)
     return "Yippie profiles", 200
 
-@auth_bp.route('/profiles/<profile_id>', methods=['GET'])
+@auth_bp.route('/profile/<int:profile_id>', methods=['GET'])
 @token_required
 def get_profile(payload,profile_id):
     profile = find_profile_by_id(profile_id)

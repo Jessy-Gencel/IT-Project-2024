@@ -4,16 +4,23 @@ import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-nati
 import { TabView, SceneMap } from 'react-native-tab-view';
 
 // Create a reusable SwipeableTabs component
-const SwipeableTabs = ({ routes, scenes }) => {
+const SwipeableTabs = ({ routes, scenes, userData }) => {
   const [index, setIndex] = React.useState(0);
-
   const initialLayout = { width: Dimensions.get('window').width };
+  const renderScene = SceneMap(
+    Object.fromEntries(
+      Object.entries(scenes).map(([key, SceneComponent]) => [
+        key,
+        () => <SceneComponent userData={userData} />,
+      ])
+    )
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <TabView
         navigationState={{ index, routes }}
-        renderScene={SceneMap(scenes)}
+        renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={initialLayout}
         renderTabBar={() => (
