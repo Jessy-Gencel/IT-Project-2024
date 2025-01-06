@@ -34,6 +34,7 @@ const LogInScreen = ({ navigation }) => {
     });
 
     const onSubmit = async (data) => {
+        console.log(`${Constants.expoConfig.extra.BASE_URL}/auth/login`)
         try{
             const response = await axios.post(`${Constants.expoConfig.extra.BASE_URL}/auth/login`, {
                 email: data.email,
