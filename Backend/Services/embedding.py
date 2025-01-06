@@ -1,5 +1,5 @@
 from DB.milvus_connection import MilvusClient, global_vector_DB, category_vector_DB, predefined_vector_DB1
-from Services.vector_similarity import check_with_predefined_vectors,make_category_bucket_array
+from Services.vector_similarity import check_with_predefined_vectors,make_category_bucket_array,slice_global_vector_for_category
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -299,18 +299,6 @@ def assemble_global_vector(id : int, raw_global_vector_info : dict):
     return uploadable_global_vector
     
 
-def slice_global_vector_for_category(global_vector : list[np.float32], category : str,global_vector_dict : dict):
-    match category:
-        case "game":
-            global_vector_dict["game"] = global_vector[0:384]
-        case "movie":
-            global_vector_dict["movie"] = global_vector[384:768]
-        case "book":
-            global_vector_dict["book"] = global_vector[768:1152]
-        case "music":
-            global_vector_dict["music"] = global_vector[1152:1536]
-        case _:
-            print("Invalid category")
 
 
 def fill_global_vector_dict(global_vector_dict : dict, current_global_vector : dict = {}):

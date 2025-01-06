@@ -1,7 +1,7 @@
 from pymilvus import MilvusClient,AnnSearchRequest,WeightedRanker
 from DB.milvus_connection import global_vector_DB,category_vector_DB,predefined_vector_DB1
 import numpy as np
-
+from Utils.expected_database_keywords import VECTOR_FIELDS,GLOBAL_VECTOR_FIELDS
 
 def get_global_matches(userid : int,amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list,black_list : list = []):
     black_list.append(userid)
@@ -97,3 +97,42 @@ def control_function_matching(category : str, sorted_ids : list):
         word = get_by_category_and_id(category, id)
         best_matches.append({"word": word})
     print(best_matches)
+
+def match_with_one_specific_user(user_id : int, other_user_id : int):
+    global_vector_components = get_by_id(user_id)[0]
+    user_vectors = {
+        "mbti" : global_vector_components["mbti_vectors"],
+        "hobby" : global_vector_components["hobby_vectors"],
+        "interest" : global_vector_components["interest_vectors"],
+    }
+    for field in GLOBAL_VECTOR_FIELDS:
+        slice_global_vector_for_category(global_vector_components["global_vectors"],field,user_vectors)
+
+    matching_percentages = {}
+    print(user_vectors)
+    for vector_field in VECTOR_FIELDS:
+        if vector_field in ["mbti","hobby","interest","game"]:
+            res = global_vector_DB.search(collection_name=f"{vector_field}_vectors", data=[user_vectors[f"{vector_field}"]], limit=1,filter=f"id == {other_user_id}")[0]
+            matching_percentages[vector_field] = round(float(res[0]["distance"]),2) * 100
+        elif vector_field in ["movie","book","music"]:
+            res = category_vector_DB.search(collection_name=f"{vector_field}_vectors", data=[user_vectors[f"{vector_field}"]], limit=1,filter=f"id == {other_user_id}")[0]
+            matching_percentages[vector_field] = round(float(res[0]["distance"]),2) * 100
+        else: 
+            print("Brother what field are you trying to access?!?!?!")
+    return matching_percentages
+
+
+def slice_global_vector_for_category(global_vector : list[np.float32], category : str,global_vector_dict : dict):
+    match category:
+        case "game":
+            global_vector_dict["game"] = global_vector[0:384]
+        case "movie":
+            global_vector_dict["movie"] = global_vector[384:768]
+        case "book":
+            global_vector_dict["book"] = global_vector[768:1152]
+        case "music":
+            global_vector_dict["music"] = global_vector[1152:1536]
+        case _:
+            print("Invalid category")
+
+

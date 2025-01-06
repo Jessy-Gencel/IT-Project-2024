@@ -2,6 +2,7 @@ from DB.couchbase_connection import cluster, db
 from couchbase.collection import Collection
 from couchbase.scope import Scope
 from couchbase.exceptions import DocumentNotFoundException, CouchbaseException
+from Services.matching import find_global_top_matches
 
 def get_collection(scope_name: str,collection_name: str) -> Collection:
 	CB_collection = db.scope(scope_name).collection(collection_name)
@@ -282,4 +283,16 @@ def get_room_messages(room: str):
 
     except CouchbaseException as e:
         print(f"An error occurred while retrieving messages from room {room}: {e}")
+        return None
+    
+def word_matches_with_specific_user(user_id: int, other_user_id: int):
+    try:
+        current_user_trait_vectors = find_profile_by_id(user_id)["trait_vectors"]
+        other_user_trait_vectors = find_profile_by_id(other_user_id)["trait_vectors"]
+        matching_vectors = find_global_top_matches(current_user_trait_vectors, other_user_trait_vectors)
+        print(matching_vectors)
+        return matching_vectors, 200
+    
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving word matches with user {other_user_id}: {e}")
         return None
