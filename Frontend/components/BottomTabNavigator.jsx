@@ -75,9 +75,6 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="FUN" component={JWSTesting} />
       <Tab.Screen name="Chat" component={ChatList} />
       <Tab.Screen name="Profile" component={ProfileScreen} initialParams={{ownProfile: true}}/>
-      <Tab.Screen name="Components" component={ComponentsScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
-      <Tab.Screen name="AccountSetup" component={AccountSetupScreen}/>
       
     </Tab.Navigator>
   );
