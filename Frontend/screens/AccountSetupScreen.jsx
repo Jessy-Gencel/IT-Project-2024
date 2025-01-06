@@ -23,6 +23,7 @@ import mbti from "../config/mbti";
 import interests from "../config/interests";
 import { getUserData } from "../services/GetToken";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import RegisterScreen from "./RegisterScreen";
 
 //weghalen van een hobby badge moet nog gebeuren
 //pas op het einde alles doorsturen naar backend via axios
@@ -73,7 +74,7 @@ const schema = yup.object({
   biography: biographySchema,
 });
 
-const AccountSetupScreen = ({ navigation }) => {
+const AccountSetupScreen = ({ navigation, route }) => {
   const [inputValue, setInputValue] = useState("");
   //following is needed bc otherwise you're simultaneously typing in
   // the same input field for all the different fields
@@ -81,11 +82,12 @@ const AccountSetupScreen = ({ navigation }) => {
   const [musicInput, setMusicInput] = useState("");
   const [gamesInput, setGamesInput] = useState("");
   const [booksInput, setBooksInput] = useState("");
+  const {idRegister} = route.params;
 
   const [currentStep, setCurrentStep] = useState(1);
   const stepsCount = 5;
   const [formData, setFormData] = useState({
-    id: "", // id is hardcoded here for now
+    id: idRegister,
     mbti: "", // Default to the first MBTI type
     interests: [],
     hobbies: [],
@@ -96,17 +98,13 @@ const AccountSetupScreen = ({ navigation }) => {
     biography: "",
   });
   const [base64Image, setBase64Image] = useState(null);
-  const getId = async () => {
-    const id = await getUserData("id");
-    addIdToFormData(id);
-  };
+
   useEffect(() => {
     console.log("getvalues", getValues());
   }, [formData]);
 
   const handleUploadSuccess = async (base64) => {
     console.log("File uploaded successfully:", base64);
-    await getId();
     setBase64Image(base64);
   };
 

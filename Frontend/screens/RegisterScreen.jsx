@@ -57,7 +57,7 @@ const RegisterScreen = ({ navigation }) => {
       console.log(refresh);
       console.log(id);
       console.log("response", response.data);
-      navigation.navigate("AccountSetup");
+      navigation.navigate("AccountSetup", {idRegister: id});
     } catch (error) {
       console.error("Register error:", error);
       const errorMessage =
