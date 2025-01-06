@@ -6,11 +6,11 @@ import SecondaryButtonPill from './SecondaryButtonPill';
 import InputField from './InputField'; // Input Field component
 import Badge from "./Badge"; // Badge component
 
-const InterestsCard = ({ title, buttonText, id }) => {
+const InterestsCard = ({ title, buttonText, id, badges_array }) => {
   const [isEnabled, setIsEnabled] = useState(false); // Switch state
   const [isPopupVisible, setIsPopupVisible] = useState(false); // Popup state
   const [inputValue, setInputValue] = useState(""); // State for input value
-  const [badges, setBadges] = useState([]); // Array to store badges
+  const [badges, setBadges] = useState(badges_array); // Array to store badges
   
   // Toggle Switch
   const toggleSwitch = () => setIsEnabled((prevState) => !prevState);
@@ -37,15 +37,7 @@ const InterestsCard = ({ title, buttonText, id }) => {
         <View style={styles.cardContent}>
           {/* Title and Button */}
           <Text style={styles.title}>{title}</Text>
-          <SecondaryButtonPill
-            title={buttonText}
-            onPress={openPopup}
-            style={styles.smallButton}
-            textStyle={styles.smallButtonText}
-          />
         </View>
-        {/* Custom Switch */}
-        <CustomSwitch />
       </View>
 
       {/* Badges Container */}
@@ -56,29 +48,6 @@ const InterestsCard = ({ title, buttonText, id }) => {
           </View>
         ))}
       </View>
-
-      {/* Popup Component */}
-      <Popup isVisible={isPopupVisible} onClose={closePopup}>
-        {id === 1 ? (
-          <View style={styles.emptyPopup}>
-            {/* Placeholder for an empty popup */}
-            <Text style={styles.popupText}>No additional options for this card.</Text>
-          </View>
-        ) : (
-          <View style={styles.inputPopup}>
-            {/* Input Field for Non-ID 1 Cards */}
-            <Text style={styles.popupText}>Enter a new badge:</Text>
-            <InputField
-              placeholder="Type here"
-              value={inputValue}
-              onChangeText={setInputValue}
-            />
-            <TouchableOpacity onPress={handleAddBadge} style={styles.addButton}>
-              <Text style={styles.addButtonText}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </Popup>
     </View>
   );
 };

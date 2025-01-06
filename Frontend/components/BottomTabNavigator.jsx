@@ -13,11 +13,34 @@ import AccountSetupScreen from "../screens/AccountSetupScreen";
 import ChatList from "../screens/ChatList";
 import SettingsScreen from "../screens/SettingsScreen";
 import JWSTesting from "../screens/JWStokensTest";
+import Constants from "expo-constants";
+import { getUserData } from "../services/GetToken";
+import { useEffect, useState } from "react";
+import { Text } from "react-native";
 
 const Tab = createBottomTabNavigator();
-
+const fetchProfile = async () => {
+  const userid = await getUserData("id");
+  const token = await getUserData("accessToken");
+  const refreshToken = await getUserData("refreshToken");
+  try {
+    const response = await fetch(`${Constants.expoConfig.extra.BASE_URL}/auth/profile/${userid}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+        "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
+      }
+    });
+    const data = await response.json();
+    console.log(data);
+    setProfileData(data);
+  }
+  catch (error) {
+    console.error(error);
+  };
+};
 const BottomTabNavigator = () => {
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -51,10 +74,10 @@ const BottomTabNavigator = () => {
       <Tab.Screen name="Gateways" component={GatewaysScreen} />
       <Tab.Screen name="FUN" component={JWSTesting} />
       <Tab.Screen name="Chat" component={ChatList} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} initialParams={{ownProfile: true}}/>
       <Tab.Screen name="Components" component={ComponentsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
-      <Tab.Screen name="AccountSetup" component={AccountSetupScreen} />
+      <Tab.Screen name="AccountSetup" component={AccountSetupScreen}/>
       
     </Tab.Navigator>
   );

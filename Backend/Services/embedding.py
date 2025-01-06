@@ -3,6 +3,9 @@ from Services.vector_similarity import check_with_predefined_vectors,make_catego
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from Utils.translate_to_string import translate_predefined_vector_to_string
+from Utils.expected_database_keywords import VECTOR_FIELDS,GLOBAL_VECTOR_FIELDS
+from itertools import chain
 
 def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict):
     """
@@ -20,6 +23,40 @@ def insert_vectors(client : MilvusClient,collection_name : str, userdata : dict)
     res = client.insert(
         collection_name=collection_name,
         data=userdata
+    )
+    return res
+def get_vector(client: MilvusClient, collection_name: str, ids : list[int]):
+    """
+    Retrieves a vector from a specified collection in Milvus.
+
+    Args:
+        client (MilvusClient): The Milvus client instance used to interact with the Milvus server.
+        collection_name (str): The name of the collection from which the vector will be retrieved.
+        id (int): The ID of the vector to be retrieved.
+
+    Returns:
+        res: The result of the get operation from the Milvus client.
+    """
+    res = client.get(
+        collection_name=collection_name,
+        ids=ids
+    )
+    return res
+def delete_vectors(client : MilvusClient,collection_name : str,ids : list[int]):
+    """
+    Deletes vectors from a specified collection in Milvus.
+
+    Args:
+        client (MilvusClient): The Milvus client instance used to interact with the Milvus server.
+        collection_name (str): The name of the collection from which the vectors will be deleted.
+        ids (list[int]): A list of IDs corresponding to the vectors to be deleted.
+
+    Returns:
+        res: The result of the delete operation from the Milvus client.
+    """
+    res = client.delete(
+        collection_name=collection_name,
+        ids=ids
     )
     return res
 def mbti_accuracy_test():
@@ -107,20 +144,45 @@ def embed_singular_vector(word : str):
     vector = model.encode(word)
     return vector
 
+
+############################################################### LARGE SCALE WRITES ########################################################################################
+
 def embed_MiniLM(id : int, category_dict : dict):
-    final_vector_array = []
     id_category_dict = {}
+    category_vector_dict = get_category_vectors(id,category_dict, id_category_dict)
+    global_vector_dict = update_global_vectors(id, category_vector_dict)
+    write_standard_vectors(id, global_vector_dict)
+    formatted_global_vector_dict = format_global_vector_dict(id,global_vector_dict)
+    print(formatted_global_vector_dict)
+    insert_vectors(global_vector_DB,"global_vectors", formatted_global_vector_dict)
+    return id_category_dict
+
+
+def update_vectors(id : int, category_dict : dict):
+    print(category_dict)
+    id_category_dict = {} #used for defining the buckets attached to a user
+    
+    old_global_vector = get_vector(global_vector_DB, "global_vectors", id)[0]
+    delete_existing_vectors(id, category_dict)
+    provided_update_vectors = get_category_vectors(id, category_dict, id_category_dict) 
+    translate_predefined_vector_to_string(id_category_dict)
+    raw_global_vector_info = update_global_vectors(id, provided_update_vectors, old_global_vector)
+    global_vector_writable_dict = assemble_global_vector(id,raw_global_vector_info)
+    insert_vectors(global_vector_DB,"global_vectors", global_vector_writable_dict)
+    return id_category_dict
+
+
+    
+def handle_mbti_vector(id : int, category_dict : dict):
     mbti = category_dict["mbti"]
     mbti_vector = get_mbti_vector(mbti)
     formatted_mbti_vector = format_vector_for_milvus(mbti_vector)
+    insert_vectors(global_vector_DB, "mbti_vectors", {"id": id, "mbti_vectors": formatted_mbti_vector}) 
     del category_dict["mbti"]
-    global_user_data = {"id": id, "mbti_vectors": formatted_mbti_vector}
-    for category, words in category_dict.items():
-        user_data = {"id": id}
-        array_for_one_category = []
-        category_ids = []
-        category_similarities = []
-        for word in words:
+    return formatted_mbti_vector
+
+def get_word_vectors(category : str, words : list[str], category_ids : list[int], category_similarities : list[float], array_for_one_category : list[np.ndarray]):
+    for word in words:
             vector = model.encode(word)
             similarity_word,category_id_word = check_with_predefined_vectors(category, vector)
             for i in range(len(category_id_word)):
@@ -128,28 +190,58 @@ def embed_MiniLM(id : int, category_dict : dict):
                     category_ids.append(category_id_word[i])
                     category_similarities.append(similarity_word[i])
             array_for_one_category.append(vector)
+            
+
+def get_category_vectors(id : int,category_dict : dict, id_category_dict : dict):
+    all_vectors_generated = {}
+    if "mbti" in category_dict:
+        formatted_mbti_vector = handle_mbti_vector(id, category_dict)
+        all_vectors_generated["mbti"] = formatted_mbti_vector
+    for category, words in category_dict.items():
+        user_data = {"id": id}
+        array_for_one_category = []
+        category_ids = []
+        category_similarities = []
+        get_word_vectors(category, words, category_ids, category_similarities, array_for_one_category)
         sorted_category_ids = make_category_bucket_array(category_similarities, category_ids, category)
-        #print(category)
         id_category_dict[f"{category}_vectors"] = sorted_category_ids
         mean_vector = get_mean_vector_for_category(array_for_one_category)
         user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
+        all_vectors_generated[category] = format_vector_for_milvus(mean_vector)
         if category in ["interest","hobby","game"]:
-            if category in ["interest","hobby"]:
-                global_user_data[f"{category}_vectors"] = format_vector_for_milvus(mean_vector)
-                pass
             insert_vectors(global_vector_DB,f"{category}_vectors", user_data)
         elif category in ["music","movie","book"]: 
             insert_vectors(category_vector_DB,f"{category}_vectors", user_data)
-            pass
         else:
             print("Category not found")
-        if category not in ["interest","hobby"]:
-            final_vector_array.append(mean_vector)
-    final_vector = conactenate_final_vector(final_vector_array)
-    global_user_data["global_vectors"] = format_vector_for_milvus(final_vector)
-    print(global_user_data)
-    insert_vectors(global_vector_DB,"global_vectors", global_user_data)
-    return id_category_dict
+    return all_vectors_generated
+
+    
+
+
+
+
+
+
+
+
+
+#################################################################### VECTOR HELPER FUNCTIONS #################################################################################
+
+def fill_with_standard_values(global_vector_dict : dict):
+    global_vector = []
+    global_vector_components = {}
+    for key in VECTOR_FIELDS:
+        if key not in global_vector_dict:
+            if key == "mbti":
+                global_vector_dict[key] = [0.0 for _ in range(4)]
+            else:
+                global_vector_dict[key] = [0.0 for _ in range(384)]
+        if key in GLOBAL_VECTOR_FIELDS:
+            global_vector_components[key] = global_vector_dict[key]
+    raw_global_array = [global_vector_components["game"],global_vector_components["movie"],global_vector_components["book"],global_vector_components["music"]]
+    global_vector = [value for sublist in raw_global_array for value in sublist]
+    global_vector_dict["global"] = global_vector
 
 def get_mean_vector_for_category(array_of_vectors : np.ndarray):
     """
@@ -162,6 +254,74 @@ def get_mean_vector_for_category(array_of_vectors : np.ndarray):
     mean_vector = np.mean(array_of_vectors, axis=0)
     return mean_vector
 
+def write_standard_vectors(id:int ,global_vector_dict : dict):
+    """
+    Writes standard vectors to a dictionary.
+    Args:
+        global_vector_dict (dict): The dictionary to write the standard vectors to.
+    """
+    for key,value in global_vector_dict.items():
+        if value[0:2] == [0.0,0.0]:
+            if key in ["interest","hobby","mbti","game"]:
+                insert_vectors(global_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
+            else:
+                insert_vectors(category_vector_DB,f"{key}_vectors", {f"{key}_vectors": value, "id": id})
+            
+           
+def format_global_vector_dict(id:int,global_vector_dict : dict):
+    formatted_global_vector_dict = {}
+    for key in global_vector_dict.keys():
+        if key not in GLOBAL_VECTOR_FIELDS:
+            formatted_global_vector_dict[f"{key}_vectors"] = global_vector_dict[key]
+
+    formatted_global_vector_dict["id"] = id
+    return formatted_global_vector_dict
+
+def delete_existing_vectors(id : int, category_dict : dict):
+    for category,_ in category_dict.items():
+        if category in ["interest","hobby","game","mbti"]:
+            delete_vectors(global_vector_DB,f"{category}_vectors", [id])
+        elif category in ["music","movie","book"]:
+            delete_vectors(category_vector_DB,f"{category}_vectors", [id])
+        else:
+            print("Invalid category")
+    delete_vectors(global_vector_DB,"global_vectors", [id])
+
+
+def assemble_global_vector(id : int, raw_global_vector_info : dict):
+    uploadable_global_vector = {}
+    raw_global_array = [raw_global_vector_info["game"],raw_global_vector_info["movie"],raw_global_vector_info["book"],raw_global_vector_info["music"]]
+    global_array = [value for sublist in raw_global_array for value in sublist]
+    uploadable_global_vector["id"] = id
+    uploadable_global_vector["global_vectors"] = global_array
+    for key,value in raw_global_vector_info.items():
+        if key in ["interest","hobby","mbti"]:
+            uploadable_global_vector[f"{key}_vectors"] = value
+    return uploadable_global_vector
+    
+
+def slice_global_vector_for_category(global_vector : list[np.float32], category : str,global_vector_dict : dict):
+    match category:
+        case "game":
+            global_vector_dict["game"] = global_vector[0:384]
+        case "movie":
+            global_vector_dict["movie"] = global_vector[384:768]
+        case "book":
+            global_vector_dict["book"] = global_vector[768:1152]
+        case "music":
+            global_vector_dict["music"] = global_vector[1152:1536]
+        case _:
+            print("Invalid category")
+
+
+def fill_global_vector_dict(global_vector_dict : dict, current_global_vector : dict = {}):
+    for key in VECTOR_FIELDS:
+        if key not in global_vector_dict:
+            if key in ["interest","hobby","mbti"]:
+                global_vector_dict[key] = current_global_vector[f"{key}_vectors"]
+            else:
+                slice_global_vector_for_category(current_global_vector["global_vectors"], key, global_vector_dict)
+
 def format_vector_for_milvus(vector : np.ndarray):
     """
     Formats a numpy array for insertion into a Milvus collection.
@@ -171,7 +331,7 @@ def format_vector_for_milvus(vector : np.ndarray):
         list: The formatted vector as a list.
     """
     return vector.tolist()
-def conactenate_final_vector(final_vector : np.ndarray):
+def concatenate_final_vector(final_vector : np.ndarray):
     """
     Concatenates a numpy array of vectors along the first dimension and reshapes the result.
     Args:
@@ -181,6 +341,19 @@ def conactenate_final_vector(final_vector : np.ndarray):
     """
     concatenated_vector = np.concatenate(final_vector, axis=0)
     return concatenated_vector.reshape(1, -1)[0]
+
+
+def update_global_vectors(id : int, category_vector_dict : dict, current_global_vector : dict = {}):
+    global_vector_dict = {}
+    for key,value in category_vector_dict.items():
+        global_vector_dict[key] = value
+    if current_global_vector != {}:
+        fill_global_vector_dict(global_vector_dict, current_global_vector)
+    else:
+        fill_with_standard_values(global_vector_dict)
+    return global_vector_dict
+
+
 
 model = SentenceTransformer('all-MiniLM-L12-v2')
 

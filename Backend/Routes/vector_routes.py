@@ -14,6 +14,7 @@ def make_vector():
 @token_required
 def get_matching_vector(payload):
     id = payload['user_id']
+    print("this is the user id" + str(id))
     user_vector = get_by_id(id)[0]
     res = get_global_matches(int(id),5, [user_vector["global_vectors"]], [user_vector["mbti_vectors"]], [user_vector["hobby_vectors"]], [user_vector["interest_vectors"]])
     matching_users = []

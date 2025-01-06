@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Entypo, Feather, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { getUserData } from "../services/GetToken";
 import axiosInstance from "../services/AxiosConfig";
 import Constants from "expo-constants";
@@ -27,6 +28,7 @@ const EventCardWithSection = ({
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Select Status");
+  const navigation = useNavigation();
 
   const options = [
     {
@@ -104,7 +106,8 @@ const EventCardWithSection = ({
               </Text>
             </View>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("EventDetails")}
+  style={styles.threeDotIcon}>
             <Entypo name="dots-three-horizontal" size={24} color="black" />
           </TouchableOpacity>
         </View>

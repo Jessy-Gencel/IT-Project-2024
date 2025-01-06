@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Keyboard, TouchableWithoutFeedback, Text,Image,Alert } from 'react-native';
 import GradientBackground from '../components/LinearBackgroundProfile'; // Adjust the path as needed
 import SwipeableTabs from '../components/SwipeableTabs';  // Import the SwipeableTabs component
@@ -7,6 +7,10 @@ import Header from '../components/DefaultHeader'; // Adjust path if necessary
 import ProfileCard from '../components/ProfileCard'; // Import the ProfileCard component
 import EventCard from '../components/Gateway';
 import InterestCard from '../components/InterestCard';
+import Constants from 'expo-constants';
+import {getUserData,storeSecretStorage} from "../services/GetToken";
+import axiosInstance from "../services/AxiosConfig";
+
 
 const eventData = [
   {
@@ -47,17 +51,19 @@ const interestsData = [
   { id: 3, title: 'Movies', buttonText: 'Add a Game' },
   { id: 4, title: 'Books', buttonText: 'Add a Book' },
   { id: 5, title: 'Songs', buttonText: 'Add a Song' },
+  { id: 6, title: 'Games', buttonText: 'Add a Game' },
 ];
 
 
 
 
 
-const Profile = () => {
+const Profile = (userData) => {
+  console.log(userData);
   return(
     <View>
       <Bio
-        name="John Doe"
+        name={userData.userData.name}
         age={25}
         pronouns="He/Him"
         bioText="Hello! I love hiking, photography, and coding. Always up for an adventure!"
@@ -66,18 +72,36 @@ const Profile = () => {
   )
 };
 
-const Interests = () => {
-  return(
-    <ScrollView style={styles.container}>
-      {interestsData.map((item) => (
-        <InterestCard
-          key={item.id}
-          title={item.title}
-          buttonText={item.buttonText} // Pass buttonText to display in the popup
-        />
-      ))}
-    </ScrollView>
-  )
+const Interests = (userData) => {
+  const expectedValue = { userData: {} };
+  console.log("this is the correct print");
+  console.log(userData)
+  if (userData?.userData && Object.keys(userData.userData).length === 0){
+    console.log("This ran");
+    return(
+      <View>
+        <Text>loading</Text>
+      </View>
+    )
+  }else{
+    return(
+      <ScrollView style={styles.container}>
+          {Object.entries(userData.userData.traits).map(([key, values]) => {
+            if (key == "mbti"){
+              return(null);
+            } 
+
+          return (
+            <InterestCard
+              key={key}
+              title={key.charAt(0).toUpperCase() + key.slice(1)} // Capitalize the trait name
+              badges_array={values} // Pass the array of values for the trait
+            />
+          );
+        })}
+      </ScrollView>
+    )
+  }
 };
 
 const Gateways = () => {
@@ -100,11 +124,49 @@ const Gateways = () => {
   )
 };
 
-const ProfileScreen = ({navigation}) => {
+
+const ProfileScreen = ({route}) => {
+  const {ownProfile} = route.params;
   const [searchQuery, setSearchQuery] = useState('');
+  const [profileData, setProfileData] = useState({});
   const dismissKeyboard = () => {
     Keyboard.dismiss(); // Dismiss the keyboard
   };
+  useEffect(() => {
+    if (ownProfile){
+      const fetchProfile = async () => {
+        const userid = await getUserData("id");
+        const accessToken = await getUserData("accessToken");
+        const refreshToken = await getUserData("refreshToken");
+        try {
+          const response = await fetch(`${Constants.expoConfig.extra.BASE_URL}/auth/profile/${userid}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + accessToken,
+              "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
+            }
+          });
+          const data = await response.json();
+          const pfp_get_url = await axiosInstance.get(
+            `${Constants.expoConfig.extra.BASE_URL}/auth/pfp/${data.pfp}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "x-refresh-token": refreshToken,
+              },
+            }
+          );
+          data.profilePicture = pfp_get_url.data.file;
+          setProfileData(data);
+        }
+        catch (error) {
+          console.error(error);
+        }
+      };
+      fetchProfile();
+    }
+  }, []);
 
   const routes = [
     { key: 'profile', title: 'Profile' },
@@ -146,17 +208,17 @@ const ProfileScreen = ({navigation}) => {
                 {/* Other components go here */}
               </View>
               <ProfileCard
-                profilePicture={require('../assets/brent_klein.png')} // Pass the image using require()
-                name="John Doe"
+                profilePicture={{uri: profileData.profilePicture}} // Pass the image using require()
+                name={profileData.name}
                 age={25}
-                mbti="INTJ"
+                mbti={profileData.mbti}
                 quote="The best way to predict the future is to create it."
                 onEditPress={handleEditPress} // Pass the function for button action
               />
 
             </GradientBackground>
             
-            <SwipeableTabs routes={routes} scenes={scenes} />
+            <SwipeableTabs routes={routes} scenes={scenes} userData={profileData}/>
         </View>
     );
 };

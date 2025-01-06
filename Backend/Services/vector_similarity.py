@@ -5,6 +5,7 @@ import numpy as np
 
 def get_global_matches(userid : int,amount_of_results : int, global_vector : list , mbti_vector : list, hobby_vector : list, interest_vector : list,black_list : list = []):
     black_list.append(userid)
+    print(black_list)
     requests = [make_ANN_request(global_vector, amount_of_results, "global_vectors",black_list), 
                 make_ANN_request(mbti_vector, amount_of_results, "mbti_vectors",black_list), 
                 make_ANN_request(hobby_vector, amount_of_results, "hobby_vectors",black_list), 
@@ -12,6 +13,7 @@ def get_global_matches(userid : int,amount_of_results : int, global_vector : lis
     reranker = WeightedRanker(0.165,0.230,0.225,0.38)
     res = global_vector_DB.hybrid_search(collection_name = "global_vectors", reqs = requests, ranker = reranker, 
                                          limit = amount_of_results)
+    black_list.remove(userid)
     return res[0]
 
 def make_ANN_request(vector : list, amount_of_results : int, target_field : str,black_list : list = []):
@@ -47,11 +49,12 @@ def check_with_predefined_vectors(category : str, vector : list,make_bucket : bo
     vector = [vector]
     res = None
     if category == "game":
-        res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
+        res = category_vector_DB.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5,output_fields=["id","distance","word"])
     else:
-        res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5)
+        res = predefined_vector_DB1.search(collection_name=f"{category}_predefined_vectors", data=vector, limit=5,output_fields=["id","distance","word"])
     if make_bucket:
-        ids = [interest['id'] for interest in res[0]]
+        print(res[0])
+        ids = [interest['entity']["word"] for interest in res[0]]
         distances = [interest['distance'] for interest in res[0]]
         return distances,ids
     else:
@@ -84,8 +87,8 @@ def make_category_bucket_array(similarities : list, ids : list, category : str):
     _, sorted_ids = zip(*combined_sorted)
     sorted_ids = list(sorted_ids)[:10]
     #control_function_matching(category, sorted_ids)
-    #print("These are the sorted IDS")
-    #print(sorted_ids)
+    print("These are the sorted IDS")
+    print(sorted_ids)
     return sorted_ids
 
 def control_function_matching(category : str, sorted_ids : list):

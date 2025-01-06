@@ -3,12 +3,16 @@ from Utils.password_hashing import hash_password, verify_password
 from Utils.jwt_encode import jwt_full_encode, token_refresh
 from Utils.sanitize_input import sanitize_input, santize_array
 from Services.couchbase_reads import find_user_by_email,find_user_by_id,find_profile_by_id
-from Services.couchbase_writes import store_user,store_profile
+from Services.couchbase_writes import store_user,store_profile,update_profile
 from Utils.extract_name import extract_name
-from Services.embedding import embed_MiniLM
+from Services.embedding import embed_MiniLM, update_vectors
 from Utils.jwt_encode import token_required
 from Utils.image_upload import save_profile_picture,firebase_url_getter
 from Utils.split_path import split_path
+from Utils.translate_to_string import translate_predefined_vector_to_string
+from Services.check_for_changes_in_profile import get_changed_traits_unordered
+import inflect
+from Utils.expected_database_keywords import VECTOR_FIELDS,DB_FIELDS
 from DB.firebase_bucket import bucket
 import jwt
 import json
@@ -18,18 +22,14 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    print(data)
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     user = find_user_by_email(email)
-    print(user)
     
     if not user or not verify_password(user["password"], password):
         return jsonify({"message": "Invalid credentials"}), 401
     
     access_token, refresh_token = jwt_full_encode(user)
-    
-    print(f'ID: {user["id"]}')
 
     return jsonify({
         "id" : str(user["id"]),
@@ -45,8 +45,6 @@ def register():
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     password_hash = hash_password(password)
-    print(password_hash)
-    print(type(password_hash))
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
     user = store_user(user=user_dict)
@@ -79,9 +77,8 @@ def create_profile():
     data_raw = request.form["data"]
     pfp = request.form["pfp"]
     data = json.loads(data_raw)
-    print(pfp)
-    print(data)
     id = sanitize_input(str(data['id']))
+    bio = sanitize_input(str(data['bio']))
     #age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
@@ -90,44 +87,70 @@ def create_profile():
     movies = santize_array(data['movies'])
     books = santize_array(data['books'])
     music = santize_array(data['music'])
-    print(mbti,interests,hobbies,games,movies,books,music)
     ############################## SANITIZATION ###############################
     pfp_result = save_profile_picture(pfp,id)
     if pfp_result["status"] == "error":
         return pfp_result["message"], 400  # Return error if PFP upload fails
     pfp_url = pfp_result["image_url"]
-    blob = bucket.blob(pfp_url)
-    blob.upload_from_filename(f"DB/PFP/{pfp_url}")
-    print(pfp_url)
     ############################## HANDLE IMAGE UPLOAD ###############################
-    traits_for_embedding = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
     traits = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits_for_embedding = {"mbti" : mbti, "interest" : interests, "hobby" : hobbies, "game" : games, "movie" : movies, "book" : books, "music" : music}
+    traits_for_embedding = {key: value for key, value in traits_for_embedding.items() if value}
     ############################## MAKE TRAITS DICT ###############################
     predefined_matching_categories = embed_MiniLM(int(id),traits_for_embedding)
-    print(predefined_matching_categories)
+    translate_predefined_vector_to_string(predefined_matching_categories)
     ############################## MAKE VECTORS FOR PROFILE ###############################
     trait_vectors = predefined_matching_categories
     user = find_user_by_id(id)
     user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
     profile = store_profile(user_profile)
-    print(profile)
     return "User created correctly", 200
 
 @auth_bp.route('/profile/edit', methods=['POST'])
-@token_required
-def edit_profile(payload):
-    data = request.get_json()
+def edit_profile():
+    data: dict = request.get_json()
+    print(data)
     id = sanitize_input(str(data['id']))
-    mbti = sanitize_input(str(data['mbti']))
-    interests = santize_array(data['interests'])
-    hobbies = santize_array(data['hobbies'])
-    games = santize_array(data['games'])
-    movies = santize_array(data['movies'])
-    books = santize_array(data['books'])
-    music = santize_array(data['music'])
-    initial_profile = find_profile_by_id(id)
-    ############################## SANITIZATION ###############################
+    old_profile = find_profile_by_id(id)
+    vector_data = {}
+    couchbase_data = {"id" : id, "traits" : {}}
+    changed_traits = get_changed_traits_unordered(data["traits"],old_profile["traits"])
+    data["traits"] = changed_traits
+    print(changed_traits)
+
+    for key, value in data["traits"].items():
+        make_lowercase = inflect.engine()
+        singular_key = make_lowercase.singular_noun(key) if make_lowercase.singular_noun(key) else key  # Convert to singular
+        if singular_key in DB_FIELDS:
+            if singular_key == "pfp":
+                save_profile_picture(value,id,old_profile["pfp"])
+            else:
+                couchbase_data[singular_key] = sanitize_input(value)
+        elif singular_key in VECTOR_FIELDS:
+            if singular_key == "mbti":
+                sanitized_value = sanitize_input(value)
+                couchbase_data["traits"][singular_key] = sanitized_value
+                vector_data[singular_key] = sanitized_value
+            else:
+                santized_value = santize_array(value)
+                couchbase_data["traits"][singular_key] = santized_value
+                vector_data[singular_key] = santized_value
+        elif key == "id":
+            pass
+        else:
+            
+            return jsonify({"error": "Invalid key"}), 400
+    ########################################## VECTOR DATA ##########################################
+    
+    if vector_data:
+        id_categories = update_vectors(int(id),vector_data)
+        couchbase_data["trait_vectors"] = id_categories
+        print(couchbase_data)
+    update_profile(id,couchbase_data)
+
+    return jsonify(find_profile_by_id(id)), 200
+
 
 
 @auth_bp.route('/refresh', methods=['POST'])
@@ -139,11 +162,12 @@ def refresh():
 
 
 @auth_bp.route('/users/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    # user = find_user_by_id(user_id)
-    # if user:
-    #     return jsonify(user), 200
-    # else:
+@token_required
+def get_user(payload,user_id):
+    user = find_user_by_id(user_id)
+    if user:
+       return jsonify(user), 200
+    else:
         return "Yippie user/user_id", 200
 
 @auth_bp.route('/profiles', methods=['GET'])
@@ -151,7 +175,7 @@ def get_profiles():
     # return jsonify(profiles)
     return "Yippie profiles", 200
 
-@auth_bp.route('/profiles/<profile_id>', methods=['GET'])
+@auth_bp.route('/profile/<int:profile_id>', methods=['GET'])
 @token_required
 def get_profile(payload,profile_id):
     profile = find_profile_by_id(profile_id)

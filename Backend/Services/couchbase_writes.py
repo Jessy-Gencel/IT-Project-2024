@@ -1,6 +1,7 @@
 from couchbase.exceptions import CouchbaseException
 from Services.couchbase_reads import find_user_by_id, find_profile_by_id, find_event_by_id, find_chat_by_id,get_collection
 from Utils.id_generator import add_id_to_document, generate_id
+from couchbase.options import ReplaceOptions
 
 def store_user(user : dict):
     user_with_id = add_id_to_document(user,"user-data","users")
@@ -60,6 +61,33 @@ def store_room(room: str):
     except CouchbaseException as e:
         print(f"An error occurred while storing the room: {e}")
         return None
+    
+
+def deep_merge(existing: dict, updates: dict):
+    """Recursively merges "updates" into "existing"."""
+    for key, value in updates.items():
+        if isinstance(value, dict) and key in existing:
+            deep_merge(existing[key], value)
+        else:
+            existing[key] = value
+    
+def update_profile(user_id:str, things_to_update:dict):
+    collection = get_collection("user-data", "profiles")
+    raw_data = collection.get(f"profile::{user_id}")
+    current_profile = raw_data.content_as[dict]
+    current_cas = raw_data.cas
+
+    deep_merge(current_profile, things_to_update)
+    try:
+        new_profile = collection.replace(f"profile::{user_id}", current_profile, ReplaceOptions(cas=current_cas))
+        return new_profile.value
+    except CouchbaseException as e:
+        print(f"An error occurred while updating the profile: {e}")
+        return None
+
+
+
+
     
 def store_message(room_id: str, sender_id: int, message: str, timestamp: str):
     message_id = generate_id("user-data", "messages")
