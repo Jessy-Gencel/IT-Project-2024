@@ -111,7 +111,7 @@ def create_profile():
     user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
     profile = store_profile(user_profile)
-    return "User created correctly", 200
+    return jsonify(profile), 200
 
 @auth_bp.route('/profile/edit', methods=['POST'])
 def edit_profile():
