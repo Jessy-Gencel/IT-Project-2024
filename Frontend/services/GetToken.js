@@ -2,10 +2,8 @@ import * as SecureStore from "expo-secure-store";
 
 const getUserData = async (key) => {
   try {
-    console.log("key: ", key);
     
     const token = await SecureStore.getItemAsync(key);
-    console.log("token: ", token);
 
     return token;
   } catch (error) {

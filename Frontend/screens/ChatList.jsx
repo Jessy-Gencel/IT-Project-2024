@@ -19,7 +19,6 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
     const fetchUserId = async () => {
       try {
         const userId = await getUserData("id");
-        console.log("Fetched User ID:", userId); // id van andere user ophalen om zo navigeren naar juiste chatscreen
         setCurrentUserId(userId);
       } catch (error) {
         console.error("Error fetching user ID:", error);
@@ -40,8 +39,6 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
             },
           }
         );
-        console.log("Fetched chats:", response.data);
-        console.log("kwni: ", response);
         await getPfp(response.data);
         setChatUsers(response.data);
       } catch (error) {
@@ -57,7 +54,6 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
       currentUserId,
       userId
     )}`;
-    console.log("roomId: ", roomId);
     socket.emit("join_room", {
       current_user_id: currentUserId,
       match_user_id: userId,
@@ -88,7 +84,6 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
           // Store the URL in the match object or wherever you need it
           match.imageUrl = firebaseUrl;
 
-          console.log("Firebase URL received:", firebaseUrl);
         } catch (error) {
           console.error("Error fetching profile picture URL:", error);
         }

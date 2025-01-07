@@ -25,6 +25,7 @@ const EventCardWithSection = ({
   eventDate,
   location,
   description,
+  badges,
 }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -76,10 +77,6 @@ const EventCardWithSection = ({
     }
   };
 
-  useEffect(() => {
-    console.log("Description: ", description);
-  }, []);
-
   // Check if the description is longer than 20 words
   const descriptionWords = description.split(" ");
   const isDescriptionLong = descriptionWords.length > 20;
@@ -109,7 +106,6 @@ const EventCardWithSection = ({
             </View>
           </View>
           <TouchableOpacity
-            onPress={() => navigation.navigate("EventDetails")}
             style={styles.threeDotIcon}
           >
             <Entypo name="dots-three-horizontal" size={24} color="black" />
@@ -144,6 +140,25 @@ const EventCardWithSection = ({
               {showFullDescription ? "Show Less" : "Show More"}
             </Text>
           </TouchableOpacity>
+        )}
+        {/* Display badges */}
+        {badges && Object.keys(badges).length > 0 && (
+          <View style={styles.badgesContainer}>
+            {Object.keys(badges).map((category) => (
+              badges[category].length > 0 && (
+                <View key={category} style={styles.badgeCategory}>
+                  <Text style={styles.badgeCategoryTitle}>{category}:</Text>
+                  <View style={styles.badgeList}>
+                    {badges[category].map((badge, index) => (
+                      <View key={index} style={styles.badgeItem}>
+                        <Text>{badge}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )
+            ))}
+          </View>
         )}
       </View>
 
@@ -325,6 +340,28 @@ const styles = StyleSheet.create({
   optionText: {
     marginLeft: 10,
     fontSize: 16,
+  },
+  badgesContainer: {
+    marginTop: 10,
+  },
+  badgeCategory: {
+    marginBottom: 5,
+  },
+  badgeCategoryTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    textTransform: "capitalize",
+  },
+  badgeList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  badgeItem: {
+    backgroundColor: "#e0e0e0",
+    padding: 5,
+    borderRadius: 5,
+    marginRight: 5,
+    marginBottom: 5,
   },
 });
 

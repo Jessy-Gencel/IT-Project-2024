@@ -73,10 +73,7 @@ const Profile = (userData) => {
 
 const Interests = (userData) => {
   const expectedValue = { userData: {} };
-  console.log("this is the correct print");
-  console.log(userData)
   if (userData?.userData && Object.keys(userData.userData).length === 0){
-    console.log("This ran");
     return(
       <View>
         <Text>loading</Text>

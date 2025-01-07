@@ -21,6 +21,7 @@ import PrimaryButton from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import socket from "../services/websockets";
 import { getUserData } from "../services/GetToken";
+import HomePopup from "../components/HomePopup";
 
 const getHomeMatches = async () => {
   try {
@@ -36,7 +37,6 @@ const getHomeMatches = async () => {
         },
       }
     );
-    console.log("Home Matches:", response.data);
     storeMatchIds(response.data);
     return response.data; // Return the data if needed elsewh
   } catch (error) {
@@ -51,7 +51,6 @@ const storeMatchIds = async (data) => {
   const ids = data.map((match) => match.id);
   try {
     await storeSecretStorage("match_ids", JSON.stringify(ids));
-    console.log("Match ids stored successfully:", ids);
   } catch (error) {
     console.error("Error storing match ids:", error);
   }
@@ -80,7 +79,6 @@ const getPfp = async (data) => {
         // Store the URL in the match object or wherever you need it
         match.imageUrl = firebaseUrl;
 
-        console.log("Firebase URL received:", firebaseUrl);
       } catch (error) {
         console.error("Error fetching profile picture URL:", error);
       }
@@ -91,6 +89,9 @@ const getPfp = async (data) => {
 const HomePage = ({ navigation }) => {
   const [matchingProfiles, setMatchingProfiles] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [popupData, setPopupData] = useState([]);
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState(null);
   const [events, setEvents] = useState([]);
 
   // Fetch matching profiles when component mounts
@@ -99,7 +100,6 @@ const HomePage = ({ navigation }) => {
       try {
         const data = await getHomeMatches(); // Fetch data from API
         await getPfp(data);
-        console.log("Matching profiles:", data);
         setMatchingProfiles(data); // Set the fetched data in state
       } catch (error) {
         console.error("Error fetching matching profiles:", error);
@@ -115,7 +115,6 @@ const HomePage = ({ navigation }) => {
             },
           }
         );
-        console.log("Fetched events:", response.data);
         setEvents(response.data);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -124,7 +123,6 @@ const HomePage = ({ navigation }) => {
     const fetchUserId = async () => {
       try {
         const userId = await getUserData("id");
-        console.log("Fetched User ID:", userId); // id van andere user ophalen om zo navigeren naar juiste chatscreen
         setCurrentUserId(userId);
       } catch (error) {
         console.error("Error fetching user ID:", error);
@@ -141,7 +139,6 @@ const HomePage = ({ navigation }) => {
       currentUserId,
       userId
     )}`;
-    console.log("roomId: ", roomId);
     socket.emit("join_room", {
       current_user_id: currentUserId,
       match_user_id: userId,
@@ -149,51 +146,77 @@ const HomePage = ({ navigation }) => {
     navigation.navigate("ChatScreen", { room: roomId, chatUserId: userId });
   };
 
-  // const events = [
-  //   {
-  //     id: "1",
-  //     profilePicture: require("../assets/brent_klein.png"),
-  //     creatorName: "John Doe",
-  //     isGroup: false,
-  //     eventName: "Football Afternoon",
-  //     eventDate: "4/12",
-  //     location: "Behind Block A, Campus KAAI",
-  //     description: "Join us for a fun football afternoon!",
-  //   },
-  //   {
-  //     id: "2",
-  //     profilePicture: require("../assets/brent_klein.png"),
-  //     creatorName: "John Doe",
-  //     isGroup: false,
-  //     eventName: "Football Afternoon",
-  //     eventDate: "4/12",
-  //     location: "Behind Block A, Campus KAAI",
-  //     description:
-  //       "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-  //   },
-  //   {
-  //     id: "3",
-  //     profilePicture: require("../assets/brent_klein.png"),
-  //     creatorName: "John Doe",
-  //     isGroup: false,
-  //     eventName: "Football Afternoon",
-  //     eventDate: "4/12",
-  //     location: "Behind Block A, Campus KAAI",
-  //     description: "Join us for a fun football afternoon!",
-  //   },
-  //   {
-  //     id: "4",
-  //     profilePicture: require("../assets/brent_klein.png"),
-  //     creatorName: "John Doe",
-  //     isGroup: false,
-  //     eventName: "Football Afternoon",
-  //     eventDate: "4/12",
-  //     location: "Behind Block A, Campus KAAI",
-  //     description:
-  //       "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-  //   },
-  //   // Add 3 more events if needed.
-  // ];
+  const homePopUp = async (userId) => {
+    const { accessToken, refreshToken } = await getAuthTokens();
+    const ids = { "current_user_id": currentUserId, "other_user_id": userId };
+
+    try {
+    const response = await axiosInstance.post(
+      `${Constants.expoConfig.extra.BASE_URL}/vector/getMatchesWithSpecificUser`,
+      ids,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "x-refresh-token": refreshToken,
+        },
+      }
+    );
+    const data = response.data;
+    console.log("Popup data:", data);
+    setSelectedMatchId(userId);
+    setPopupData(data);
+    setPopupVisible(true); 
+    console.log("matching profiles:", matchingProfiles);
+
+  }catch (error) {
+    console.error("Error fetching popup data:", error);
+  }
+  };
+
+  const events = [
+    {
+      id: "1",
+      profilePicture: require("../assets/brent_klein.png"),
+      creatorName: "John Doe",
+      isGroup: false,
+      eventName: "Football Afternoon",
+      eventDate: "4/12",
+      location: "Behind Block A, Campus KAAI",
+      description: "Join us for a fun football afternoon!",
+    },
+    {
+      id: "2",
+      profilePicture: require("../assets/brent_klein.png"),
+      creatorName: "John Doe",
+      isGroup: false,
+      eventName: "Football Afternoon",
+      eventDate: "4/12",
+      location: "Behind Block A, Campus KAAI",
+      description:
+        "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
+    },
+    {
+      id: "3",
+      profilePicture: require("../assets/brent_klein.png"),
+      creatorName: "John Doe",
+      isGroup: false,
+      eventName: "Football Afternoon",
+      eventDate: "4/12",
+      location: "Behind Block A, Campus KAAI",
+      description: "Join us for a fun football afternoon!",
+    },
+    {
+      id: "4",
+      profilePicture: require("../assets/brent_klein.png"),
+      creatorName: "John Doe",
+      isGroup: false,
+      eventName: "Football Afternoon",
+      eventDate: "4/12",
+      location: "Behind Block A, Campus KAAI",
+      description:
+        "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
+    },
+  ];
 
   return (
     <ScrollView style={styles.container} nestedScrollEnabled={true}>
@@ -259,7 +282,7 @@ const HomePage = ({ navigation }) => {
                         color="black"
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => homePopUp(item.id, index)}>
                       <Ionicons
                         name="information-circle-outline"
                         size={25}
@@ -272,6 +295,12 @@ const HomePage = ({ navigation }) => {
             ))}
           </ScrollView>
         </View>
+        <HomePopup
+          isVisible={isPopupVisible}
+          onClose={() => setPopupVisible(false)} // Close the popup
+          matchPercentages={popupData[0]}
+          src={matchingProfiles.find((profile) => profile.id == selectedMatchId)?.imageUrl}
+        />
 
         {/* Event Section */}
         <View style={styles.eventSection}>

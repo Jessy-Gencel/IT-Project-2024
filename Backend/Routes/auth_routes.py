@@ -26,7 +26,6 @@ def login():
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     password = decrypt(password)
-    print(password)
     user = find_user_by_email(email)
     
     if not user or not verify_password(user["password"], password):
@@ -48,7 +47,6 @@ def register():
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
     password = decrypt(password)
-    print(password)
     password_hash = hash_password(password)
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
@@ -82,7 +80,6 @@ def create_profile():
     data_raw = request.form["data"]
     pfp = request.form["pfp"]
     data = json.loads(data_raw)
-    print(data)
     id = sanitize_input(str(data['id']))
     bio = "No bio yet" #frontend saves as biography
     #age = sanitize_input(str(data['age']))
@@ -115,16 +112,13 @@ def create_profile():
 
 @auth_bp.route('/profile/edit', methods=['POST'])
 def edit_profile():
-    print(data)
     data: dict = request.get_json()
-    print(data)
     id = sanitize_input(str(data['id']))
     old_profile = find_profile_by_id(id)
     vector_data = {}
     couchbase_data = {"id" : id, "traits" : {}}
     changed_traits = get_changed_traits_unordered(data["traits"],old_profile["traits"])
     data["traits"] = changed_traits
-    print(changed_traits)
 
     for key, value in data["traits"].items():
         make_lowercase = inflect.engine()

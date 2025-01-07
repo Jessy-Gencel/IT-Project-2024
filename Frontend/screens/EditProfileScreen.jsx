@@ -30,7 +30,6 @@ const EditProfileScreen = ({ route, navigation }) => {
   });
 
   useEffect(() => {
-    console.log('selectedInterests updated:', selectedInterests); // Debug log
     setValue('interests', selectedInterests); // Make sure form is updated with the latest selectedInterests
   }, [selectedInterests, setValue]);
 
@@ -38,10 +37,8 @@ const EditProfileScreen = ({ route, navigation }) => {
   const handleAddInterestValue = (trait, value) => {
     const valueToAdd = value ? value.trim() : ''; // Ensure value is a string and trimmed
 
-    console.log('Attempting to add interest:', trait, valueToAdd); // Debug log
 
     if (!valueToAdd) {
-      console.log('No value provided or value is empty.'); // Debug log
       
       return; // Prevent empty value
     }
@@ -51,15 +48,12 @@ const EditProfileScreen = ({ route, navigation }) => {
 
     if (!newSelectedInterests[trait]) {
       newSelectedInterests[trait] = []; // Initialize trait array if not exists
-      console.log(`Trait "${trait}" initialized in selectedInterests.`); // Debug log
     }
 
     // Add the new value to the interest array
-    console.log('old array:', newSelectedInterests); // Debug log
 
     newSelectedInterests[trait] = [...newSelectedInterests[trait], valueToAdd];
 
-    console.log('new array:', newSelectedInterests); // Debug log
 
     // Update the state with new selected interests
     setSelectedInterests(newSelectedInterests);
@@ -70,14 +64,12 @@ const EditProfileScreen = ({ route, navigation }) => {
 
   // Handle removing an interest value
   const handleRemoveInterestValue = (trait, value) => {
-    console.log('Attempting to remove interest:', trait, value); // Debug log
 
     const updatedValues = selectedInterests[trait]?.filter(v => v !== value) || [];
     const newSelectedInterests = { ...selectedInterests };
 
     newSelectedInterests[trait] = updatedValues; // Remove the value from the array
 
-    console.log('New selectedInterests after removal:', newSelectedInterests); // Debug log
 
     setSelectedInterests(newSelectedInterests); // Update the state
     setValue('interests', newSelectedInterests); // Update form values
@@ -85,7 +77,6 @@ const EditProfileScreen = ({ route, navigation }) => {
 
   // Handle form submission (update profile)
   const handleFormSubmit = async (data) => {
-    console.log('Form submitted with data:', data); // Debug log
 
     try {
       const accessToken = await getUserData("accessToken");
@@ -102,7 +93,6 @@ const EditProfileScreen = ({ route, navigation }) => {
         }
       });
 
-      console.log('Profile updated successfully:', response.data); // Debug log
       Alert.alert('Success', 'Your profile has been updated');
       navigation.goBack(); // Navigate back after success
     } catch (error) {
@@ -168,7 +158,6 @@ const EditProfileScreen = ({ route, navigation }) => {
               <TouchableOpacity 
                 style={styles.addButton} 
                 onPress={() => {
-                  console.log('Add button pressed with input value:', newInterestValue); // Debug log
                   handleAddInterestValue(trait, newInterestValue);
                 }}
               >
