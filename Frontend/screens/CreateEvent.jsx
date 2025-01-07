@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,11 +19,21 @@ import axiosInstance from "../services/AxiosConfig";
 import Constants from "expo-constants";
 
 const GatewaysScreen = ({ navigation }) => {
+  const [presets, setPresets] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const [formData, setFormData] = useState({
     eventName: "",
     eventDate: "",
     location: "",
     description: "",
+    badges: {
+      interests: [],
+      books: [],
+      games: [],
+      movies: [],
+      music: [],
+      hobbies: [],
+    },
   });
 
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
@@ -76,6 +86,71 @@ const GatewaysScreen = ({ navigation }) => {
     setFormData({ ...formData, [field]: value });
   };
 
+  useEffect(() => {
+    const fetchPresets = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `${Constants.expoConfig.extra.BASE_URL}/preset/get`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.status === 200) {
+          setPresets(response.data);
+        } else {
+          console.error("Failed to fetch presets:", response.status);
+        }
+      } catch (error) {
+        console.error("Error fetching presets:", error);
+      }
+    };
+    fetchPresets();
+  }, []);
+
+  const filterPresets = () => {
+    const searchLower = searchText.toLowerCase();
+
+    const uniquePresets = presets
+      .flatMap((category) => category[Object.keys(category)[0]])
+      .filter((preset) => preset.toLowerCase().includes(searchLower));
+
+    return [...new Set(uniquePresets)];
+  };
+
+  const handleSearchChange = (text) => {
+    setSearchText(text);
+  };
+
+  // TODO: Fix issue with assigning preset to the correct category
+  // Problem: Some presets belong to multiple categories (e.g., "Horror" is in books, movies, and games).
+  // Currently, the preset is only added to one of the categories found.
+  // It's unclear which category the user intended to add the preset to.
+  // Potential Solution: Provide a way for the user to specify the category, or handle duplicates more intelligently.
+  const handleBadgeChange = (preset) => {
+    const updatedBadges = { ...formData.badges };
+
+    const categoryKey = Object.keys(updatedBadges).find((key) =>
+      presets.some((category) => category[key]?.includes(preset))
+    );
+
+    if (!categoryKey) {
+      console.error("Preset not found in any category");
+      return;
+    }
+
+    if (updatedBadges[categoryKey].includes(preset)) {
+      updatedBadges[categoryKey] = updatedBadges[categoryKey].filter(
+        (badge) => badge !== preset
+      );
+    } else {
+      updatedBadges[categoryKey].push(preset);
+    }
+
+    setFormData({ ...formData, badges: updatedBadges });
+  };
+
   return (
     <View style={styles.container}>
       <GradientBackground style={styles.background}>
@@ -114,6 +189,47 @@ const GatewaysScreen = ({ navigation }) => {
               multiline={true}
               numberOfLines={4}
             />
+
+            {/* Display selected badges */}
+            <View style={styles.selectedBadgesContainer}>
+              <Text style={styles.selectedBadgesTitle}>Selected Badges:</Text>
+              {Object.keys(formData.badges).map(
+                (category) =>
+                  formData.badges[category].length > 0 && (
+                    <View key={category} style={styles.badgeCategory}>
+                      <Text style={styles.badgeCategoryTitle}>{category}:</Text>
+                      <View style={styles.badgeList}>
+                        {formData.badges[category].map((badge, index) => (
+                          <View key={index} style={styles.badgeItem}>
+                            <Text>{badge}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )
+              )}
+            </View>
+            {/* Search bar for filtering presets */}
+            <TextInput
+              style={styles.input}
+              placeholder="Search presets"
+              value={searchText}
+              onChangeText={handleSearchChange}
+            />
+
+            {/* Display matching presets */}
+            <View style={styles.presetList}>
+              {filterPresets().map((preset, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleBadgeChange(preset)}
+                  style={styles.presetItem}
+                >
+                  <Text>{preset}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <TouchableOpacity
               onPress={handleSubmit}
               style={styles.submitButton}
@@ -187,6 +303,39 @@ const styles = StyleSheet.create({
     marginTop: 20,
     flex: 1,
     width: "100%",
+  },
+  presetList: {
+    marginTop: 10,
+  },
+  presetItem: {
+    backgroundColor: "#f0f0f0",
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 5,
+  },
+  selectedBadgesTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  badgeCategory: {
+    marginBottom: 10,
+  },
+  badgeCategoryTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textTransform: "capitalize",
+  },
+  badgeList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  badgeItem: {
+    backgroundColor: "#e0e0e0",
+    padding: 5,
+    borderRadius: 5,
+    marginRight: 5,
+    marginBottom: 5,
   },
 });
 
