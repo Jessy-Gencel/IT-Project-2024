@@ -37,9 +37,7 @@ def get_chat(chat_id):
 # fetch all chats of a user using their id
 @message_bp.route('/user_chats/<int:user_id>', methods=['GET'])
 def user_chats(user_id):
-    print('user_chats route')
     result = get_user_chats(user_id)
-    print('result: ', result)
 
     if result is None:
         return jsonify({"error": "Users not found"}), 404
@@ -49,7 +47,6 @@ def user_chats(user_id):
 @message_bp.route('/<string:room_id>', methods=['GET'])
 def get_messages_by_room_id(room_id):
     result = get_room_messages(room_id)
-    # print('messages: ', result)
     
     if not result:
         return jsonify([]), 200

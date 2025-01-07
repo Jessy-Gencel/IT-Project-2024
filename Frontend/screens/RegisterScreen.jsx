@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Image, TextInput, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
+import {
+  View,
+  Image,
+  TextInput,
+  Text,
+  StyleSheet,
+  Button,
+  TouchableOpacity,
+} from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import styles from "../styles/LogIn";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
@@ -9,9 +17,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller } from "react-hook-form";
 import GradientBackground from "../components/GradientBackground";
 import axios from "axios";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 import { getUserData, storeSecretStorage } from "../services/GetToken";
-
+import encrypt from "../services/EncryptionService";
+import { ScrollView } from "react-native-gesture-handler";
 
 const schema = yup.object({
   email: yup
@@ -22,10 +31,10 @@ const schema = yup.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .required("Password is required"),
-    confirm_password: yup
-        .string()
-        .oneOf([yup.ref('password'), null], "Passwords must match")
-        .required("Please confirm your password"),
+  confirm_password: yup
+    .string()
+    .oneOf([yup.ref("password"), null], "Passwords must match")
+    .required("Please confirm your password"),
 });
 
 const RegisterScreen = ({ navigation }) => {
@@ -39,25 +48,27 @@ const RegisterScreen = ({ navigation }) => {
 
   const onSubmit = async (data) => {
     try {
+      const encryptedPassword = encrypt(data.password);
+
       const response = await axios.post(
         `${Constants.expoConfig.extra.BASE_URL}/auth/register`,
         {
           email: data.email,
-          password: data.password,
+          password: encryptedPassword,
         }
       );
-      const { access_token: accessToken, refresh_token: refreshToken, id: userId } = response.data;
+      const {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        id: userId,
+      } = response.data;
       await storeSecretStorage("accessToken", accessToken);
       await storeSecretStorage("refreshToken", refreshToken);
       await storeSecretStorage("id", userId);
       const access = await getUserData("accessToken");
       const refresh = await getUserData("refreshToken");
       const id = await getUserData("id");
-      console.log(access);
-      console.log(refresh);
-      console.log(id);
-      console.log("response", response.data);
-      navigation.navigate("AccountSetup", {idRegister: id});
+      navigation.navigate("AccountSetup", { idRegister: id });
     } catch (error) {
       console.error("Register error:", error);
       const errorMessage =
@@ -71,6 +82,10 @@ const RegisterScreen = ({ navigation }) => {
     <SafeAreaProvider>
       <GradientBackground>
         <SafeAreaView style={{ flex: 1 }}>
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+          >
           <View style={styles.logoWelkomContainer}>
             <Image
               source={require("../assets/GatewayNoText_Logo.png")}
@@ -171,6 +186,7 @@ const RegisterScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
+          </ScrollView>
         </SafeAreaView>
       </GradientBackground>
     </SafeAreaProvider>

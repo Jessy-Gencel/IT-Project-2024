@@ -16,6 +16,7 @@ from Utils.expected_database_keywords import VECTOR_FIELDS,DB_FIELDS
 from DB.firebase_bucket import bucket
 import jwt
 import json
+from Services.encryption import decrypt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -24,6 +25,7 @@ def login():
     data = request.get_json()
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
+    password = decrypt(password)
     user = find_user_by_email(email)
     
     if not user or not verify_password(user["password"], password):
@@ -33,6 +35,8 @@ def login():
 
     return jsonify({
         "id" : str(user["id"]),
+        "first_name" : user["first_name"],
+        "last_name" : user["last_name"],
         "access_token": access_token,
         "refresh_token": refresh_token
     })
@@ -42,6 +46,7 @@ def register():
     data = request.get_json()
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
+    password = decrypt(password)
     password_hash = hash_password(password)
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}
@@ -75,7 +80,6 @@ def create_profile():
     data_raw = request.form["data"]
     pfp = request.form["pfp"]
     data = json.loads(data_raw)
-    print(data)
     id = sanitize_input(str(data['id']))
     bio = "No bio yet" #frontend saves as biography
     #age = sanitize_input(str(data['age']))
@@ -104,20 +108,17 @@ def create_profile():
     user_profile = {"id" : id,"pfp" : pfp_url,"name": user["first_name"], "traits" : traits, "trait_vectors" : trait_vectors}
     ############################## MAKE PROFILE DICT ###############################
     profile = store_profile(user_profile)
-    return "User created correctly", 200
+    return jsonify(profile), 200
 
 @auth_bp.route('/profile/edit', methods=['POST'])
 def edit_profile():
-    print(data)
     data: dict = request.get_json()
-    print(data)
     id = sanitize_input(str(data['id']))
     old_profile = find_profile_by_id(id)
     vector_data = {}
     couchbase_data = {"id" : id, "traits" : {}}
     changed_traits = get_changed_traits_unordered(data["traits"],old_profile["traits"])
     data["traits"] = changed_traits
-    print(changed_traits)
 
     for key, value in data["traits"].items():
         make_lowercase = inflect.engine()
