@@ -44,10 +44,8 @@ const LogInScreen = ({ navigation }) => {
   });
 
   const onSubmit = async (data) => {
-    console.log(`${Constants.expoConfig.extra.BASE_URL}/auth/login`);
     try {
       const encryptedPassword = encrypt(data.password);
-      console.log("encrypted:", encryptedPassword);
 
       const response = await axios.post(
         `${Constants.expoConfig.extra.BASE_URL}/auth/login`,
@@ -71,12 +69,9 @@ const LogInScreen = ({ navigation }) => {
       const access = await getUserData("accessToken");
       const refresh = await getUserData("refreshToken");
 
-      console.log(access);
-      console.log(refresh);
-      console.log(userId);
-
       navigation.navigate("Main");
-      console.log("login succesfull !");
+      console.log("Logged in succesfully!");
+      
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage =

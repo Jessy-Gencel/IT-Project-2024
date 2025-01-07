@@ -31,8 +31,6 @@ const MessageListHeader = () => {
         const token = await getUserData("accessToken");
         const refreshToken = await getUserData("refreshToken");
         try {
-          console.log(currentUserId);
-
           const response = await fetch(
             `${Constants.expoConfig.extra.BASE_URL}/auth/profile/${currentUserId}`,
             {
@@ -54,8 +52,6 @@ const MessageListHeader = () => {
 
       const getPfp = async (data) => {
         const { accessToken, refreshToken } = await getAuthTokens();
-        console.log("data: ", data);
-
         if ("pfp" in data) {
           try {
             // Make the Axios request to get the image URL from the backend
@@ -75,7 +71,6 @@ const MessageListHeader = () => {
             // Store the URL in the match object or wherever you need it
             data.imageUrl = firebaseUrl;
 
-            console.log("Firebase URL received:", firebaseUrl);
             return data;
           } catch (error) {
             console.error("Error fetching profile picture URL:", error);

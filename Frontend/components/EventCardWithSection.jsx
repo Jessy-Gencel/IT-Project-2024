@@ -76,10 +76,6 @@ const EventCardWithSection = ({
     }
   };
 
-  useEffect(() => {
-    console.log("Description: ", description);
-  }, []);
-
   // Check if the description is longer than 20 words
   const descriptionWords = description.split(" ");
   const isDescriptionLong = descriptionWords.length > 20;

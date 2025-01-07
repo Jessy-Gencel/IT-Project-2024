@@ -49,7 +49,6 @@ const RegisterScreen = ({ navigation }) => {
   const onSubmit = async (data) => {
     try {
       const encryptedPassword = encrypt(data.password);
-      console.log("encrypted:", encryptedPassword);
 
       const response = await axios.post(
         `${Constants.expoConfig.extra.BASE_URL}/auth/register`,
@@ -69,10 +68,6 @@ const RegisterScreen = ({ navigation }) => {
       const access = await getUserData("accessToken");
       const refresh = await getUserData("refreshToken");
       const id = await getUserData("id");
-      console.log(access);
-      console.log(refresh);
-      console.log(id);
-      console.log("response", response.data);
       navigation.navigate("AccountSetup", { idRegister: id });
     } catch (error) {
       console.error("Register error:", error);

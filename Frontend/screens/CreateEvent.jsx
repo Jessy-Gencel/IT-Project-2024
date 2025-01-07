@@ -79,7 +79,6 @@ const GatewaysScreen = ({ navigation }) => {
       console.error("Error creating event:", error);
       alert("Error creating event!");
     }
-    console.log(eventData);
   };
 
   const handleInputChange = (field, value) => {

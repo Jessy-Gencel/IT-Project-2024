@@ -20,10 +20,8 @@ def generate_id(scope : str,collection : str):
     """
     collection_cb = get_collection(scope_name=scope, collection_name=collection)
     counter_key = f'counter:{collection_cb.name}'
-    print(counter_key)
     try:
         result = collection_cb.binary().increment(counter_key,IncrementOptions(initial=SignedInt64(1)))
-        print(result.content)
         return result.content   
     except CouchbaseException as e:
         print(f"Error generating ID: {e}")

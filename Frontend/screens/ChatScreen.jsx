@@ -43,7 +43,6 @@ const getMessages = async (room) => {
 
 const getPfp = async (data) => {
   const { accessToken, refreshToken } = await getAuthTokens();
-  console.log("data: ", data);
 
   if ("pfp" in data) {
     try {
@@ -64,7 +63,6 @@ const getPfp = async (data) => {
       // Store the URL in the match object or wherever you need it
       data.imageUrl = firebaseUrl;
 
-      console.log("Firebase URL received:", firebaseUrl);
       return data;
     } catch (error) {
       console.error("Error fetching profile picture URL:", error);
@@ -96,7 +94,6 @@ const ChatScreen = ({ navigation, route }) => {
       try {
         const data = await getMessages(room);
         setMessages(data);
-        // console.log("data: ", data);
       } catch (error) {
         if (error.response.status === 404) {
           console.log("no messages found");
@@ -131,7 +128,6 @@ const ChatScreen = ({ navigation, route }) => {
           }
         );
         const data = await response.json();
-        console.log("Chat user profile: ", data);
         const chatUserData = await getPfp(data);
         setChatUserProfile(chatUserData);
       } catch (error) {
@@ -144,7 +140,6 @@ const ChatScreen = ({ navigation, route }) => {
     fetchChatUser(chatUserId);
 
     socket.on("new_message", (data) => {
-      // console.log("data: ", data);
       setMessages((prevMessages) => [...prevMessages, data]);
     });
 
@@ -155,7 +150,6 @@ const ChatScreen = ({ navigation, route }) => {
   }, [room]);
 
   useEffect(() => {
-    // console.log("Updated messages: ", messages);
   }, [messages]);
 
   function leaveChat() {
