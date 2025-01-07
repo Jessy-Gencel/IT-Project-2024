@@ -283,3 +283,33 @@ def word_matches_with_specific_user(user_id: int, other_user_id: int):
     except CouchbaseException as e:
         print(f"An error occurred while retrieving word matches with user {other_user_id}: {e}")
         return None
+def get_event_participants(event_id: int):
+    try:
+        print(event_id)
+        query = f"SELECT participants FROM `ehb-link`.`event-data`.`events` WHERE id = {event_id}"
+        query_data = cluster.query(query).execute()
+        return query_data
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving participants from event: {event_id}: {e}")
+        return None
+    
+def get_events():
+    try:
+        query = f"SELECT * FROM `ehb-link`.`event-data`.`events` WHERE META().id LIKE 'event::%'"
+        query_data = cluster.query(query).execute()
+        query_data = [row["events"] for row in query_data]
+        print(query_data)
+        return query_data
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving events: {e}")
+        return None
+    
+def get_interests():
+    try:
+        query = f"SELECT * FROM `ehb-link`.`service-data`.`presets`"
+        query_data = cluster.query(query).execute()
+        query_data = [row["presets"] for row in query_data]
+        return query_data
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving interests: {e}")
+        return None

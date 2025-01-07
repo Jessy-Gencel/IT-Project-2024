@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import {
   View,
   Text,
@@ -14,52 +14,76 @@ import ProgressBar from "../components/ProgressBar"; // Assuming ProgressBar com
 import GradientBackground from "../components/GradientBackground";
 import { Ionicons } from "@expo/vector-icons";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
-const events = [
-  {
-    id: "1",
-    profilePicture: require("../assets/brent_klein.png"),
-    creatorName: "John Doe",
-    isGroup: false,
-    eventName: "Football Afternoon",
-    eventDate: "4/12",
-    location: "Behind Block A, Campus KAAI",
-    description: "Join us for a fun football afternoon!",
-  },
-  {
-    id: "2",
-    profilePicture: require("../assets/brent_klein.png"),
-    creatorName: "John Doe",
-    isGroup: false,
-    eventName: "Football Afternoon",
-    eventDate: "4/12",
-    location: "Behind Block A, Campus KAAI",
-    description:
-      "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-  },
-  {
-    id: "3",
-    profilePicture: require("../assets/brent_klein.png"),
-    creatorName: "John Doe",
-    isGroup: false,
-    eventName: "Football Afternoon",
-    eventDate: "4/12",
-    location: "Behind Block A, Campus KAAI",
-    description: "Join us for a fun football afternoon!",
-  },
-  {
-    id: "4",
-    profilePicture: require("../assets/brent_klein.png"),
-    creatorName: "John Doe",
-    isGroup: false,
-    eventName: "Football Afternoon",
-    eventDate: "4/12",
-    location: "Behind Block A, Campus KAAI",
-    description:
-      "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-  },
-];
+import axiosInstance from "../services/AxiosConfig";
+import Constants from "expo-constants";
+import { useEffect } from "react";
+import { useState } from "react";
+
+
+
+
+// const events = [
+//   {
+//     id: "1",
+//     profilePicture: require("../assets/brent_klein.png"),
+//     creatorName: "John Doe",
+//     isGroup: false,
+//     eventName: "Football Afternoon",
+//     eventDate: "4/12",
+//     location: "Behind Block A, Campus KAAI",
+//     description: "Join us for a fun football afternoon!",
+//   },
+//   {
+//     id: "2",
+//     profilePicture: require("../assets/brent_klein.png"),
+//     creatorName: "John Doe",
+//     isGroup: false,
+//     eventName: "Football Afternoon",
+//     eventDate: "4/12",
+//     location: "Behind Block A, Campus KAAI",
+//     description:
+//       "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
+//   },
+//   {
+//     id: "3",
+//     profilePicture: require("../assets/brent_klein.png"),
+//     creatorName: "John Doe",
+//     isGroup: false,
+//     eventName: "Football Afternoon",
+//     eventDate: "4/12",
+//     location: "Behind Block A, Campus KAAI",
+//     description: "Join us for a fun football afternoon!",
+//   },
+//   {
+//     id: "4",
+//     profilePicture: require("../assets/brent_klein.png"),
+//     creatorName: "John Doe",
+//     isGroup: false,
+//     eventName: "Football Afternoon",
+//     eventDate: "4/12",
+//     location: "Behind Block A, Campus KAAI",
+//     description:
+//       "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
+//   },
+// ];
 
 const GatewaysScreen = ({ navigation }) => {
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `${Constants.expoConfig.extra.BASE_URL}/events/events`
+        );
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+    fetchEvents();
+  }, []);
+
   return (
     <View style={styles.container}>
       <GradientBackground style={styles.background}>
@@ -79,7 +103,7 @@ const GatewaysScreen = ({ navigation }) => {
             />
           </View>
           {events.map((event) => (
-            <EventCardWithSection key={event.id} {...event} />
+            <EventCardWithSection key={event.id} id={event.id} {...event}  />
           ))}
         </ScrollView>
       </GradientBackground>

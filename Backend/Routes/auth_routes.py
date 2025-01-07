@@ -33,6 +33,8 @@ def login():
 
     return jsonify({
         "id" : str(user["id"]),
+        "first_name" : user["first_name"],
+        "last_name" : user["last_name"],
         "access_token": access_token,
         "refresh_token": refresh_token
     })

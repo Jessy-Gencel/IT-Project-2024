@@ -91,6 +91,7 @@ const getPfp = async (data) => {
 const HomePage = ({ navigation }) => {
   const [matchingProfiles, setMatchingProfiles] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [events, setEvents] = useState([]);
 
   // Fetch matching profiles when component mounts
   useEffect(() => {
@@ -104,7 +105,22 @@ const HomePage = ({ navigation }) => {
         console.error("Error fetching matching profiles:", error);
       }
     };
-
+    const fetchEvents = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `${Constants.expoConfig.extra.BASE_URL}/events/events`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("Fetched events:", response.data);
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
     const fetchUserId = async () => {
       try {
         const userId = await getUserData("id");
@@ -116,7 +132,8 @@ const HomePage = ({ navigation }) => {
     };
 
     fetchUserId();
-    fetchMatchingProfiles(); // Fetch data
+    fetchMatchingProfiles();
+    fetchEvents(); // Fetch data
   }, []);
 
   const createRoom = (userId) => {
@@ -132,51 +149,51 @@ const HomePage = ({ navigation }) => {
     navigation.navigate("ChatScreen", { room: roomId, chatUserId: userId });
   };
 
-  const events = [
-    {
-      id: "1",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description: "Join us for a fun football afternoon!",
-    },
-    {
-      id: "2",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description:
-        "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-    },
-    {
-      id: "3",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description: "Join us for a fun football afternoon!",
-    },
-    {
-      id: "4",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description:
-        "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-    },
-    // Add 3 more events if needed.
-  ];
+  // const events = [
+  //   {
+  //     id: "1",
+  //     profilePicture: require("../assets/brent_klein.png"),
+  //     creatorName: "John Doe",
+  //     isGroup: false,
+  //     eventName: "Football Afternoon",
+  //     eventDate: "4/12",
+  //     location: "Behind Block A, Campus KAAI",
+  //     description: "Join us for a fun football afternoon!",
+  //   },
+  //   {
+  //     id: "2",
+  //     profilePicture: require("../assets/brent_klein.png"),
+  //     creatorName: "John Doe",
+  //     isGroup: false,
+  //     eventName: "Football Afternoon",
+  //     eventDate: "4/12",
+  //     location: "Behind Block A, Campus KAAI",
+  //     description:
+  //       "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
+  //   },
+  //   {
+  //     id: "3",
+  //     profilePicture: require("../assets/brent_klein.png"),
+  //     creatorName: "John Doe",
+  //     isGroup: false,
+  //     eventName: "Football Afternoon",
+  //     eventDate: "4/12",
+  //     location: "Behind Block A, Campus KAAI",
+  //     description: "Join us for a fun football afternoon!",
+  //   },
+  //   {
+  //     id: "4",
+  //     profilePicture: require("../assets/brent_klein.png"),
+  //     creatorName: "John Doe",
+  //     isGroup: false,
+  //     eventName: "Football Afternoon",
+  //     eventDate: "4/12",
+  //     location: "Behind Block A, Campus KAAI",
+  //     description:
+  //       "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
+  //   },
+  //   // Add 3 more events if needed.
+  // ];
 
   return (
     <ScrollView style={styles.container} nestedScrollEnabled={true}>
