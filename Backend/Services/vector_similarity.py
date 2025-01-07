@@ -114,11 +114,11 @@ def match_with_one_specific_user(user_id : int, other_user_id : int):
         if vector_field in ["mbti","hobby","interest","game"]:
             res = global_vector_DB.search(collection_name=f"{vector_field}_vectors", data=[user_vectors[f"{vector_field}"]], limit=1,filter=f"id == {other_user_id}")[0]
             print(res[0])
-            matching_percentages[vector_field] = round(float(res[0]["distance"]),2) * 100
+            matching_percentages[vector_field] = int(round(float(res[0]["distance"]),2) * 100)
         elif vector_field in ["movie","book","music"]:
             res = category_vector_DB.search(collection_name=f"{vector_field}_vectors", data=[user_vectors[f"{vector_field}"]], limit=1,filter=f"id == {other_user_id}")[0]
             print(res[0])
-            matching_percentages[vector_field] = round(float(res[0]["distance"]),2) * 100
+            matching_percentages[vector_field] = int(round(float(res[0]["distance"]),2) * 100)
         else: 
             print("Brother what field are you trying to access?!?!?!")
     return matching_percentages
