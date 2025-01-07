@@ -21,6 +21,7 @@ import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store"; // Secure storage library
 import { getUserData, storeSecretStorage } from "../services/GetToken";
 import encrypt from "../services/EncryptionService";
+import { ScrollView } from "react-native-gesture-handler";
 
 const schema = yup.object({
   email: yup
@@ -45,7 +46,7 @@ const LogInScreen = ({ navigation }) => {
   const onSubmit = async (data) => {
     console.log(`${Constants.expoConfig.extra.BASE_URL}/auth/login`);
     try {
-      encryptedPassword = encrypt(data.password);
+      const encryptedPassword = encrypt(data.password);
       console.log("encrypted:", encryptedPassword);
 
       const response = await axios.post(
@@ -90,6 +91,10 @@ const LogInScreen = ({ navigation }) => {
     <SafeAreaProvider>
       <GradientBackground>
         <SafeAreaView style={{ flex: 1 }}>
+            <ScrollView 
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            >
           <View style={styles.logoWelkomContainer}>
             <Image
               source={require("../assets/GatewayNoText_Logo.png")}
@@ -169,6 +174,7 @@ const LogInScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
+        </ScrollView>
         </SafeAreaView>
       </GradientBackground>
     </SafeAreaProvider>
