@@ -214,6 +214,7 @@ def order_users_by_matches(category: str, vector_ids: list, user_rows: list):
 def get_user_chats(user_id: int):
     print('get_user_chats')
     try:
+        # Get all rooms related to the user
         query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id LIKE 'room:{user_id}:%' OR room_id LIKE 'room:%:{user_id}'"
         query_data = cluster.query(query).execute()
         print(query_data)
@@ -229,10 +230,13 @@ def get_user_chats(user_id: int):
         ]
         print(user_ids_list)
         
-        user_query = f"SELECT name, id, pfp FROM `ehb-link`.`user-data`.`profiles` WHERE id IN [{', '.join([f"'{id}'" for id in user_ids_list])}]"
-        print(user_query)
+        rooms = [];
+        for id in user_ids_list:
+            rooms.append(f"room:{min(int(user_id), int(id))}:{max(int(user_id), int(id))}")
+        
+        # Retrieve profiles for each user in chatlist
+        user_query = f"SELECT name, id, pfp FROM `ehb-link`.`user-data`.`profiles` AS profiles WHERE id IN [{', '.join([f"'{id}'" for id in user_ids_list])}]"
         user_data = cluster.query(user_query).execute()
-        print(user_data)
         user_list = [row for row in user_data]
         
         return user_list
@@ -241,25 +245,8 @@ def get_user_chats(user_id: int):
         print(f"An error occurred while retrieving the rooms for user_id {user_id}: {e}")
         return None
     
-
     
-    #fetch all chats where the user is involved
-    # chats_query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id = 'room:{user_id}:%' OR chat_id = 'room:%:{user_id}'"
-    # chats_data = cluster.query(chats_query).execute()
-    # chats_list = [row for row in chats_data]
-
-    # still need to fetch the pfp but the documents dont have them yet (just fetching all the data for now)
-    # profile = find_profile_by_id(user_id)
-    # if profile is None:
-    #     print(f"Profile with ID {user_id} not found.")
-    #     return None
-    # result = {
-    #     "user": user_list,
-    #     "chats": chats_list,
-    #     "profile": profile
-    # }
-
-    return user_list
+    
 
 def check_room_exists(room: str):
     query = f"SELECT room_id FROM `ehb-link`.`user-data`.`chats` WHERE room_id = '{room}'"

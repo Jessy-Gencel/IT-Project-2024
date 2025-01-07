@@ -62,7 +62,7 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
       current_user_id: currentUserId,
       match_user_id: userId,
     });
-    navigation.navigate("ChatScreen", { room: roomId });
+    navigation.navigate("ChatScreen", { room: roomId, chatUserId: userId });
   };
 
   const getPfp = async (data) => {
@@ -96,17 +96,48 @@ const ChatList = ({ navigation, isUnread, isMuted }) => {
     }
   };
 
+  const convertTimeToReadableFormat = (isoDate) => {
+    const date = new Date(isoDate);
+
+    const now = new Date();
+    const isToday = 
+      date.getUTCFullYear() === now.getUTCFullYear() &&
+      date.getUTCMonth() === now.getUTCMonth() &&
+      date.getUTCDate() === now.getUTCDate();
+
+      if (isToday) {
+        const hours = date.getUTCHours().toString().padStart(2, "0");
+        const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+
+        return `${hours}:${minutes}`;
+      } else {
+        const daysOfWeek = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+        const dayOfWeek = daysOfWeek[date.getUTCDay()];
+
+        return dayOfWeek;
+
+      }
+  };
+
   const renderChatCard = ({ item }) => (
     <TouchableOpacity onPress={() => createRoom(item.id)}>
       <View style={styles.chatListContainer}>
         <Image source={{ uri: item.imageUrl }} style={styles.avatar} />
         <View style={styles.senderAndMessage}>
-          <Text style={styles.sender}>{`${item.name}`}</Text>
+          <Text style={styles.sender}>{`${item.name.substring(0, 1).toUpperCase()}${item.name.substring(1)}`}</Text>
           <View style={styles.timeAndMessage}>
             <Text
               numberOfLines={1}
               style={[styles.message, isUnread && styles.messageUnread]}>
-              Hardcoded Message
+              Hello
             </Text>
             <Text style={[styles.time, isUnread && styles.timeUnread]}>
               12:33

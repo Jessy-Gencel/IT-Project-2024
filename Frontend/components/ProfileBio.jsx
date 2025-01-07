@@ -1,14 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
 const Bio = ({ name, age, pronouns, bioText }) => {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Bio</Text>
-      
+
       <View style={styles.bioContent}>
         <Text style={styles.bioText}>
-          <Text style={styles.boldText}>Name:</Text> {name} ({age})
+          <Text style={styles.boldText}>Name:</Text>
+          {` ${name?.substring(0, 1).toUpperCase()}${name?.substring(1)}`},{" "}
+          {age}
         </Text>
         <Text style={styles.bioText}>
           <Text style={styles.boldText}>Pronouns:</Text> {pronouns}
@@ -23,14 +25,12 @@ const Bio = ({ name, age, pronouns, bioText }) => {
 
 const styles = StyleSheet.create({
   card: {
-    
     padding: 20,
     margin: 10,
-    
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   bioContent: {
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   boldText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 
