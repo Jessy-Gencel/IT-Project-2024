@@ -19,6 +19,7 @@ import { getUserData } from "../services/GetToken";
 import socket from "../services/websockets";
 import Constants from "expo-constants";
 import { useRef } from "react";
+import { getAuthTokens, storeSecretStorage } from "../services/GetToken";
 
 const getMessages = async (room) => {
   const response = await axiosInstance.get(
@@ -30,7 +31,6 @@ const getMessages = async (room) => {
       },
     }
   );
-  // console.log("response: ", response.data);
 
   const sortedMessages = response.data.sort((a, b) => {
     const timestampA = new Date(a.timestamp);
@@ -41,12 +41,44 @@ const getMessages = async (room) => {
   return sortedMessages;
 };
 
+const getPfp = async (data) => {
+  const { accessToken, refreshToken } = await getAuthTokens();
+  console.log("data: ", data);
+
+  if ("pfp" in data) {
+    try {
+      // Make the Axios request to get the image URL from the backend
+      const response = await axiosInstance.get(
+        `${Constants.expoConfig.extra.BASE_URL}/auth/pfp/${data.pfp}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "x-refresh-token": refreshToken,
+          },
+        }
+      );
+
+      // Get the Firebase URL from the response data
+      const firebaseUrl = response.data.file;
+
+      // Store the URL in the match object or wherever you need it
+      data.imageUrl = firebaseUrl;
+
+      console.log("Firebase URL received:", firebaseUrl);
+      return data;
+    } catch (error) {
+      console.error("Error fetching profile picture URL:", error);
+    }
+  }
+};
+
 const ChatScreen = ({ navigation, route }) => {
-  const { room } = route.params;
+  const { room, chatUserId } = route.params;
   const [messages, setMessages] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [message, setMessage] = useState("");
   const scrollViewRef = useRef(null);
+  const [chatUserProfile, setChatUserProfile] = useState([]);
 
   const sendMessage = (room, sender_id, message) => {
     const timestamp = new Date().toISOString();
@@ -83,8 +115,33 @@ const ChatScreen = ({ navigation, route }) => {
       }
     };
 
+    const fetchChatUser = async (chatUserId) => {
+      const token = await getUserData("accessToken");
+      const refreshToken = await getUserData("refreshToken");
+      try {
+        const response = await fetch(
+          `${Constants.expoConfig.extra.BASE_URL}/auth/profile/${chatUserId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+              "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
+            },
+          }
+        );
+        const data = await response.json();
+        console.log("Chat user profile: ", data);
+        const chatUserData = await getPfp(data);
+        setChatUserProfile(chatUserData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     fetchMessages(room);
     fetchUserId();
+    fetchChatUser(chatUserId);
 
     socket.on("new_message", (data) => {
       // console.log("data: ", data);
@@ -112,34 +169,44 @@ const ChatScreen = ({ navigation, route }) => {
         ref={scrollViewRef}
         style={styles.chatSection}
         contentContainerStyle={{ paddingBottom: 0 }}
-        onLayout={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-      >
+        onLayout={() => scrollViewRef.current?.scrollToEnd({ animated: true })}>
         <View style={styles.header}>
           <Ionicons
             name="chevron-back-outline"
             style={styles.backIcon}
+            size={25}
             onPress={() => {
-              leaveChat(room)
-              navigation.goBack()
+              leaveChat(room);
+              navigation.goBack();
             }}
           />
           <Image
-            source={require("../assets/brent_klein.png")}
+            source={
+              typeof chatUserProfile.imageUrl === "string"
+                ? { uri: chatUserProfile.imageUrl }
+                : chatUserProfile.imageUrl
+            }
             style={styles.topPfp}
           />
-          <Text style={styles.topName}>Brent Devroey</Text>
+          <Text style={styles.topName}>{`${chatUserProfile.name
+            ?.substring(0, 1)
+            .toUpperCase()}${chatUserProfile.name?.substring(1)}`}</Text>
         </View>
         <View style={styles.profileShort}>
           <Image
-            source={require("../assets/brent_groot.png")}
+            source={
+              typeof chatUserProfile.imageUrl === "string"
+                ? { uri: chatUserProfile.imageUrl }
+                : chatUserProfile.imageUrl
+            }
             style={styles.pfpBig}
           />
-          <Text style={styles.pfpName}>Brent Devroey</Text>
-          <Text style={styles.biography}>
-            Ge moet naar de maan schieten en in de sterren belanden
-          </Text>
+          <Text style={styles.pfpName}>{`${chatUserProfile.name
+            ?.substring(0, 1)
+            .toUpperCase()}${chatUserProfile.name?.substring(1)}`}</Text>
+          <Text style={styles.biography}>{chatUserProfile.bio ?? ""}</Text>
         </View>
-        <View style={styles.matchSection}>
+        {/* <View style={styles.matchSection}>
           <Text style={styles.matchText}>You matched on</Text>
           <View style={styles.badges}>
             <Badge text="Football" />
@@ -148,7 +215,7 @@ const ChatScreen = ({ navigation, route }) => {
             <Badge text="Poëzie" />
             <Badge text="MILFs" />
           </View>
-        </View>
+        </View> */}
 
         {Array.isArray(messages) && messages.length > 0 ? (
           messages.map((item) => (
@@ -195,6 +262,8 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     marginRight: 10,
+    width: 25,
+    height: 25,
   },
   topPfp: {
     width: 40,

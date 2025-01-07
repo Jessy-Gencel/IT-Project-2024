@@ -20,6 +20,12 @@
 
 <h3>Cedric Pas:</h3>
 <ol>
+  <li><a href="https://chatgpt.com/share/677cf702-2024-800b-bd4b-6c104b24cd0f">Multiline string + union sql++</a></li>
+  <li><a href="https://chatgpt.com/share/677cf763-0070-800b-9065-05b5dc138549">Python + CouchBase max int size</a></li>
+  <li><a href="https://chatgpt.com/share/677cf7b7-a5b4-800b-bb4f-cdc195eedafe">Websockets connection manager</a></li>
+  <li><a href="https://chatgpt.com/share/677cf7e4-3c44-800b-b0a3-a5d7669ea33b">axiosInstance setup</a></li>
+  <li><a href="https://websockets.readthedocs.io/en/stable/">Websockets</a></li>
+  <li><a href="https://chatgpt.com/share/677cf810-6ab4-800b-a446-e3eba566f3d0">Websockets setup</a></li>
 </ol>
 
 <h3>Nils Kelecom:</h3>
