@@ -29,6 +29,7 @@ export default {
     },
     extra: {
       BASE_URL: process.env.FRONTEND_BASE_URL,
+      ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     },
     plugins: [
       "expo-secure-store"
