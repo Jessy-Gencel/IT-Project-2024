@@ -75,8 +75,9 @@ def create_profile():
     data_raw = request.form["data"]
     pfp = request.form["pfp"]
     data = json.loads(data_raw)
+    print(data)
     id = sanitize_input(str(data['id']))
-    bio = sanitize_input(str(data['bio']))
+    bio = "No bio yet" #frontend saves as biography
     #age = sanitize_input(str(data['age']))
     mbti = sanitize_input(str(data['mbti']))
     interests = santize_array(data['interests'])
@@ -107,6 +108,7 @@ def create_profile():
 
 @auth_bp.route('/profile/edit', methods=['POST'])
 def edit_profile():
+    print(data)
     data: dict = request.get_json()
     print(data)
     id = sanitize_input(str(data['id']))
