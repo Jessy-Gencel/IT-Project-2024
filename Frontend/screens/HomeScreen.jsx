@@ -21,6 +21,7 @@ import PrimaryButton from "../components/Badge";
 import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import socket from "../services/websockets";
 import { getUserData } from "../services/GetToken";
+import HomePopup from "../components/HomePopup";
 
 const getHomeMatches = async () => {
   try {
@@ -91,6 +92,9 @@ const getPfp = async (data) => {
 const HomePage = ({ navigation }) => {
   const [matchingProfiles, setMatchingProfiles] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [popupData, setPopupData] = useState([]);
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState(null);
 
   // Fetch matching profiles when component mounts
   useEffect(() => {
@@ -130,6 +134,33 @@ const HomePage = ({ navigation }) => {
       match_user_id: userId,
     });
     navigation.navigate("ChatScreen", { room: roomId, chatUserId: userId });
+  };
+
+  const homePopUp = async (userId) => {
+    const { accessToken, refreshToken } = await getAuthTokens();
+    const ids = { "current_user_id": currentUserId, "other_user_id": userId };
+
+    try {
+    const response = await axiosInstance.post(
+      `${Constants.expoConfig.extra.BASE_URL}/vector/getMatchesWithSpecificUser`,
+      ids,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "x-refresh-token": refreshToken,
+        },
+      }
+    );
+    const data = response.data;
+    console.log("Popup data:", data);
+    setSelectedMatchId(userId);
+    setPopupData(data);
+    setPopupVisible(true); 
+    console.log("matching profiles:", matchingProfiles);
+
+  }catch (error) {
+    console.error("Error fetching popup data:", error);
+  }
   };
 
   const events = [
@@ -242,7 +273,7 @@ const HomePage = ({ navigation }) => {
                         color="black"
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => homePopUp(item.id, index)}>
                       <Ionicons
                         name="information-circle-outline"
                         size={25}
@@ -255,6 +286,12 @@ const HomePage = ({ navigation }) => {
             ))}
           </ScrollView>
         </View>
+        <HomePopup
+          isVisible={isPopupVisible}
+          onClose={() => setPopupVisible(false)} // Close the popup
+          matchPercentages={popupData[0]}
+          src={matchingProfiles.find((profile) => profile.id == selectedMatchId)?.imageUrl}
+        />
 
         {/* Event Section */}
         <View style={styles.eventSection}>
