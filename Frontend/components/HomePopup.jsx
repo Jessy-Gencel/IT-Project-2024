@@ -4,7 +4,22 @@ import { Entypo } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import ProgressBar from './ProgressBar';
 
-const HomePopup = ({ isVisible, onClose, children }) => {
+const HomePopup = ({ 
+        isVisible,
+        onClose, 
+        children,
+        age,
+        src,
+        name,
+        matchPercentageHobbies,
+        matchPercentageInterest,
+        matchPercentageMBTI,
+        matchPercentageMusic,
+        matchPercentageMovies,
+        matchPercentageBooks,
+        matchPercentageGames
+
+ }) => {
   return (
     <Modal
       visible={isVisible}
@@ -12,51 +27,57 @@ const HomePopup = ({ isVisible, onClose, children }) => {
       animationType="fade"
       onRequestClose={onClose} // Handles back button press on Android
     >
+        <Image source={src} style={styles.image} />
+        <View style={styles.nameContainer}>
+                  <Text style={styles.name}>
+                    {name}, {age}
+                  </Text>
+        </View>
     <ProgressBar
             title="Hobbies"
-            fillWidth={matchPercentage}
+            fillWidth={matchPercentageHobbies} 
             height={20}
             borderRadius={10}
             barColor="#4CAF50"
           />
     <ProgressBar
             title="interests"
-            fillWidth={matchPercentage}
+            fillWidth={matchPercentageInterest}
             height={20}
             borderRadius={10}
             barColor="#4CAF50"
           />
     <ProgressBar
             title="MBTI"
-            fillWidth={matchPercentage}
+            fillWidth={matchPercentageMBTI}
             height={20}
             borderRadius={10}
             barColor="#4CAF50"
             />
     <ProgressBar
             title="Music"
-            fillWidth={matchPercentage}
+            fillWidth={matchPercentageMusic}
             height={20}
             borderRadius={10}
             barColor="#4CAF50"
             />
     <ProgressBar
             title="Movies"
-            fillWidth={matchPercentage}
+            fillWidth={matchPercentageMovies}
             height={20}
             borderRadius={10}
             barColor="#4CAF50"
             />
     <ProgressBar
             title="Books"
-            fillWidth={matchPercentage}
+            fillWidth={matchPercentageBooks}
             height={20}
             borderRadius={10}
             barColor="#4CAF50"
             />
     <ProgressBar
             title="Games"
-            fillWidth={matchPercentage}
+            fillWidth={matchPercentageGames}
             height={20}
             borderRadius={10}
             barColor="#4CAF50"
