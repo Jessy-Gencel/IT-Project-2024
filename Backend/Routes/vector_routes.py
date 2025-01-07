@@ -23,6 +23,7 @@ def get_matching_vector(payload):
     for user in res:
         user_profile = find_profile_by_id(user["id"])
         score = round(float(user["distance"]),2) * 100
+        score = int(score)
         user_profile["match_score"] = score
         matching_users.append(user_profile)
     return matching_users, 200
@@ -40,7 +41,7 @@ def get_matching_vector_by_category(payload):
     matching_users = []
     for user in user_matches:
         user_profile = find_profile_by_id(user["id"])
-        score = round(float(user["distance"]),2) * 100
+        score = round(int(user["distance"]),2) * 100
         user_profile["match_score"] = score
         matching_users.append(user_profile)
     return matching_users, 200
