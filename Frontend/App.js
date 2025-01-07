@@ -19,7 +19,6 @@ import CreateEvent from './screens/CreateEvent';
 import ChangePasswordScreen from './screens/ChangePasswordScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import ChatScreen from './screens/ChatScreen';
-import EventDetailsScreen from './screens/EventDetailScreen';
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 const Stack = createStackNavigator();
@@ -38,7 +37,6 @@ export default function App() {
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         <Stack.Screen name="ChatScreen" component={ChatScreen} />
-        <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
 
       </Stack.Navigator>
       <StatusBar style="auto" />

@@ -173,50 +173,7 @@ const HomePage = ({ navigation }) => {
   }
   };
 
-  const events = [
-    {
-      id: "1",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description: "Join us for a fun football afternoon!",
-    },
-    {
-      id: "2",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description:
-        "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-    },
-    {
-      id: "3",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description: "Join us for a fun football afternoon!",
-    },
-    {
-      id: "4",
-      profilePicture: require("../assets/brent_klein.png"),
-      creatorName: "John Doe",
-      isGroup: false,
-      eventName: "Football Afternoon",
-      eventDate: "4/12",
-      location: "Behind Block A, Campus KAAI",
-      description:
-        "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
-    },
-  ];
+  
 
   return (
     <ScrollView style={styles.container} nestedScrollEnabled={true}>
