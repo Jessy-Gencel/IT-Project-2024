@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Alert, Image, } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -9,6 +9,8 @@ import Badge from '../components/Badge';
 import axiosInstance from "../services/AxiosConfig";
 import { getUserData } from "../services/GetToken";
 import Constants from "expo-constants";
+import ImageEditComponent from '../components/ImageUploadComponent';
+import * as ImagePicker from 'expo-image-picker'; // Import ImagePicker
 
 // Validation schema using Yup
 const schema = yup.object({
@@ -20,6 +22,8 @@ const EditProfileScreen = ({ route, navigation }) => {
   const { profile, interests } = route.params;
   const [selectedInterests, setSelectedInterests] = useState(interests || {});
   const [newInterestValue, setNewInterestValue] = useState(''); // Local state to capture the input value
+  const [profilePicture, setProfilePicture] = useState(profile.profilePicture); // For preview
+  const [base64Image, setBase64Image] = useState(null); // For backend
   const { control, handleSubmit, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -34,6 +38,10 @@ const EditProfileScreen = ({ route, navigation }) => {
     setValue('interests', selectedInterests); // Make sure form is updated with the latest selectedInterests
   }, [selectedInterests, setValue]);
 
+  const handleUploadSuccess = (base64) => {
+    setBase64Image(base64); // Update base64 image for submission
+    console.log("Base64 profile picture updated.");
+  };
   // Handle adding a new interest value
   const handleAddInterestValue = (trait, value) => {
     const valueToAdd = value ? value.trim() : ''; // Ensure value is a string and trimmed
@@ -95,6 +103,8 @@ const EditProfileScreen = ({ route, navigation }) => {
         id: data.id,
         bioText: data.bioText,
         traits: data.interests, // Include updated interests
+        profilePicture: base64Image, // Include updated profile picture in base64 format
+
       }, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -114,6 +124,15 @@ const EditProfileScreen = ({ route, navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.EditProfiletitle}>Edit Profile</Text>
+
+      {/* Profile Picture Section */}
+      <View style={styles.profilePictureContainer}>
+        <Image
+          source={{ uri: profilePicture }}
+          style={styles.profilePicture}
+        />
+        <ImageEditComponent onUploadSuccess={handleUploadSuccess} />
+      </View>
 
       {/* Bio */}
       <Controller
@@ -251,6 +270,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
+  profilePictureContainer: { alignItems: 'center', marginBottom: 20 },
+  profilePicture: { width: 100, height: 100, borderRadius: 50, marginBottom: 10 },
 });
 
 export default EditProfileScreen;
