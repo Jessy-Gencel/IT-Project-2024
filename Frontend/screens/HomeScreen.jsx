@@ -22,8 +22,6 @@ import PrimaryButtonPill from "../components/PrimaryButtonPill";
 import socket from "../services/websockets";
 import { getUserData } from "../services/GetToken";
 
-
-
 const getHomeMatches = async () => {
   try {
     const { accessToken, refreshToken } = await getAuthTokens();
@@ -99,7 +97,7 @@ const HomePage = ({ navigation }) => {
     const fetchMatchingProfiles = async () => {
       try {
         const data = await getHomeMatches(); // Fetch data from API
-        const pfp = await getPfp(data);
+        await getPfp(data);
         console.log("Matching profiles:", data);
         setMatchingProfiles(data); // Set the fetched data in state
       } catch (error) {
@@ -131,7 +129,7 @@ const HomePage = ({ navigation }) => {
       current_user_id: currentUserId,
       match_user_id: userId,
     });
-    navigation.navigate("ChatScreen", { room: roomId });
+    navigation.navigate("ChatScreen", { room: roomId, chatUserId: userId });
   };
 
   const events = [
@@ -205,7 +203,7 @@ const HomePage = ({ navigation }) => {
                     style={styles.pfp}
                   />
                   <View style={styles.cardText}>
-                    <Text style={styles.cardName}>{item.name}</Text>
+                    <Text style={styles.cardName}>{`${item.name.substring(0, 1).toUpperCase()}${item.name.substring(1)}`}</Text>
                     <View style={styles.progressBarCard}>
                       <Text style={styles.progressBarText}>
                         {item.match_score}%
