@@ -16,6 +16,7 @@ from Utils.expected_database_keywords import VECTOR_FIELDS,DB_FIELDS
 from DB.firebase_bucket import bucket
 import jwt
 import json
+from Services.encryption import decrypt
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -24,6 +25,8 @@ def login():
     data = request.get_json()
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
+    password = decrypt(password)
+    print(password)
     user = find_user_by_email(email)
     
     if not user or not verify_password(user["password"], password):
@@ -44,6 +47,8 @@ def register():
     data = request.get_json()
     email = sanitize_input(data['email'])
     password = sanitize_input(data['password'])
+    password = decrypt(password)
+    print(password)
     password_hash = hash_password(password)
     first_name,last_name = extract_name(email=email)
     user_dict = {"email" : email, "password" : password_hash, "first_name" : first_name, "last_name" : last_name}

@@ -20,6 +20,8 @@ import ChangePasswordScreen from './screens/ChangePasswordScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import ChatScreen from './screens/ChatScreen';
 import EventDetailsScreen from './screens/EventDetailScreen';
+
+global.Buffer = global.Buffer || require("buffer").Buffer;
 const Stack = createStackNavigator();
 
 export default function App() {
