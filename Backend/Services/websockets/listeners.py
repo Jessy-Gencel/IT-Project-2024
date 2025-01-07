@@ -17,7 +17,7 @@ def init_websockets(socketio):
     @socketio.on('connect')
     def handle_connect():
         """Handles new WebSocket connections."""
-        print(f"Client connected: yay")
+        print(f"Client connected to websockets")
         emit('server_response', {'message': 'Welcome to the WebSocket server!'})
 
 
@@ -25,7 +25,6 @@ def init_websockets(socketio):
     def on_join(data):
         current_user_id = data.get('current_user_id')
         match_user_id = data.get('match_user_id')
-        print(f'current user: {current_user_id} match id: {match_user_id}')
         room = f'room:{min(int(current_user_id), int(match_user_id))}:{max(int(current_user_id), int(match_user_id))}'
 
         # Check if room exists, if not add to db
@@ -55,16 +54,14 @@ def init_websockets(socketio):
             room = data.get('room')
             timestamp = data.get('timestamp')
             message_id = store_message(room, sender_id, message, timestamp)
-            print("emitting")
             emit('new_message', {'message_id': message_id, 'sender_id': sender_id, 'message': message, 'timestamp': timestamp}, room=room)
-            print("emitted")
 
         except Exception as e:
             emit('response', {'status': 'error', 'message': str(e)})
             
     @socketio.on('disconnect')
     def handle_disconnect():
-        print("Client disconnected")
+        print("Client disconnected from websockets server")
 
     @socketio.on('leave_room')
     def on_leave(data):

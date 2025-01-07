@@ -213,14 +213,11 @@ def order_users_by_matches(category: str, vector_ids: list, user_rows: list):
 #                 query = "SELECT * FROM `ehb-link`.`user-data`.chats WHERE user1 = $user1, user2 = $user2 OR WHERE user1 = $user2, user2 = $user1"
 
 def get_user_chats(user_id: int):
-    print('get_user_chats')
     try:
         # Get all rooms related to the user
         query = f"SELECT * FROM `ehb-link`.`user-data`.`chats` WHERE room_id LIKE 'room:{user_id}:%' OR room_id LIKE 'room:%:{user_id}'"
         query_data = cluster.query(query).execute()
-        print(query_data)
         rooms_list = [row["chats"] for row in query_data]
-        print("rooms: ", rooms_list)
         
         # Make array with other chat user id's and get their profile data
         user_ids_list = [
@@ -229,7 +226,6 @@ def get_user_chats(user_id: int):
         for num in item['room_id'].split(':')[1:]
         if int(num) != user_id
         ]
-        print(user_ids_list)
         
         rooms = [];
         for id in user_ids_list:
@@ -282,4 +278,32 @@ def word_matches_with_specific_user(user_id: int, other_user_id: int):
     
     except CouchbaseException as e:
         print(f"An error occurred while retrieving word matches with user {other_user_id}: {e}")
+        return None
+def get_event_participants(event_id: int):
+    try:
+        query = f"SELECT participants FROM `ehb-link`.`event-data`.`events` WHERE id = {event_id}"
+        query_data = cluster.query(query).execute()
+        return query_data
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving participants from event: {event_id}: {e}")
+        return None
+    
+def get_events():
+    try:
+        query = f"SELECT * FROM `ehb-link`.`event-data`.`events` WHERE META().id LIKE 'event::%'"
+        query_data = cluster.query(query).execute()
+        query_data = [row["events"] for row in query_data]
+        return query_data
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving events: {e}")
+        return None
+    
+def get_interests():
+    try:
+        query = f"SELECT * FROM `ehb-link`.`service-data`.`presets`"
+        query_data = cluster.query(query).execute()
+        query_data = [row["presets"] for row in query_data]
+        return query_data
+    except CouchbaseException as e:
+        print(f"An error occurred while retrieving interests: {e}")
         return None

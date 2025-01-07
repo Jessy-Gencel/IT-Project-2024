@@ -99,12 +99,7 @@ const AccountSetupScreen = ({ navigation, route }) => {
   });
   const [base64Image, setBase64Image] = useState(null);
 
-  useEffect(() => {
-    console.log("getvalues", getValues());
-  }, [formData]);
-
   const handleUploadSuccess = async (base64) => {
-    console.log("File uploaded successfully:", base64);
     setBase64Image(base64);
   };
 
@@ -144,12 +139,8 @@ const AccountSetupScreen = ({ navigation, route }) => {
       ],
       4: ["mbti"],
     };
-    console.log("Current step:", currentStep);
-    console.log("formData:", formData["hobbies"]);
     const fieldsToValidate = stepFields[currentStep];
-    console.log("Fields to validate:", fieldsToValidate);
     const isValid = await trigger(fieldsToValidate);
-    console.log("Validation result:", isValid);
 
     if (isValid) {
       if (currentStep < stepsCount) {
@@ -161,7 +152,6 @@ const AccountSetupScreen = ({ navigation, route }) => {
   };
 
   const addIdToFormData = (newId) => {
-    console.log("Adding ID to form data:", newId);
     setFormData((prevFormData) => ({
       ...prevFormData, // Spread the previous state
       id: newId, // Update only the id
@@ -178,12 +168,11 @@ const AccountSetupScreen = ({ navigation, route }) => {
     if (currentStep + 1 <= stepsCount) {
       setCurrentStep(currentStep + 1);
     } else {
-      navigation.navigate("Home");
+      navigation.navigate("HomeScreen");
     }
   };
 
   const addItem = (field, value) => {
-    console.log("Adding item:", value);
     if (value.trim()) {
       if (field === "interests" && !interests.includes(value.trim())) {
         alert("Please select a valid interest from the predefined list.");
@@ -196,13 +185,11 @@ const AccountSetupScreen = ({ navigation, route }) => {
       
       if(currentStep == 3){
         setValue(`favorites.${field}`, [...getValues(`favorites.${field}`), value.trim()]);
-        console.log("value", value);
       }else{
         setValue(field, [...getValues(field), value]);
 
       }
 
-      console.log("value", value);
     }
   };
 
@@ -226,7 +213,6 @@ const AccountSetupScreen = ({ navigation, route }) => {
     const formattedData = new FormData();
     formattedData.append("data", JSON.stringify(formData));
     formattedData.append("pfp", base64Image);
-    console.log("Form data after appending pfp:", formattedData);
 
     try {
       const response = await axios.post(
@@ -240,7 +226,7 @@ const AccountSetupScreen = ({ navigation, route }) => {
       );
 
       console.log("Form data submitted successfully:", response.data);
-      navigation.navigate("Home"); // Navigate to another screen upon success
+      navigation.navigate("HomeScreen"); // Navigate to another screen upon success
     } catch (error) {
       console.error("Error submitting form data:", error);
     }
@@ -529,9 +515,6 @@ const AccountSetupScreen = ({ navigation, route }) => {
           <>
             <View style={styles.alignLeft}>
               <Text style={styles.titleMedium}>What's your MBTI?</Text>
-
-              {/* Debugging: Log the mbti data */}
-              {console.log(mbti)}
 
               <RNPickerSelect
                 onValueChange={(value) =>

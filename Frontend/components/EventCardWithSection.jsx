@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,16 @@ import {
 import { Entypo, Feather, MaterialIcons } from "@expo/vector-icons";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { getUserData } from "../services/GetToken";
+import axiosInstance from "../services/AxiosConfig";
+import Constants from "expo-constants";
+import { useEffect } from "react";
 
 const EventCardWithSection = ({
+  id,
   profilePicture,
-  creatorName,
-  isGroup, // Indicates if the event is created by a group
+  isGroup,
+  organizerFullName,
   eventName,
   eventDate,
   location,
@@ -34,22 +39,41 @@ const EventCardWithSection = ({
       color: "#4CAF50", // Green for Going
     },
     {
-      label: "Not Interested",
-      value: "notInterested",
-      icon: <MaterialCommunityIcons name="close-circle" size={18} color="red" />,
+      label: "Not going",
+      value: "notGoing",
+      icon: (
+        <MaterialCommunityIcons name="close-circle" size={18} color="red" />
+      ),
       color: "#F44336", // Red for Not Interested
-    },
-    {
-      label: "Interested",
-      value: "interested",
-      icon: <MaterialCommunityIcons name="heart-circle" size={18} color="orange" />,
-      color: "#FF9800", // Orange for Interested
     },
   ];
 
-  const handleSelect = (option) => {
+  const handleSelect = async (option, id) => {
     setSelectedOption(option.label);
     setDropdownVisible(false);
+    const userId = await getUserData("id");
+    let isGoing = false;
+    if (option.value === "going") {
+      isGoing = true;
+    }
+    try {
+      const response = await axiosInstance.post(
+        `${Constants.expoConfig.extra.BASE_URL}/events/participants`,
+        {
+          event_id: id,
+          user_id: userId,
+          is_going: isGoing,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error updating participants:", error);
+      alert("Error updating participants!");
+    }
   };
 
   // Check if the description is longer than 20 words
@@ -63,11 +87,7 @@ const EventCardWithSection = ({
         <View style={styles.header}>
           <View style={styles.profileInfo}>
             <Image
-              source={
-                typeof profilePicture === "string"
-                  ? { uri: profilePicture }
-                  : profilePicture
-              }
+              source={require("../assets/GatewayNoText_Logo.png")}
               style={styles.profilePicture}
             />
             <View style={styles.nameWrapper}>
@@ -76,16 +96,18 @@ const EventCardWithSection = ({
               ) : null}
               <Text
                 style={[
-                  styles.creatorName,
+                  styles.organizerFullName,
                   { marginLeft: isGroup ? 5 : 0 },
                 ]}
               >
-                {creatorName}
+                {organizerFullName}
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate("EventDetails")}
-  style={styles.threeDotIcon}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("EventDetails")}
+            style={styles.threeDotIcon}
+          >
             <Entypo name="dots-three-horizontal" size={24} color="black" />
           </TouchableOpacity>
         </View>
@@ -126,27 +148,25 @@ const EventCardWithSection = ({
 
       {/* Right Section: Dropdown Picker */}
       <View style={styles.rightSection}>
-        <Image
-          source={
-            typeof profilePicture === "string"
-              ? { uri: profilePicture }
-              : profilePicture
-          }
-          style={styles.eventImage}
-        />
         <TouchableOpacity
           style={[
             styles.dropdownButton,
-            { backgroundColor: options.find((opt) => opt.label === selectedOption)?.color || "#F7931E" },
+            {
+              backgroundColor:
+                options.find((opt) => opt.label === selectedOption)?.color ||
+                "#F7931E",
+            },
           ]}
           onPress={() => setDropdownVisible(!dropdownVisible)}
         >
-          <Text style={styles.dropdownButtonText}>
-            {selectedOption}
-          </Text>
+          <Text style={styles.dropdownButtonText}>{selectedOption}</Text>
         </TouchableOpacity>
 
-        <Modal visible={dropdownVisible} transparent={true} animationType="fade">
+        <Modal
+          visible={dropdownVisible}
+          transparent={true}
+          animationType="fade"
+        >
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
               <FlatList
@@ -155,7 +175,7 @@ const EventCardWithSection = ({
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.optionContainer}
-                    onPress={() => handleSelect(item)}
+                    onPress={() => handleSelect(item, id)}
                   >
                     {item.icon}
                     <Text style={styles.optionText}>{item.label}</Text>
@@ -214,7 +234,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  creatorName: {
+  organizerFullName: {
     fontSize: 16,
     fontWeight: "bold",
   },

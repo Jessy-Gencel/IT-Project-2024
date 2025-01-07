@@ -33,7 +33,6 @@ const fetchProfile = async () => {
       }
     });
     const data = await response.json();
-    console.log(data);
     setProfileData(data);
   }
   catch (error) {

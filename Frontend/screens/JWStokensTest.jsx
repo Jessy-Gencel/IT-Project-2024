@@ -30,7 +30,6 @@ const JWSTesting = () => {
         try{
             const accessToken = await getToken("accessToken");
             const refreshToken = await getToken("refreshToken");
-            console.log("accessToken", accessToken);
             const response = await axios.get(
                 `${Constants.expoConfig.extra.BASE_URL}/auth/users`,
                 {
@@ -40,7 +39,6 @@ const JWSTesting = () => {
                   },
                 }
               );
-            console.log("response", response.data);
 
             
         } catch(error){

@@ -37,7 +37,6 @@ const getHomeMatches = async () => {
         },
       }
     );
-    console.log("Home Matches:", response.data);
     storeMatchIds(response.data);
     return response.data; // Return the data if needed elsewh
   } catch (error) {
@@ -52,7 +51,6 @@ const storeMatchIds = async (data) => {
   const ids = data.map((match) => match.id);
   try {
     await storeSecretStorage("match_ids", JSON.stringify(ids));
-    console.log("Match ids stored successfully:", ids);
   } catch (error) {
     console.error("Error storing match ids:", error);
   }
@@ -81,7 +79,6 @@ const getPfp = async (data) => {
         // Store the URL in the match object or wherever you need it
         match.imageUrl = firebaseUrl;
 
-        console.log("Firebase URL received:", firebaseUrl);
       } catch (error) {
         console.error("Error fetching profile picture URL:", error);
       }
@@ -95,6 +92,7 @@ const HomePage = ({ navigation }) => {
   const [popupData, setPopupData] = useState([]);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState(null);
+  const [events, setEvents] = useState([]);
 
   // Fetch matching profiles when component mounts
   useEffect(() => {
@@ -102,17 +100,29 @@ const HomePage = ({ navigation }) => {
       try {
         const data = await getHomeMatches(); // Fetch data from API
         await getPfp(data);
-        console.log("Matching profiles:", data);
         setMatchingProfiles(data); // Set the fetched data in state
       } catch (error) {
         console.error("Error fetching matching profiles:", error);
       }
     };
-
+    const fetchEvents = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `${Constants.expoConfig.extra.BASE_URL}/events/events`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
     const fetchUserId = async () => {
       try {
         const userId = await getUserData("id");
-        console.log("Fetched User ID:", userId); // id van andere user ophalen om zo navigeren naar juiste chatscreen
         setCurrentUserId(userId);
       } catch (error) {
         console.error("Error fetching user ID:", error);
@@ -120,7 +130,8 @@ const HomePage = ({ navigation }) => {
     };
 
     fetchUserId();
-    fetchMatchingProfiles(); // Fetch data
+    fetchMatchingProfiles();
+    fetchEvents(); // Fetch data
   }, []);
 
   const createRoom = (userId) => {
@@ -128,7 +139,6 @@ const HomePage = ({ navigation }) => {
       currentUserId,
       userId
     )}`;
-    console.log("roomId: ", roomId);
     socket.emit("join_room", {
       current_user_id: currentUserId,
       match_user_id: userId,
@@ -206,7 +216,6 @@ const HomePage = ({ navigation }) => {
       description:
         "Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!Join us for a fun football afternoon!",
     },
-    // Add 3 more events if needed.
   ];
 
   return (
