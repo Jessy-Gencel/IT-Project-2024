@@ -209,17 +209,10 @@ const GatewaysScreen = ({ navigation }) => {
                   )
               )}
             </View>
-            {/* Search bar for filtering presets */}
-            <TextInput
-              style={styles.input}
-              placeholder="Search presets"
-              value={searchText}
-              onChangeText={handleSearchChange}
-            />
 
             {/* Display matching presets */}
             <View style={styles.presetList}>
-              {filterPresets().map((preset, index) => (
+              {filterPresets().slice(0, 5).map((preset, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => handleBadgeChange(preset)}
@@ -230,6 +223,14 @@ const GatewaysScreen = ({ navigation }) => {
               ))}
             </View>
 
+            {/* Search bar for filtering presets */}
+            <TextInput
+              style={styles.input}
+              placeholder="Search presets"
+              value={searchText}
+              onChangeText={handleSearchChange}
+            />
+            
             <TouchableOpacity
               onPress={handleSubmit}
               style={styles.submitButton}
