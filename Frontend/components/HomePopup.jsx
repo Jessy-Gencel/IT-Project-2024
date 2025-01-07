@@ -34,7 +34,7 @@ const HomePopup = ({
                 style={styles.image}
               />
               <View style={styles.nameContainer}>
-                <Text style={styles.name}>{name}</Text>
+                <Text style={styles.name}>{`${name?.substring(0, 1).toUpperCase()}${name?.substring(1)}`}</Text>
                 <Text style={styles.matchInfo}>
                   {matchPercentages["hobby"]}% hobby match
                 </Text>

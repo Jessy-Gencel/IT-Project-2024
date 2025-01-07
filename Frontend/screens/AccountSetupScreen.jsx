@@ -22,8 +22,7 @@ import ImageUploadComponent from "../components/ImageUploadComponent"; // Image 
 import mbti from "../config/mbti";
 import interests from "../config/interests";
 import { getUserData } from "../services/GetToken";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
-import RegisterScreen from "./RegisterScreen";
+import axiosInstance from "../services/AxiosConfig";
 
 //weghalen van een hobby badge moet nog gebeuren
 //pas op het einde alles doorsturen naar backend via axios
@@ -83,7 +82,7 @@ const AccountSetupScreen = ({ navigation, route }) => {
   const [gamesInput, setGamesInput] = useState("");
   const [booksInput, setBooksInput] = useState("");
   const {idRegister} = route.params;
-
+  const [userProfile, setUserProfile] = useState([]);
   const [currentStep, setCurrentStep] = useState(1);
   const stepsCount = 5;
   const [formData, setFormData] = useState({
@@ -98,6 +97,35 @@ const AccountSetupScreen = ({ navigation, route }) => {
     biography: "",
   });
   const [base64Image, setBase64Image] = useState(null);
+
+  useEffect(() => {
+    const getUserName = async () => {
+      const token = await getUserData("accessToken");
+      const refreshToken = await getUserData("refreshToken");
+      try {
+        console.log("idRegister", idRegister);
+        const response = await axiosInstance.get(
+          `${Constants.expoConfig.extra.BASE_URL}/auth/users/${idRegister}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+              "x-refresh-token": refreshToken, // Optionally include refresh token as a custom header
+            },
+          }
+        );
+
+        const data = response.data;
+        console.log("User profile data:", data);
+  
+        setUserProfile(data);
+        
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    getUserName();
+  }, []);
 
   const handleUploadSuccess = async (base64) => {
     setBase64Image(base64);
@@ -193,6 +221,8 @@ const AccountSetupScreen = ({ navigation, route }) => {
     }
   };
 
+
+
   const removeItem = (field, index) => {
     const updatedField = field.includes("favorites.")
       ? `favorites.${field.split('.')[1]}`
@@ -240,7 +270,7 @@ const AccountSetupScreen = ({ navigation, route }) => {
           style={styles.logo}
         />
         <Text style={styles.title}>
-          Hi, Nils!{"\n"}Let's set up your account.
+          Hi,  {`${userProfile["first_name"]?.substring(0, 1).toUpperCase()}${userProfile["first_name"]?.substring(1)}`}!{"\n"}Let's set up your account.
         </Text>
         <StepCounter stepsCount={stepsCount} currentStep={currentStep} />
         {/* Step 1 */}

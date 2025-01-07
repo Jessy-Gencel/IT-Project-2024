@@ -257,6 +257,7 @@ const HomePage = ({ navigation }) => {
           onClose={() => setPopupVisible(false)} // Close the popup
           matchPercentages={popupData[0]}
           src={matchingProfiles.find((profile) => profile.id == selectedMatchId)?.imageUrl}
+          name= {matchingProfiles.find((profile) => profile.id == selectedMatchId)?.name}
         />
 
         {/* Event Section */}
