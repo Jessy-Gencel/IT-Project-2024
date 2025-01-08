@@ -16,6 +16,12 @@
 
 <h3>Jessy Gencel:</h3>
 <ol>
+  <li><a href="https://chatgpt.com/share/677eeb35-1828-8009-a083-0fca6fc71293">Sending images via Json</a></li>
+  <li><a href="https://chatgpt.com/share/677eeba6-668c-8009-95a5-78e6c4973ee1">Sending images via Axios</a></li>
+  <li><a href="https://chatgpt.com/share/677eec9a-e6bc-8009-8809-212125e65f0f">Hashing algorithm</a></li>
+  <li><a href="https://chatgpt.com/share/677eec63-cc44-8009-aa72-8a57edbd195f">MiniLM vector dimensions</a></li>
+  <li><a href="https://chatgpt.com/share/677eebee-b7ec-8009-9662-18ce06538346">JWT validation</a></li>
+  <li><a href="https://chatgpt.com/share/677eebc5-f250-8009-83c7-4cf4a0bc0f69">Couchbase profile updates</a></li>
 </ol>
 
 <h3>Cedric Pas:</h3>
@@ -43,9 +49,26 @@
 </ol>
 
 <h2>Starting up the project</h2>
+
 <h3>Requirements</h3>
+<ol>
+  <li><p>An android phone</p></li>
+  <li><p>A working .env file provided by the authors</p></li>
+  <li><p>Working Firebase credentials</p></li>
+  <li><p>Python 3.12.7 installed alongside pipenv</p></li>
+  <li><p>Node js and npm</p></li>
+  <li><p>Expo Go app on your phone</p></li>
+</ol>
 <h3>Installation</h3>
-<h3>Database information</h3>
+<ol>
+  <li><p>Place the provided .env file and Firebase json into the root directory</p></li>
+  <li><p>Cd into the backend directory and run pipenv install</p></li>
+  <li><p>Open a different terminal and cd into Frontend and then run npm install</p></li>
+  <li><p>In VSCode ensure you have the python extension running and the virtual env set as your interpretor </p></li>
+  <li><p>Run python main.py in the backend terminal</p></li>
+  <li><p>Run npm start in the frontend terminal</p></li>
+  <li><p>Scan the QR code provided by the frontend terminal using expo go</p></li>
+</ol>
 
 <h2>Technologies used</h2>
 
